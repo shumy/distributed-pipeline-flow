@@ -35,6 +35,7 @@ class DpfClientStarter {
 			failHandler = [ println('PIPELINE-FAIL: ' + it) ]
 		]
 		
+		//TODO: router should have the client credentials...
 		val router = new ClientRouter(server, client, pipeline, converter)
 		router.bind[
 			router.send(new Message => [id=1L cmd='ping' client='sss-client' path='srv:ping'])
