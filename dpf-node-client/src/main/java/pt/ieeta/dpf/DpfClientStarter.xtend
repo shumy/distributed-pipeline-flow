@@ -4,8 +4,8 @@ import rt.pipeline.Registry
 import pt.ieeta.dpf.test.TestService
 import rt.pipeline.IMessageBus.Message
 import rt.ws.client.MessageConverter
-import rt.ws.client.ClientMessageBus
 import rt.ws.client.ClientRouter
+import rt.pipeline.DefaultMessageBus
 
 class DpfClientStarter {
 	def static void main(String[] args) {
@@ -26,8 +26,8 @@ class DpfClientStarter {
 	}
 	
 	def void start() {
+		val bus = new DefaultMessageBus
 		val converter = new MessageConverter
-		val bus = new ClientMessageBus
 		val registry = new Registry(client, bus)
 		
 		val pipeline = registry.createPipeline => [
@@ -38,7 +38,7 @@ class DpfClientStarter {
 		//TODO: router should have the client credentials...
 		val router = new ClientRouter(server, client, pipeline, converter)
 		router.bind[
-			router.send(new Message => [id=1L cmd='ping' client='sss-client' path='srv:ping'])
+			router.send(new Message => [id=1L cmd='ping' clt='sss-client' path='srv:ping'])
 		]
 	}
 }

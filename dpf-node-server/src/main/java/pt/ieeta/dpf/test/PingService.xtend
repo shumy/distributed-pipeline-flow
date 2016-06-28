@@ -8,7 +8,7 @@ import rt.pipeline.IMessageBus.Message
 class PingService {
 		
 	@Public
-	def void ping() {
-		ctx.send(new Message => [id=1L cmd='hello' client='server' path='srv:test' args=#['Alex']])
+	def void ping(String name) {
+		ctx.send(new Message => [id=1L cmd='hello' clt='server' path='srv:test' args=#[name]])
 	}
 }

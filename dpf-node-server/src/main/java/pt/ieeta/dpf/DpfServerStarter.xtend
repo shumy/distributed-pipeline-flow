@@ -7,11 +7,11 @@ import io.vertx.core.http.HttpServerOptions
 
 import static io.vertx.core.Vertx.*
 import rt.pipeline.Registry
-import rt.vertx.server.VertxMessageBus
 import rt.vertx.server.VertxRouter
 import rt.vertx.server.MessageConverter
 import rt.pipeline.pipe.Pipeline
 import pt.ieeta.dpf.test.PingService
+import rt.pipeline.DefaultMessageBus
 
 class DpfServerStarter extends AbstractVerticle {
 	def static void main(String[] args) {
@@ -51,7 +51,7 @@ class DpfServerStarter extends AbstractVerticle {
 			tcpKeepAlive = true
 		])
 		
-		val registry = new Registry(domain, new VertxMessageBus(vertx.eventBus, converter))
+		val registry = new Registry(domain, new DefaultMessageBus)
 		val pipeline = registry.createPipeline => [
 			bootServices
 			failHandler = [ println('PIPELINE-FAIL: ' + it) ]
