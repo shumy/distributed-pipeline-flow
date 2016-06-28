@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<config>
+    <entries>
+        <entry type="srv" ref="pt.ieeta.dpf.test.PingService">
+            <name>ping</name>
+        </entry>
+    </entries>
+</config>
