@@ -9,6 +9,6 @@ class TestService implements TestInterface {
 	
 	@Public
 	override hello(String name) {
-		println('HELLO ' + name)
+		return 'Hello from ' + name
 	}
 }

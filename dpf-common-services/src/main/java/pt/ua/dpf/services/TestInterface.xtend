@@ -1,5 +1,5 @@
 package pt.ua.dpf.services
 
 interface TestInterface {
-	def void hello(String name)
+	def String hello(String name)
 }
