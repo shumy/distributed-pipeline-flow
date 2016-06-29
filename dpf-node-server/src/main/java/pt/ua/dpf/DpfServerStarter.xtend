@@ -1,15 +1,14 @@
-package pt.ieeta.dpf
+package pt.ua.dpf
 
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
-import io.vertx.core.VertxOptions
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.http.HttpServerOptions
-
-import static io.vertx.core.Vertx.*
 import rt.vertx.server.VertxRouter
 import rt.pipeline.pipe.Pipeline
-import pt.ieeta.dpf.test.PingService
-import rt.pipeline.DefaultMessageBus
+import pt.ua.dpf.test.PingService
+import io.vertx.core.Vertx
+//import static io.vertx.core.Vertx.*
+//import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
+//import io.vertx.core.VertxOptions
 
 class DpfServerStarter extends AbstractVerticle {
 	def static void main(String[] args) {
@@ -20,6 +19,9 @@ class DpfServerStarter extends AbstractVerticle {
 		}
 		
 		val node = new DpfServerStarter(port)
+		Vertx.vertx.deployVerticle(node)
+		
+		/*
 		val options = new VertxOptions => [
 			clusterManager = new HazelcastClusterManager
 		]
@@ -31,6 +33,7 @@ class DpfServerStarter extends AbstractVerticle {
 				System.exit(-1)
 			}
 		]
+		*/
 	}
 	
 	val int port
@@ -40,19 +43,17 @@ class DpfServerStarter extends AbstractVerticle {
 	}
 	
 	override def start() {
-		val server = vertx.createHttpServer(new HttpServerOptions => [
-			tcpKeepAlive = true
-		])
-		
-		val bus = new DefaultMessageBus
-		
-		val pipeline = new Pipeline(bus) => [
+		val pipeline = new Pipeline => [
 			bootServices
 			failHandler = [ println('PIPELINE-FAIL: ' + it) ]
 		]
 		
+		val server = vertx.createHttpServer(new HttpServerOptions => [
+			tcpKeepAlive = true
+		])
+		
 		val router = new VertxRouter(server) => [
-			route('/ws', pipeline)
+			route('/clt', pipeline)
 		]
 		
 		router.listen(port)

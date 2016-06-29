@@ -1,12 +1,10 @@
-package pt.ieeta.dpf
+package pt.ua.dpf
 
-import pt.ieeta.dpf.test.TestService
-import rt.pipeline.IMessageBus.Message
 import rt.ws.client.ClientRouter
-import rt.pipeline.DefaultMessageBus
 import rt.pipeline.pipe.Pipeline
 import rt.plugin.service.ServiceClient
-import pt.ieeta.dpf.test.PingInterface
+import pt.ua.dpf.test.PingProxy
+import pt.ua.dpf.test.TestService
 
 class DpfClientStarter {
 	def static void main(String[] args) {
@@ -27,9 +25,7 @@ class DpfClientStarter {
 	}
 	
 	def void start() {
-		val bus = new DefaultMessageBus
-		
-		val pipeline = new Pipeline(bus) => [
+		val pipeline = new Pipeline => [
 			addService(new TestService)
 			failHandler = [ println('PIPELINE-FAIL: ' + it) ]
 		]
@@ -38,7 +34,7 @@ class DpfClientStarter {
 		val router = new ClientRouter(server, client, pipeline)
 		
 		val srvClient = new ServiceClient(router.bus)
-		val pingProxy = srvClient.create('ping', PingInterface)
+		val pingProxy = srvClient.create('ping', PingProxy)
 		
 		//same as -> router.bus.publish(new Message => [id=1L cmd='ping' clt='sss-client' path='srv:ping' args=#['Simon']])
 		pingProxy.ping('Simon').then[

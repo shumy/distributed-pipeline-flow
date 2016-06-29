@@ -8,16 +8,25 @@
 	</parent>
 	<artifactId>dpf-node-server</artifactId>
 	
+	<properties>
+		<rtsVersion>0.2.0</rtsVersion>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>rts.core</groupId>
 			<artifactId>rts-plugin-service</artifactId>
-			<version>0.2.0</version>
+			<version>${rtsVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>rts.core</groupId>
 			<artifactId>rts-vertx-server</artifactId>
-			<version>0.2.0</version>
+			<version>${rtsVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>pt.ua.dpf</groupId>
+			<artifactId>dpf-common-services</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 	
@@ -28,10 +37,9 @@
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.2.1</version>
 				<configuration>
-					<mainClass>pt.ieeta.dpf.DpfServerStarter</mainClass>
+					<mainClass>pt.ua.dpf.DpfServerStarter</mainClass>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-	
 </project>
