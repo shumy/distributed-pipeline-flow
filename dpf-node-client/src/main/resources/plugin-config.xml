@@ -4,5 +4,8 @@
         <entry type="srv" ref="pt.ieeta.dpf.test.TestService">
             <name>test</name>
         </entry>
+        <entry type="srv" ref="pt.ieeta.dpf.test.PingService">
+            <name>ping</name>
+        </entry>
     </entries>
 </config>

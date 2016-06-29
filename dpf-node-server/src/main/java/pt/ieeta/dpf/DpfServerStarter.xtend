@@ -6,23 +6,20 @@ import io.vertx.core.AbstractVerticle
 import io.vertx.core.http.HttpServerOptions
 
 import static io.vertx.core.Vertx.*
-import rt.pipeline.Registry
 import rt.vertx.server.VertxRouter
-import rt.vertx.server.MessageConverter
 import rt.pipeline.pipe.Pipeline
 import pt.ieeta.dpf.test.PingService
 import rt.pipeline.DefaultMessageBus
 
 class DpfServerStarter extends AbstractVerticle {
 	def static void main(String[] args) {
-		var domain = args.get(0)
 		var port = 9090
 		
-		if(args.length > 1) {
-			port = Integer.parseInt(args.get(1))
+		if(args.length > 0) {
+			port = Integer.parseInt(args.get(0))
 		}
 		
-		val node = new DpfServerStarter(domain, port)
+		val node = new DpfServerStarter(port)
 		val options = new VertxOptions => [
 			clusterManager = new HazelcastClusterManager
 		]
@@ -36,33 +33,30 @@ class DpfServerStarter extends AbstractVerticle {
 		]
 	}
 	
-	val String domain
 	val int port
 	
-	new(String domain, int port) {
-		this.domain = domain
+	new(int port) {
 		this.port = port
 	}
 	
 	override def start() {
-		val converter = new MessageConverter
-		
 		val server = vertx.createHttpServer(new HttpServerOptions => [
 			tcpKeepAlive = true
 		])
 		
-		val registry = new Registry(domain, new DefaultMessageBus)
-		val pipeline = registry.createPipeline => [
+		val bus = new DefaultMessageBus
+		
+		val pipeline = new Pipeline(bus) => [
 			bootServices
 			failHandler = [ println('PIPELINE-FAIL: ' + it) ]
 		]
 		
-		val router = new VertxRouter(server, converter) => [
+		val router = new VertxRouter(server) => [
 			route('/ws', pipeline)
 		]
 		
 		router.listen(port)
-		println('''Node («domain», «port»)''')
+		println('''Node («port»)''')
 	}
 	
 	def void bootServices(Pipeline pipeline) {
