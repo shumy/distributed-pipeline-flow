@@ -15,13 +15,9 @@
 	"exclude": [
 		"node_modules"
 	],
-	"filesGlob": [
-		"main.ts",
-		"app/**/*.ts",
-		"typings/index.d.ts"
-	],
 	"files": [
 		"main.ts",
+		"lib/rts-ws-client.ts",
 		"app/app.config.ts",
 		"app/app.ts",
 		"app/srv/index.srv.ts",
