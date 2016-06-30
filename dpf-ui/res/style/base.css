@@ -1,0 +1,32 @@
+html, body {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background-color: #FFFFFF;
+}
+
+.ui.menu .item img.logo {
+  margin-right: 1.5em;
+}
+
+.page-wrapper {
+  height: 100%;
+  position: relative;
+}
+
+.left-column {
+  position:fixed;
+  top: 0;
+  left: 0;
+  width: 235px;
+
+  margin-left: 15px;
+  margin-top: 70px;
+}
+
+.right-column {
+  margin-top: 70px;
+  margin-left: 240px;
+  margin-right: 15px;
+}

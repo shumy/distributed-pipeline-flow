@@ -1,0 +1,31 @@
+{
+	"compileOnSave": true,
+	"compilerOptions": {
+		"target": "es5",
+		"module": "system",
+		"moduleResolution": "node",
+		"removeComments": true,
+		"preserveConstEnums": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"noImplicitAny": false,
+		"sourceMap": true,
+		"outDir": "dist"
+	},
+	"exclude": [
+		"node_modules"
+	],
+	"filesGlob": [
+		"main.ts",
+		"app/**/*.ts",
+		"typings/index.d.ts"
+	],
+	"files": [
+		"main.ts",
+		"app/app.config.ts",
+		"app/app.ts",
+		"app/srv/index.srv.ts",
+		"app/srv/notification.srv.ts",
+		"typings/index.d.ts"
+	]
+}
