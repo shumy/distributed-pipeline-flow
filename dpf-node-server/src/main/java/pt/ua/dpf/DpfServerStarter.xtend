@@ -1,14 +1,11 @@
 package pt.ua.dpf
 
 import io.vertx.core.AbstractVerticle
-import io.vertx.core.http.HttpServerOptions
-import rt.pipeline.pipe.Pipeline
 import pt.ua.dpf.test.PingService
 import io.vertx.core.Vertx
-import rt.vertx.server.WsRouter
-import rt.vertx.server.HttpRouter
 import rt.vertx.server.web.FileUploaderService
 import rt.vertx.server.web.WebFileService
+import rt.vertx.server.DefaultVertxServer
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -47,31 +44,22 @@ class DpfServerStarter extends AbstractVerticle {
 	}
 	
 	override def start() {
-		val server = vertx.createHttpServer(new HttpServerOptions => [
-			tcpKeepAlive = true
-		])
-		
-		val srvWebFile = new WebFileService('../dpf-ui') //TODO: source code not protected 
-		val srvUploader = new FileUploaderService('./downloads')
-		val srvPing = new PingService
-				
-		val pipeline = new Pipeline => [
-			addService('http-file-request', srvWebFile)
-			addService('http-file-uploader', srvUploader)
-			addService('ping', srvPing)
-			failHandler = [ println('PIPELINE-FAIL: ' + it) ]
+		new DefaultVertxServer(vertx, '/clt') => [
+			pipeline => [
+				addService('http-file-request', new WebFileService('../dpf-ui')) //TODO: source code not protected 
+				addService('http-file-uploader', new FileUploaderService('./downloads'))
+				addService('ping', new PingService)
+				failHandler = [ println('PIPELINE-FAIL: ' + it) ]
+			]
+			
+			httpRouter => [
+				route('/*', 'http-file-request')
+				route('/file-upload', 'http-file-uploader')
+			]
+			
+			listen(port)
 		]
 		
-		//config WS router
-		new WsRouter('/clt', server, pipeline)
-		
-		//config HTTP router
-		new HttpRouter(server, pipeline) => [
-			route('/*', 'http-file-request')
-			route('/file-upload', 'http-file-uploader')
-		]
-		
-		server.listen(port)
 		println('''DPF-SERVER available at port: «port»''')
 	}
 }
