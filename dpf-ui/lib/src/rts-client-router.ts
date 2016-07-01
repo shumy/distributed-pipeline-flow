@@ -1,46 +1,39 @@
+import { Pipeline, PipeResource } from './rts-pipeline'
+import { MessageBus, IMessage, CMD } from './rts-messagebus'
 
 export class ClientRouter {
-  _ready = false
-  url: string
+  private _ready = false
+  private url: string
   
-  resource: any = null //PipeResource
-  websocket: WebSocket
+  private resource: PipeResource = null
+  private websocket: WebSocket
 
-  constructor(private server: string, private client: string, private pipeline: any) {
+  get bus() { return this.pipeline.mb }
+
+  constructor(private server: string, private client: string, private pipeline: Pipeline = new Pipeline) {
     this.url = server + '?client=' + client
 
-    this.bind()
+    this.bus.listener(server, _ => this.send(_))
+    this.connect()
   }
 
   ready() { this._ready = true }
 
-  send(msg: any) {
-    waitReady => { this.websocket.send(JSON.stringify(msg)) }
-  }
+	createServiceClient() {
+    return new ServiceClient(this.bus, this.server, this.client)
+	}
 
-  private waitReady(callback: () => void) {
-    if (this.websocket.readyState === 1) {
-      callback()
-    } else {
-      setTimeout => { this.waitReady(callback) }
-    }
-  }
-
-  private bind() {
+  connect() {
+    console.log('TRY-OPEN: ', this.url)
     this.websocket = new WebSocket(this.url)
 
     this.websocket.onopen = (evt) => {
-		  this.resource = this.pipeline.createResource(this.server, (msg) => {}, () => {})
+		  this.onOpen()
     }
 
     this.websocket.onclose = () => {
-      if (this.resource == null) {
-        this.resource.release
-        this.resource = null
-        this.websocket = null
-      }
-
-      setTimeout(() => { this.bind() }, 3000) // try reconnection
+      this.close()
+      setTimeout(() => this.connect(), 3000) // try reconnection
     }
 
     this.websocket.onerror = (evt) => {
@@ -49,11 +42,83 @@ export class ClientRouter {
 
     this.websocket.onmessage = (evt) => {
       let msg = JSON.parse(evt.data)
+      console.log('RECEIVED: ', msg)
       this.receive(msg)
     }
   }
 
+  close() {
+    if (this.resource !== null) {
+      this.resource.release
+      this.resource = null
+      
+      if (this.websocket !== null) {
+        this.websocket.close()
+        this.websocket = null
+      } 
+    }
+	}
+	
+  private send(msg: any) {
+    this.waitReady(() => this.websocket.send(JSON.stringify(msg)))
+  }
+
+  private waitReady(callback: () => void) {
+    if (this.websocket.readyState === 1) {
+      callback()
+    } else {
+      setTimeout(() => this.waitReady(callback))
+    }
+  }
+
+  private onOpen() {
+		this.resource = this.pipeline.createResource(this.server, (msg) => this.send(msg), () => this.close())
+	}
+
   private receive(msg: any) {
 		this.resource.process(msg)
+	}
+}
+
+declare let Proxy: any
+
+export class ServiceClient {
+  static clientSeq = 0
+
+	private uuid: string
+	private msgID = 0		      //increment for every new message
+	
+	constructor(private bus: MessageBus, private server: string, client: string) {
+    ServiceClient.clientSeq++
+		this.uuid = ServiceClient.clientSeq + ':' + client
+	}
+	
+	create(srvName: string): any {
+    let srvPath = 'srv:' + srvName
+    let srvClient = this
+
+    let handler = {
+      get(target, srvMeth, receiver) {
+        //console.log('GET-METH: ', srvMeth)
+        return (...srvArgs) => {
+          return new Promise((resolve, reject) => {
+            srvClient.msgID++
+            let sendMsg: IMessage = { id: srvClient.msgID, clt: srvClient.uuid, path: srvPath, cmd: srvMeth, args: srvArgs }
+
+            //console.log('RUN-METH: ', srvMeth + JSON.stringify(srvArgs))
+            srvClient.bus.send(srvClient.server, sendMsg, (replyMsg) => {
+              //console.log('METH-RETURN: ', srvMeth + '(' + replyMsg.cmd  + ') -> ' + JSON.stringify(replyMsg.res))
+              if (replyMsg.cmd === CMD.OK) {
+                resolve.apply(replyMsg.res)
+              } else {
+                reject.apply(replyMsg.res)
+              }
+            })  
+          })
+        }
+      }
+    }
+
+    return new Proxy({}, handler)
 	}
 }
