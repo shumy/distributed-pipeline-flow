@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import Dropzone from 'dropzone';
 
-import { ClientRouter, ServiceClient, Pipeline, IComponent } from '../lib/rts-ws-client';
+import { ClientRouter, ServiceClient, Pipeline, PipeContext } from '../lib/rts-ws-client';
 
 @Component({
   selector: 'body[app]',
@@ -13,18 +13,15 @@ export class Application {
     
     console.log('INIT')
 
-    let srvTest: IComponent = {
-      name: 'srv:test',
-      apply: (ctx) => {
-        console.log('IServiceClientFactory', ctx.getObject('IServiceClientFactory'))
-        let from = ctx.message.args[0]
-        ctx.replyOK('Hello from ' + from)
-      }
+    let srvTest = (ctx: PipeContext) => {
+      console.log('IServiceClientFactory', ctx.getObject('IServiceClientFactory'))
+      let from = ctx.message.args[0]
+      ctx.replyOK('Hello from ' + from)
     }
 
     let pipeline = new Pipeline
     pipeline.failHandler = _ => console.log('PIPELINE-FAIL: ' + _)
-    pipeline.addService(srvTest)
+    pipeline.addService('test', srvTest)
     
     let server = 'ws://localhost:9090/clt'
     let client = 'web-client'

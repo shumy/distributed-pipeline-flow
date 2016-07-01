@@ -25,7 +25,7 @@ class DpfClientStarter {
 	
 	def void start() {
 		val pipeline = new Pipeline => [
-			addService(new TestService)
+			addService('test', new TestService)
 			failHandler = [ println('PIPELINE-FAIL: ' + it) ]
 		]
 		

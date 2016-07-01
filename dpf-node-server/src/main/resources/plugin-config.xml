@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <config>
     <entries>
-        <entry type="srv" ref="pt.ua.dpf.test.PingService">
-            <name>ping</name>
-        </entry>
+        <entry type="srv" ref="pt.ua.dpf.test.PingService"/>
     </entries>
 </config>

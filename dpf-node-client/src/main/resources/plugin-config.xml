@@ -10,8 +10,6 @@
         <entry type="srv" ref="pt.ieeta.dpf.test.PingProxy">
             <name>ping</name>
         </entry>
-        <entry type="srv" ref="pt.ua.dpf.test.TestService">
-            <name>test</name>
-        </entry>
+        <entry type="srv" ref="pt.ua.dpf.test.TestService"/>
     </entries>
 </config>

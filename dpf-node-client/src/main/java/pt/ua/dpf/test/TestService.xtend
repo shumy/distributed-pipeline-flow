@@ -1,10 +1,10 @@
 package pt.ua.dpf.test
 
-import rt.plugin.service.Service
-import rt.plugin.service.Public
+import rt.plugin.service.an.Service
+import rt.plugin.service.an.Public
 import pt.ua.dpf.services.TestInterface
 
-@Service('test')
+@Service
 class TestService implements TestInterface {
 	
 	@Public

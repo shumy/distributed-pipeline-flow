@@ -1,6 +1,6 @@
 export class MessageBus {
     listeners = new Map<string, Set<Listener>>()
-    private replyListeners = new Map<string, (IMessage) => void>()
+    private replyListeners = new Map<string, (msg: IMessage) => void>()
 
 	publish(address: string, msg: IMessage) {
 		if (msg.cmd === CMD.OK || msg.cmd === CMD.ERROR) {

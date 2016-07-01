@@ -1,15 +1,10 @@
 import { MessageBus, Listener, IMessage, CMD } from './rts-messagebus'
 
-export interface IComponent {
-    name: string
-    apply: (ctx: PipeContext) => void
-}
-
 export class Pipeline {
     private _failHandler: (String) => void = null
 
-    private interceptors: IComponent[] = []
-	private services = new Map<string, IComponent>()
+    private interceptors: ((ctx: PipeContext) => void)[] = []
+	private services = new Map<string, (ctx: PipeContext) => void>()
 
     set failHandler(callback: (error: String) => void) {
         this._failHandler = callback
@@ -32,27 +27,31 @@ export class Pipeline {
 			this._failHandler(error)
 	}
 
-	addInterceptor(interceptor: IComponent) {
+	addInterceptor(interceptor: (ctx: PipeContext) => void) {
 		this.interceptors.push(interceptor)
 	}
 
-	getService(name: string): IComponent {
-		return this.services.get(name)
+	getServiceFromPath(path: string) {
+		return this.services.get(path)
 	}
 
-	addService(service: IComponent) {
-	    this.services.set(service.name, service)
+	getService(address: string) {
+		return this.services.get('srv:' + address)
+	}
+
+	addService(address: string, service: (ctx: PipeContext) => void) {
+	    this.services.set('srv:' + address, service)
 	}
 	
-	removeService(service: IComponent) {
-        this.services.delete(service.name)
+	removeService(address: string) {
+        this.services.delete('srv:' + address)
 	}
 }
 
 export class PipeResource {
     subscriptions = new Map<string, Listener>()
 
-	constructor(private pipeline: Pipeline, private client: string, private sendCallback: (Message) => void, private closeCallback: () => void) {
+	constructor(private pipeline: Pipeline, private client: string, private sendCallback: (msg: IMessage) => void, private closeCallback: () => void) {
 		console.log('RESOURCE-CREATE ', this.client)
 	}
 
@@ -95,7 +94,7 @@ export class PipeResource {
 	}
 }
 
-class PipeContext {
+export class PipeContext {
     private objects = new Map<string, Object>()
 	private inFail: boolean = false
 
@@ -104,7 +103,7 @@ class PipeContext {
     setObject(type: string, instance: Object) { this.objects.set(type, instance) }
 	getObject(type: string) { return this.objects.get(type) }
 
-	constructor(private pipeline: Pipeline, public resource: PipeResource, public message: IMessage, private iter: Iterator<IComponent>) {}
+	constructor(private pipeline: Pipeline, public resource: PipeResource, public message: IMessage, private iter: Iterator<(ctx: PipeContext) => void>) {}
 	
 	deliver() {
 		if(!this.inFail) {
@@ -176,11 +175,11 @@ class PipeContext {
 	}
 	
 	private deliverRequest() {
-		let srv = this.pipeline.getService(this.message.path)
+		let srv = this.pipeline.getServiceFromPath(this.message.path)
 		if (srv) {
 			console.log('DELIVER(' + this.message.path + ')')
 			try {
-				srv.apply(this)
+				srv(this)
 			} catch(error) {
 				console.error(error)
 				this.fail(error)
