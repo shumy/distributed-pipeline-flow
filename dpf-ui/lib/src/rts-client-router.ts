@@ -30,8 +30,7 @@ export class ClientRouter {
     this.websocket = new WebSocket(this.url)
 
     this.websocket.onopen = (evt) => {
-      let uuid = UUID.randomUUID.toString
-		  this.resource = this.pipeline.createResource(this.server, uuid, (msg) => {}, () => {})
+		  this.resource = this.pipeline.createResource(this.server, (msg) => {}, () => {})
     }
 
     this.websocket.onclose = () => {
