@@ -16,6 +16,7 @@ export class Application {
     let srvTest: IComponent = {
       name: 'srv:test',
       apply: (ctx) => {
+        console.log('IServiceClientFactory', ctx.getObject('IServiceClientFactory'))
         let from = ctx.message.args[0]
         ctx.replyOK('Hello from ' + from)
       }

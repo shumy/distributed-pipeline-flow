@@ -17,8 +17,9 @@ export class Pipeline {
 
 	constructor(public mb: MessageBus = new MessageBus) {}
 
-    process(resource: PipeResource, msg: IMessage) {
+    process(resource: PipeResource, msg: IMessage, onContextCreated?: (ctx: PipeContext) => void) {
         let ctx = new PipeContext(this, resource, msg, new Iterator(this.interceptors))
+        if (onContextCreated) onContextCreated(ctx)
 		ctx.next()
     }
 
@@ -55,8 +56,8 @@ export class PipeResource {
 		console.log('RESOURCE-CREATE ', this.client)
 	}
 
-    process(msg: IMessage) {
-        this.pipeline.process(this, msg)
+    process(msg: IMessage, onContextCreated?: (ctx: PipeContext) => void) {
+        this.pipeline.process(this, msg, onContextCreated)
 	}
 
 	send(msg: IMessage) {
@@ -95,9 +96,13 @@ export class PipeResource {
 }
 
 class PipeContext {
-	inFail: boolean = false
+    private objects = new Map<string, Object>()
+	private inFail: boolean = false
 
     get bus() { return this.pipeline.mb }
+
+    setObject(type: string, instance: Object) { this.objects.set(type, instance) }
+	getObject(type: string) { return this.objects.get(type) }
 
 	constructor(private pipeline: Pipeline, public resource: PipeResource, public message: IMessage, private iter: Iterator<IComponent>) {}
 	

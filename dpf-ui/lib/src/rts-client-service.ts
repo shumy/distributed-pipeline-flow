@@ -1,7 +1,11 @@
 import { Pipeline, PipeResource } from './rts-pipeline'
 import { MessageBus, IMessage, CMD } from './rts-messagebus'
 
-export class ClientRouter {
+export interface IServiceClientFactory {
+  createServiceClient(): ServiceClient
+} 
+
+export class ClientRouter implements IServiceClientFactory {
   private _ready = false
   private url: string
   
@@ -76,7 +80,7 @@ export class ClientRouter {
 	}
 
   private receive(msg: any) {
-		this.resource.process(msg)
+		this.resource.process(msg, _ => _.setObject('IServiceClientFactory', this))
 	}
 }
 
