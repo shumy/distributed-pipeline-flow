@@ -4,11 +4,11 @@ import rt.plugin.service.an.Service
 import rt.plugin.service.an.Public
 import pt.ua.dpf.services.TestInterface
 
-@Service
-class TestService implements TestInterface {
+@Service(TestInterface)
+class TestService {
 	
 	@Public
-	override hello(String name) {
+	def String hello(String name) {
 		return 'Hello from ' + name
 	}
 }

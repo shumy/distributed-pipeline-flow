@@ -1,7 +1,6 @@
 package pt.ua.dpf
 
 import rt.ws.client.ClientRouter
-import rt.pipeline.pipe.Pipeline
 import pt.ua.dpf.test.PingProxy
 import pt.ua.dpf.test.TestService
 
@@ -24,20 +23,18 @@ class DpfClientStarter {
 	}
 	
 	def void start() {
-		val pipeline = new Pipeline => [
-			addService('test', new TestService)
-			failHandler = [ println('PIPELINE-FAIL: ' + it) ]
-		]
-		
 		//TODO: router should have the client credentials...
-		val router = new ClientRouter(server, client, pipeline)
-		
-		val srvClient = router.createServiceClient
-		val pingProxy = srvClient.create('ping', PingProxy)
-		
-		//same as -> router.bus.publish(new Message => [id=1L cmd='ping' clt='sss-client' path='srv:ping' args=#['Simon']])
-		pingProxy.ping('Simon').then[
-			println('PING-OK')
+		new ClientRouter(server, client) => [
+			pipeline => [
+				addService('test', new TestService)
+				failHandler = [ println('PIPELINE-FAIL: ' + it) ]
+			]
+			
+			serviceClient => [
+				create('ping', PingProxy) => [
+					ping('Simon').then[ println('PING-OK') ]
+				]
+			]
 		]
 	}
 }
