@@ -64,5 +64,6 @@
 		<module>dpf-common-services</module>
 		<module>dpf-node-client</module>
 		<module>dpf-node-server</module>
+		<module>dpf-ui</module>
 	</modules>
 </project>
