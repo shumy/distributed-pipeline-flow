@@ -3,6 +3,7 @@ package pt.ua.dpf
 import rt.ws.client.ClientRouter
 import pt.ua.dpf.test.PingProxy
 import pt.ua.dpf.test.TestService
+import rt.pipeline.pipe.use.ChannelService
 
 class DpfClientStarter {
 	def static void main(String[] args) {
@@ -26,12 +27,13 @@ class DpfClientStarter {
 		//TODO: router should have the client credentials...
 		new ClientRouter(server, client) => [
 			pipeline => [
+				addChannelService(new ChannelService)
 				addService('test', new TestService)
 				failHandler = [ println('PIPELINE-FAIL: ' + it) ]
 			]
 			
 			serviceClient => [
-				create('ping', PingProxy) => [
+				create('srv:ping', PingProxy) => [
 					ping('Simon').then[ println('PING-OK') ]
 				]
 			]
