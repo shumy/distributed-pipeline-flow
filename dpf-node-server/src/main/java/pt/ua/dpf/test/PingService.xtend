@@ -18,10 +18,10 @@ class PingService {
 			println('HELLO-OK: ' + it)
 		]
 		
-		channel.requestChannel(new PipeChannelInfo).then[
+		channel.requestChannel(new PipeChannelInfo).then([
 			println('CHANNEL-REQ-OK')
 			send('Send bytes!'.bytes)
 			close
-		]
+		], [ println('CHANNEL-REQ-ERROR: ' + it) ])
 	}
 }

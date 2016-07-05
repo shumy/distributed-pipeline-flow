@@ -4,6 +4,7 @@ import rt.ws.client.ClientRouter
 import pt.ua.dpf.test.PingProxy
 import pt.ua.dpf.test.TestService
 import rt.pipeline.pipe.use.ChannelService
+import rt.pipeline.pipe.IPipeChannel.PipeChannelInfo
 
 class DpfClientStarter {
 	def static void main(String[] args) {
@@ -24,10 +25,16 @@ class DpfClientStarter {
 	}
 	
 	def void start() {
+		val srvChannel = new ChannelService {
+			override request(PipeChannelInfo chInfo) {
+				throw new RuntimeException('Channel rejected!')
+			}
+		}
+		
 		//TODO: router should have the client credentials...
 		new ClientRouter(server, client) => [
 			pipeline => [
-				addChannelService(new ChannelService)
+				addChannelService(srvChannel)
 				addService('test', new TestService)
 				failHandler = [ println('PIPELINE-FAIL: ' + it) ]
 			]
