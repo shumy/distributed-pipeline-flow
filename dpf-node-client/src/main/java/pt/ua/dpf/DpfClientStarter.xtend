@@ -4,7 +4,12 @@ import rt.ws.client.ClientRouter
 import pt.ua.dpf.test.PingProxy
 import pt.ua.dpf.test.TestService
 import rt.pipeline.pipe.use.ChannelService
-import rt.pipeline.pipe.IPipeChannel.PipeChannelInfo
+import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
+import java.io.File
+import rt.pipeline.pipe.channel.IPipeChannel
 
 class DpfClientStarter {
 	def static void main(String[] args) {
@@ -27,7 +32,18 @@ class DpfClientStarter {
 	def void start() {
 		val srvChannel = new ChannelService {
 			override request(PipeChannelInfo chInfo) {
-				throw new RuntimeException('Channel rejected!')
+				//throw new RuntimeException('Channel rejected!')
+				//just accept...
+				println('CHANNEL-REQ: ' + chInfo.uuid)
+			}
+			
+			override bind(IPipeChannel channel) {
+				println('CHANNEL-BIND: ' + channel.info.uuid)
+				/*channel.receive[ data |
+					println('CLIENT-WRITE-FILE: ' + channel.info.uuid)
+					//val file = new File('./test.txt')
+					//Files.write(Paths.get(file.toURI), data, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
+				]*/
 			}
 		}
 		

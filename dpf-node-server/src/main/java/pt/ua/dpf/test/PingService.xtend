@@ -5,8 +5,9 @@ import rt.plugin.service.an.Public
 import pt.ua.dpf.services.PingInterface
 import rt.plugin.service.an.Proxy
 import rt.plugin.service.an.Proxies
-import rt.pipeline.pipe.IPipeChannel.PipeChannelInfo
+import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.vertx.server.ChannelProxy
+import rt.pipeline.pipe.channel.IPipeChannel
 
 @Service(PingInterface)
 class PingService {
@@ -18,10 +19,12 @@ class PingService {
 			println('HELLO-OK: ' + it)
 		]
 		
-		channel.requestChannel(new PipeChannelInfo).then([
+		val reqInfo = new PipeChannelInfo(PipeChannelInfo.Type.SENDER)
+		channel.request(reqInfo).then([
+			val sender = it as IPipeChannel
 			println('CHANNEL-REQ-OK')
-			send('Send bytes!'.bytes)
-			close
+			//sender.send('Send bytes!'.bytes)
+			sender.close
 		], [ println('CHANNEL-REQ-ERROR: ' + it) ])
 	}
 }
