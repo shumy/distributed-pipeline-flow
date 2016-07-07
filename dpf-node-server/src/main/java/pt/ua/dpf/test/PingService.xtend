@@ -7,7 +7,7 @@ import rt.plugin.service.an.Proxy
 import rt.plugin.service.an.Proxies
 import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.vertx.server.ChannelProxy
-import rt.pipeline.pipe.channel.IPipeChannel
+import rt.pipeline.pipe.channel.SendBuffer
 
 @Service(PingInterface)
 class PingService {
@@ -20,11 +20,28 @@ class PingService {
 		]
 		
 		val reqInfo = new PipeChannelInfo(PipeChannelInfo.Type.SENDER)
-		channel.request(reqInfo).then([
-			val sender = it as IPipeChannel
+		channel.request(reqInfo).then([ pipe |
 			println('CHANNEL-REQ-OK')
-			//sender.send('Send bytes!'.bytes)
-			sender.close
+			
+			val testFile = './downloads/test.txt'
+			val bigFile = './downloads/big_test_file'
+			
+			pipe.buffer as SendBuffer => [ sender |
+				sender.onError[ println('ERROR: ' + it) ]
+				sender.sendFile(testFile).then([
+					println('SENT ' + testFile)
+					sender.sendFile(bigFile).then[
+						println('SENT ' + bigFile)
+						pipe.close
+					]
+				],[
+					println('NOT-SENT ' + testFile)
+					sender.sendFile(bigFile).then[
+						println('SENT ' + bigFile)
+						pipe.close
+					]
+				])
+			]
 		], [ println('CHANNEL-REQ-ERROR: ' + it) ])
 	}
 }

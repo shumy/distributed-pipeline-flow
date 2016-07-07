@@ -1,15 +1,13 @@
 package pt.ua.dpf
 
-import rt.ws.client.ClientRouter
 import pt.ua.dpf.test.PingProxy
 import pt.ua.dpf.test.TestService
-import rt.pipeline.pipe.use.ChannelService
-import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardOpenOption
-import java.io.File
 import rt.pipeline.pipe.channel.IPipeChannel
+import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
+import rt.pipeline.pipe.channel.ReceiveBuffer
+import rt.pipeline.pipe.use.ChannelService
+import rt.pipeline.promise.AsyncUtils
+import rt.ws.client.ClientRouter
 
 class DpfClientStarter {
 	def static void main(String[] args) {
@@ -30,6 +28,8 @@ class DpfClientStarter {
 	}
 	
 	def void start() {
+		AsyncUtils.setDefault
+		
 		val srvChannel = new ChannelService {
 			override request(PipeChannelInfo chInfo) {
 				//throw new RuntimeException('Channel rejected!')
@@ -39,11 +39,13 @@ class DpfClientStarter {
 			
 			override bind(IPipeChannel channel) {
 				println('CHANNEL-BIND: ' + channel.info.uuid)
-				/*channel.receive[ data |
-					println('CLIENT-WRITE-FILE: ' + channel.info.uuid)
-					//val file = new File('./test.txt')
-					//Files.write(Paths.get(file.toURI), data, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
-				]*/
+				val receiver = channel.buffer as ReceiveBuffer
+				receiver.onBegin[ path |
+					println('FILE: ' + path)
+					receiver.writeToFile(path).then[
+						println('FILE-OK: ' + path)
+					]
+				]
 			}
 		}
 		

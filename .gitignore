@@ -9,3 +9,4 @@ target/
 xtend-gen/
 dist/
 node_modules/
+downloads/

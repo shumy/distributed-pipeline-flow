@@ -1,11 +1,13 @@
 package pt.ua.dpf
 
 import io.vertx.core.AbstractVerticle
-import pt.ua.dpf.test.PingService
 import io.vertx.core.Vertx
+import pt.ua.dpf.test.PingService
+import rt.pipeline.promise.AsyncUtils
+import rt.vertx.server.DefaultVertxServer
+import rt.vertx.server.VertxAsyncUtils
 import rt.vertx.server.web.FileUploaderService
 import rt.vertx.server.web.WebFileService
-import rt.vertx.server.DefaultVertxServer
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -44,6 +46,8 @@ class DpfServerStarter extends AbstractVerticle {
 	}
 	
 	override def start() {
+		AsyncUtils.set(new VertxAsyncUtils(vertx))
+		
 		new DefaultVertxServer(vertx, '/clt') => [
 			pipeline => [
 				addService('http-file-request', new WebFileService('../dpf-ui')) //TODO: source code not protected 
