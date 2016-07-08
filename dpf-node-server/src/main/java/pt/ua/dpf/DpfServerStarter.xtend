@@ -56,9 +56,14 @@ class DpfServerStarter extends AbstractVerticle {
 				failHandler = [ println('PIPELINE-FAIL: ' + it) ]
 			]
 			
-			httpRouter => [
+			webRouter => [
 				route('/*', 'http-file-request')
 				route('/file-upload', 'http-file-uploader')
+			]
+			
+			wsRouter => [
+				onResourceOpen[ println('RESOURCE-OPEN: ' + client) ]
+				onResourceClose[ println('RESOURCE-CLOSE: ' + it) ]
 			]
 			
 			listen(port)
