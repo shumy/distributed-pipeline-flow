@@ -6,8 +6,8 @@ import pt.ua.dpf.test.PingService
 import rt.pipeline.promise.AsyncUtils
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.VertxAsyncUtils
-import rt.vertx.server.web.FileUploaderService
-import rt.vertx.server.web.WebFileService
+import rt.vertx.server.web.service.FileUploaderService
+import rt.vertx.server.web.service.WebFileService
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
