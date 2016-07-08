@@ -42,9 +42,7 @@ class DpfClientStarter {
 				val receiver = channel.buffer as ReceiveBuffer
 				receiver.onBegin[ path |
 					println('FILE: ' + path)
-					receiver.writeToFile(path).then[
-						println('FILE-OK: ' + path)
-					]
+					receiver.writeToFile(path)[ println('WRITE-FILE-OK: ' + path) ]
 				]
 			}
 		}

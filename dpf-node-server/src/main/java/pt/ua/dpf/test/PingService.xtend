@@ -26,21 +26,12 @@ class PingService {
 			val testFile = './downloads/test.txt'
 			val bigFile = './downloads/big_test_file'
 			
-			pipe.buffer as SendBuffer => [ sender |
-				sender.onError[ println('ERROR: ' + it) ]
-				sender.sendFile(testFile).then([
-					println('SENT ' + testFile)
-					sender.sendFile(bigFile).then[
-						println('SENT ' + bigFile)
-						pipe.close
-					]
-				],[
-					println('NOT-SENT ' + testFile)
-					sender.sendFile(bigFile).then[
-						println('SENT ' + bigFile)
-						pipe.close
-					]
-				])
+			pipe.buffer as SendBuffer => [
+				onError[ println('ERROR: ' + it) ]
+				onEnd[ println('END') ]
+				
+				sendFile(testFile)[ println('SENT ' + testFile) ]
+				sendFile(bigFile)[ println('SENT ' + bigFile) pipe.close ]
 			]
 		], [ println('CHANNEL-REQ-ERROR: ' + it) ])
 	}
