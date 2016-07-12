@@ -8,6 +8,9 @@ import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.VertxAsyncUtils
 import rt.vertx.server.web.service.FileUploaderService
 import rt.vertx.server.web.service.WebFileService
+import io.vertx.core.http.HttpClientOptions
+import io.vertx.core.http.HttpMethod
+import pt.ua.dpf.dicoogle.DicoogleClient
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -48,7 +51,7 @@ class DpfServerStarter extends AbstractVerticle {
 	override def start() {
 		AsyncUtils.set(new VertxAsyncUtils(vertx))
 		
-		new DefaultVertxServer(vertx, '/clt') => [
+		val server = new DefaultVertxServer(vertx, '/clt') => [
 			pipeline => [
 				addService('http-file-request', new WebFileService('../dpf-ui')) //TODO: source code not protected 
 				addService('http-file-uploader', new FileUploaderService('./downloads'))
@@ -64,11 +67,21 @@ class DpfServerStarter extends AbstractVerticle {
 			wsRouter => [
 				onResourceOpen[ println('RESOURCE-OPEN: ' + client) ]
 				onResourceClose[ println('RESOURCE-CLOSE: ' + it) ]
-			]
-			
-			listen(port)
+			]	
 		]
 		
+		val dicoogle = new DicoogleClient(vertx, 'localhost', 8080)
+		dicoogle.query('Modality:OP').then[
+			println(numResults)
+			println(results)
+		]
+		
+		val sopInstanceUUID = '1.3.6.1.4.1.9590.100.1.2.336693595913510495035179723761217566701'
+		dicoogle.download(sopInstanceUUID, './downloads/' + sopInstanceUUID + '.dcm').then[
+			println('File transfer ended')
+		]
+		
+		server.listen(port)
 		println('''DPF-SERVER available at port: «port»''')
 	}
 }
