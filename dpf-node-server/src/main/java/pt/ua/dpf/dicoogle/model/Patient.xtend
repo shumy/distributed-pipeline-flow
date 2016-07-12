@@ -1,7 +1,7 @@
 package pt.ua.dpf.dicoogle.model
 
-import java.util.Map
 import java.util.List
+import java.util.LinkedList
 
 class Patient {
 	public String id
@@ -9,5 +9,12 @@ class Patient {
 	public String birthdate
 	
 	public int nStudies
-	public List<Map<String, Object>> studies
+	public List<Study> studies
+	
+	def List<Image> getAllImages() {
+		val result = new LinkedList<Image>
+		studies.forEach[ series.forEach[ images.forEach[ result.add(it) ] ] ]
+		
+		return result
+	}
 }

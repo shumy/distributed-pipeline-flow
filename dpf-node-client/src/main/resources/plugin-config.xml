@@ -2,5 +2,6 @@
 <config>
     <entries>
         <entry type="srv" ref="pt.ua.dpf.test.TestService"/>
+        <entry type="srv" ref="pt.ua.dpf.services.ServicePointService"/>
     </entries>
 </config>

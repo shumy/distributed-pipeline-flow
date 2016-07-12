@@ -1,13 +1,12 @@
 package pt.ua.dpf
 
-import pt.ua.dpf.test.PingProxy
-import pt.ua.dpf.test.TestService
 import rt.pipeline.pipe.channel.IPipeChannel
 import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.pipeline.pipe.channel.ReceiveBuffer
 import rt.pipeline.pipe.use.ChannelService
 import rt.pipeline.promise.AsyncUtils
 import rt.ws.client.ClientRouter
+import pt.ua.dpf.services.ServicePointService
 
 class DpfClientStarter {
 	def static void main(String[] args) {
@@ -51,14 +50,8 @@ class DpfClientStarter {
 		new ClientRouter(server, client) => [
 			pipeline => [
 				addChannelService(srvChannel)
-				addService('test', new TestService)
+				addService('service-point', new ServicePointService)
 				failHandler = [ println('PIPELINE-FAIL: ' + it) ]
-			]
-			
-			serviceClient => [
-				create('srv:ping', PingProxy) => [
-					ping('Simon').then[ println('PING-OK') ]
-				]
 			]
 		]
 	}

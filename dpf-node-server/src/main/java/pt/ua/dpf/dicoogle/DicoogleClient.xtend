@@ -6,6 +6,10 @@ import io.vertx.core.file.OpenOptions
 import io.vertx.core.http.HttpClient
 import io.vertx.core.http.HttpClientOptions
 import io.vertx.core.streams.Pump
+import java.util.List
+import pt.ua.dpf.dicoogle.model.Image
+import rt.pipeline.pipe.channel.IPipeChannel
+import rt.pipeline.pipe.channel.SendBuffer
 import rt.pipeline.promise.Promise
 import rt.pipeline.promise.PromiseResult
 
@@ -61,12 +65,37 @@ class DicoogleClient {
 						]
 						
 						pump.start
-						resp.resume	
+						resp.resume
 					}
 				]
 			]	
 		]
 		
 		return pResult.promise
+	}
+	
+	def void transferTo(List<Image> images, IPipeChannel writePipe) {
+		images.forEach[ image |
+			httpClient.getNow('/legacy/file?uid=' + image.sopInstanceUID)[ resp |
+				println('TransferTo status: ' + resp.statusCode)
+				val sendBuffer = writePipe.buffer as SendBuffer
+				
+				resp.pause
+				sendBuffer.begin('./downloads/' + image.filename)[
+					println('Begin transfer: ' + image.filename)
+					resp.resume
+				]
+				
+				resp.handler[
+					sendBuffer << byteBuf.nioBuffer
+				]
+				
+				resp.endHandler[
+					println('End transfer: ' + image.filename)
+					sendBuffer.end
+				]
+			]
+		]
+		
 	}
 }

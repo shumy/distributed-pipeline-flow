@@ -19,6 +19,7 @@ class PingService {
 			println('HELLO-OK: ' + it)
 		]
 		
+		/*
 		val reqInfo = new PipeChannelInfo(PipeChannelInfo.Type.SENDER)
 		channel.request(reqInfo).then([ pipe |
 			println('CHANNEL-REQ-OK')
@@ -34,5 +35,8 @@ class PingService {
 				sendFile(bigFile)[ println('SENT ' + bigFile) pipe.close ]
 			]
 		], [ println('CHANNEL-REQ-ERROR: ' + it) ])
+		*/
+		
+		
 	}
 }
