@@ -2,7 +2,7 @@ import { Pipeline, PipeResource } from './rts-pipeline'
 import { MessageBus, IMessage, CMD } from './rts-messagebus'
 
 export interface IServiceClientFactory {
-  createServiceClient(): ServiceClient
+  serviceClient: ServiceClient
 } 
 
 export class ClientRouter implements IServiceClientFactory {
@@ -11,11 +11,13 @@ export class ClientRouter implements IServiceClientFactory {
   
   private resource: PipeResource = null
   private websocket: WebSocket
+  private _serviceClient: ServiceClient
 
   get bus() { return this.pipeline.mb }
 
   constructor(private server: string, private client: string, private pipeline: Pipeline = new Pipeline) {
     this.url = server + '?client=' + client
+    this._serviceClient = new ServiceClient(this.bus, this.server, this.client)
 
     this.bus.listener(server, _ => this.send(_))
     this.connect()
@@ -23,8 +25,12 @@ export class ClientRouter implements IServiceClientFactory {
 
   ready() { this._ready = true }
 
-	createServiceClient() {
-    return new ServiceClient(this.bus, this.server, this.client)
+	createProxy(srvName: string) {
+		return this._serviceClient.create('srv:' + srvName)
+	}
+
+	get serviceClient() {
+    return this._serviceClient
 	}
 
   connect() {

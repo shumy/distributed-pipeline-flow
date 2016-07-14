@@ -12,7 +12,7 @@
   var packages = {
     'main':                       { main: 'main.js', defaultExtension: 'js' },
     'rxjs':                       { defaultExtension: 'js' },
-    'dropzone':                   { main: 'dropzone.min.js', defaultExtension: 'js' },
+    'dropzone':                   { main: 'dropzone.min.js', defaultExtension: 'js' }
   };
 
   var packageNames = [

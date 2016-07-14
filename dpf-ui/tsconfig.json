@@ -18,7 +18,10 @@
 	"files": [
 		"main.ts",
 		"lib/rts-ws-client.ts",
+		"app/view/search.view.ts",
+		"app/view/results.view.ts",
 		"app/app.config.ts",
+		"app/app.routes.ts",
 		"app/app.ts",
 		"app/srv/index.srv.ts",
 		"app/srv/notification.srv.ts",

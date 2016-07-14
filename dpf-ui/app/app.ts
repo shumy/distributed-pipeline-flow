@@ -1,16 +1,19 @@
 import { Component } from '@angular/core';
-import Dropzone from 'dropzone';
+import { ROUTER_DIRECTIVES } from '@angular/router';
 
 import { ClientRouter, ServiceClient, Pipeline, PipeContext } from '../lib/rts-ws-client';
 
 @Component({
   selector: 'body[app]',
+  directives: [ROUTER_DIRECTIVES],
   templateUrl: './app/app.html'
 })
 export class Application {
   ngOnInit() {
+
     //let drop = new Dropzone('div#dropzone', { url: '/file-upload' })
     
+    /*
     console.log('INIT')
 
     let srvTest = (ctx: PipeContext) => {
@@ -27,10 +30,10 @@ export class Application {
     let client = 'web-client'
 
 		let router = new ClientRouter(server, client, pipeline)
-    
-    let srvClient = router.createServiceClient()
-    let srvPing = srvClient.create('ping') as PingProxy
+
+    let srvPing = router.createProxy('ping') as PingProxy
     srvPing.ping('Alex').then(_ => console.log('PING-OK'))
+    */
   }
 }
 

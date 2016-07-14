@@ -1,2 +1,11 @@
-<!--<form action="/file-upload" class="dropzone"></form>-->
-<div id="dropzone" class="dropzone"></div>
+<!--<div id="dropzone" class="dropzone"></div>-->
+<div class="ui fixed inverted menu">
+  <a [routerLink]="['/search']" class="header item" style="padding-left: 20px;">
+    <img class="logo" src="res/img/logo.png">
+    Search
+  </a>
+  <a [routerLink]="['/results']" class="header item">
+    Results
+  </a>
+</div>
+<router-outlet></router-outlet>

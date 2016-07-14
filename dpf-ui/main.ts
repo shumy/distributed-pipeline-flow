@@ -1,11 +1,12 @@
 import { enableProdMode, provide }   from '@angular/core';
-import { HTTP_PROVIDERS }   from '@angular/http';
-import { ROUTER_PROVIDERS } from '@angular/router';
 import { bootstrap }        from '@angular/platform-browser-dynamic';
 
-import { Application }      from './app/app';
+import { HTTP_PROVIDERS }   from '@angular/http';
 
 import { APP_CONFIG, Config, config } from './app/app.config';
+import { appRouterProviders } from './app/app.routes';
+
+import { Application }      from './app/app';
 
 // services
 //import { NotificationSrv }  from './app/srv/notification.srv';
@@ -15,7 +16,7 @@ import { APP_CONFIG, Config, config } from './app/app.config';
 
 //enableProdMode()
 bootstrap(Application, [
-  HTTP_PROVIDERS, ROUTER_PROVIDERS,
+  HTTP_PROVIDERS, appRouterProviders,
   provide(APP_CONFIG, { useValue: config })
 ]).catch(err => console.log(err))
 

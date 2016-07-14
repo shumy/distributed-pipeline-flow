@@ -2,6 +2,7 @@
   "globalDependencies": {
     "dropzone": "registry:dt/dropzone#4.3.0+20160412155034",
     "es6-shim": "registry:dt/es6-shim#0.31.2+20160602141504",
-    "jquery": "registry:dt/jquery#1.10.0+20160417213236"
+    "jquery": "registry:dt/jquery#1.10.0+20160417213236",
+    "toastr": "registry:dt/toastr#2.1.1+20160510010435"
   }
 }
