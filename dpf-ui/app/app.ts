@@ -9,7 +9,17 @@ import { ClientRouter, ServiceClient, Pipeline, PipeContext } from '../lib/rts-w
   templateUrl: './app/app.html'
 })
 export class Application {
+  jQueryInit() {
+    let modal: any = $('.ui.modal')
+    modal.modal({
+      closable: false,
+      transition: 'fly down',
+      offset: 2000
+    })
+  }
+
   ngOnInit() {
+    this.jQueryInit()
 
     //let drop = new Dropzone('div#dropzone', { url: '/file-upload' })
     

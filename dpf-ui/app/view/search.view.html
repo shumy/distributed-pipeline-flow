@@ -29,8 +29,8 @@
   </div>
 </div>
 
-<div class="ui content raised segment">
-  <table class="ui very basic selectable padded table">
+<div class="ui content segment">
+  <table class="ui very basic table">
     <thead>
       <tr>
         <th>Patient</th>
@@ -43,6 +43,7 @@
       <tr>
         <td>
           <h5 class="ui header">
+            <i class="right triangle link icon"></i>
             <i class="male icon"></i>
             <div class="content">Micael Pedrosa</div>
           </h5>
@@ -60,6 +61,7 @@
       <tr>
         <td>
           <h5 class="ui header">
+            <i class="down triangle link icon"></i>
             <i class="female icon"></i>
             <div class="content">Ana Martins</div>
           </h5>
@@ -76,7 +78,7 @@
       </tr>
       <tr>
         <td colspan="4">
-          <table class="ui very basic selectable padded table">
+          <table class="ui very basic table">
             <thead>
               <tr>
                 <th></th>
@@ -104,11 +106,66 @@
           </table>
         </td>
       </tr>
+
+      <tr>
+        <td>
+          <h5 class="ui header">
+            <i class="down triangle link icon"></i>
+            <i class="female icon"></i>
+            <div class="content">Ana Martins</div>
+          </h5>
+        </td>
+        <td>12</td>
+        <td>OP, CR, MR</td>
+        <td>
+          <div class="ui active progress" data-value="15" data-total="20">
+            <div class="bar">
+              <div class="progress"></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4">
+          <div class="ui relaxed list" style="padding-left: 20px">
+            <div class="item">
+              <i class="right triangle link icon"></i>
+              <div class="content">
+                <div class="header">Modality: OP</div>
+                <div class="ui horizontal divided list">
+                  <div class="item">Series: 5</div>
+                  <div class="item">Other: 1</div>
+                </div>
+              </div>
+            </div>
+            <div class="item">
+              <i class="right triangle link icon"></i>
+              <div class="content">
+                <div class="header">Modality: CR</div>
+                <div class="ui horizontal divided list">
+                  <div class="item">Series: 5</div>
+                  <div class="item">Other: 1</div>
+                </div>
+              </div>
+            </div>
+            <div class="item">
+              <i class="right triangle link icon"></i>
+              <div class="content">
+                <div class="header">Modality: MR</div>
+                <div class="ui horizontal divided list">
+                  <div class="item">Series: 1</div>
+                  <div class="item">Other: 1</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
     </tbody>
   </table>
 </div>
 
-<div class="ui content raised segment">
+<div class="ui content segment">
   
   <div class="ui relaxed divided list">
     <div class="item">
@@ -120,8 +177,6 @@
           <div class="item">Studies: 22</div>
           <div class="item">Modalities: [ OP, CT ]</div>
         </div>
-        <!--<div class="description">Studies: 22 | Modalities: [ OP, CT ]</div>-->
-
       </div>
       <div class="ui small progress success" data-value="20" data-total="20" style="margin-left: 40px;">
         <div class="bar">
@@ -139,25 +194,36 @@
           <div class="item">Studies: 12</div>
           <div class="item">Modalities: [ OP, CR, MR ]</div>
         </div>
-        <!--<div class="description">Studies: 12 | Modalities: [ OP, CR, MR ]</div>-->
 
         <div class="list">
           <div class="item">
+            <i class="right triangle link icon"></i>
             <div class="content">
               <div class="header">Modality: OP</div>
-              <div class="description">Series: 5</div>
+              <div class="ui horizontal divided list">
+                <div class="item">Series: 5</div>
+                <div class="item">Other: 1</div>
+              </div>
             </div>
           </div>
           <div class="item">
+            <i class="right triangle link icon"></i>
             <div class="content">
               <div class="header">Modality: CR</div>
-              <div class="description">Series: 5</div>
+              <div class="ui horizontal divided list">
+                <div class="item">Series: 5</div>
+                <div class="item">Other: 1</div>
+              </div>
             </div>
           </div>
           <div class="item">
+            <i class="right triangle link icon"></i>
             <div class="content">
               <div class="header">Modality: MR</div>
-              <div class="description">Series: 1</div>
+              <div class="ui horizontal divided list">
+                <div class="item">Series: 1</div>
+                <div class="item">Other: 1</div>
+              </div>
             </div>
           </div>
         </div>
@@ -170,20 +236,4 @@
     </div>
   </div>
 
-</div>
-
-<!--DataSet Name Modal-->
-<div class="ui modal">
-  <div class="header">
-    Dataset Name
-  </div>
-  <div class="content">
-    <div class="ui fluid input focus">
-      <input type="text" placeholder="Set name...">
-    </div>
-  </div>
-  <div class="actions">
-    <div class="ui cancel button">Cancel</div>
-    <div class="ui ok primary button">OK</div>
-  </div>
 </div>

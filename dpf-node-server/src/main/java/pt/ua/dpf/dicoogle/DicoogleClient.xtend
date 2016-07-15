@@ -81,8 +81,8 @@ class DicoogleClient {
 				val sendBuffer = writePipe.buffer as SendBuffer
 				
 				resp.pause
-				sendBuffer.begin('./downloads/' + image.filename)[
-					println('Begin transfer: ' + image.filename)
+				sendBuffer.begin('./downloads/' + image.sopInstanceUID + '.dcm')[
+					println('Begin transfer: ' + image.sopInstanceUID)
 					resp.resume
 				]
 				
@@ -91,7 +91,7 @@ class DicoogleClient {
 				]
 				
 				resp.endHandler[
-					println('End transfer: ' + image.filename)
+					println('End transfer: ' + image.sopInstanceUID)
 					sendBuffer.end
 				]
 			]

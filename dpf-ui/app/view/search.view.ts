@@ -6,8 +6,6 @@ import { Component, OnInit, Input } from '@angular/core';
   styles: ['.main.menu { margin: 60px 20px 5px; }']
 })
 export class SearchView implements OnInit {
-  modal: any
-
   selectedSrvPoint: any = { id: 1, name: 'Download', selected: true }
   srvPoints = [
     this.selectedSrvPoint,
@@ -16,13 +14,14 @@ export class SearchView implements OnInit {
     { id: 4, name: 'SP 3', icon: true }
   ]
 
-  ngOnInit() {
+  jQueryInit() {
+    console.log('jQueryInit')
+
     let pBars: any = $('.ui.progress')
     pBars.progress({
       label: 'ratio',
       text: { ratio: '{value} of {total}' }
     })
-
 
     let dropdown: any = $('.ui.dropdown')
     dropdown.dropdown({
@@ -31,16 +30,10 @@ export class SearchView implements OnInit {
         this.select(selectedItem.attr('id'))
       }
     })
+  }
 
-    this.modal = $('.ui.modal')
-    this.modal.modal({
-      closable: false,
-      transition: 'fly down',
-      offset: 2000,
-      onApprove : _ => {
-        toastr.success('Dataset submitted')
-      }
-    })
+  ngOnInit() {
+    this.jQueryInit()
   }
 
   select(srvID: number) {
@@ -51,7 +44,12 @@ export class SearchView implements OnInit {
 
   transfer() {
     if (this.selectedSrvPoint.id != 1) {
-      this.modal.modal('show')
+      let modal: any = $('.ui.modal')
+      modal.modal('setting', 'onApprove', _ => {
+        toastr.success('Dataset submitted')
+      })
+
+      modal.modal('show')
     }
   }
 }
