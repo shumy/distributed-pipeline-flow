@@ -80,7 +80,7 @@ class DicoogleClient {
 		transferTo(images, writePipe, null)
 	}
 	
-	def void transferTo(List<Image> images, IPipeChannel writePipe, (ByteBuffer, ByteBuffer) => void transform) {
+	def void transferTo(List<Image> images, IPipeChannel writePipe, (ByteBuffer) => ByteBuffer transform) {
 		val sendBuffer = writePipe.buffer as SendBuffer
 		
 		images.forEach[ image |
@@ -113,12 +113,11 @@ class DicoogleClient {
 						val size = bufferCache.fold(0)[ r, next | r + next.limit ]
 						
 						//TODO: process in parallel task?
-						val transformedBuffer = ByteBuffer.allocate(size)
 						val endBuffer = ByteBuffer.allocate(size)
 						bufferCache.forEach[ endBuffer.put(it) ]
 						endBuffer.flip
 						
-						transform.apply(endBuffer, transformedBuffer)
+						val transformedBuffer = transform.apply(endBuffer)
 						transformedBuffer.flip
 						
 						sendBuffer.sendSliced(transformedBuffer) [

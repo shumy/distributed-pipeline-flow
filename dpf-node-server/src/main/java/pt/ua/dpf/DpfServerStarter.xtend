@@ -86,9 +86,10 @@ class DpfServerStarter extends AbstractVerticle {
 							val reqInfo = new PipeChannelInfo(PipeChannelInfo.Type.SENDER)
 							channelProxy.request(reqInfo).then([ pipe |
 								println('CHANNEL-REQ-OK')
-								dicoogle.transferTo(allImages, pipe)[ in, out |
+								dicoogle.transferTo(allImages, pipe)[ in |
 									println('Transform P:' + in.position + ' L:' + in.limit)
-									out.put(in)
+									in.position(in.limit)
+									return in
 								]
 							], [ println('CHANNEL-REQ-ERROR: ' + it) ])
 						]
