@@ -12,6 +12,7 @@ import pt.ua.dpf.dicoogle.DicoogleClient
 import pt.ua.dpf.proxy.ServicePointProxy
 import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.vertx.server.ChannelProxy
+import rt.vertx.server.web.WebMethod
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -63,6 +64,7 @@ class DpfServerStarter extends AbstractVerticle {
 			webRouter => [
 				route('/*', 'http-file-request')
 				route('/file-upload', 'http-file-uploader')
+				rest(WebMethod.GET, '/user/:id', 'users', 'get', #{ 'id' -> 0 })
 			]
 			
 			wsRouter => [
@@ -84,7 +86,10 @@ class DpfServerStarter extends AbstractVerticle {
 							val reqInfo = new PipeChannelInfo(PipeChannelInfo.Type.SENDER)
 							channelProxy.request(reqInfo).then([ pipe |
 								println('CHANNEL-REQ-OK')
-								dicoogle.transferTo(allImages, pipe)
+								dicoogle.transferTo(allImages, pipe)[ in, out |
+									println('Transform P:' + in.position + ' L:' + in.limit)
+									out.put(in)
+								]
 							], [ println('CHANNEL-REQ-ERROR: ' + it) ])
 						]
 					]

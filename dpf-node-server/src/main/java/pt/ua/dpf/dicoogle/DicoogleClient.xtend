@@ -6,6 +6,8 @@ import io.vertx.core.file.OpenOptions
 import io.vertx.core.http.HttpClient
 import io.vertx.core.http.HttpClientOptions
 import io.vertx.core.streams.Pump
+import java.nio.ByteBuffer
+import java.util.LinkedList
 import java.util.List
 import pt.ua.dpf.dicoogle.model.Image
 import rt.pipeline.pipe.channel.IPipeChannel
@@ -75,27 +77,60 @@ class DicoogleClient {
 	}
 	
 	def void transferTo(List<Image> images, IPipeChannel writePipe) {
+		transferTo(images, writePipe, null)
+	}
+	
+	def void transferTo(List<Image> images, IPipeChannel writePipe, (ByteBuffer, ByteBuffer) => void transform) {
+		val sendBuffer = writePipe.buffer as SendBuffer
+		
 		images.forEach[ image |
 			httpClient.getNow('/legacy/file?uid=' + image.sopInstanceUID)[ resp |
 				println('TransferTo status: ' + resp.statusCode)
-				val sendBuffer = writePipe.buffer as SendBuffer
+				if (resp.statusCode != 200) {
+					println(resp.statusMessage)
+					return
+				}
+				
+				val bufferCache = new LinkedList<ByteBuffer>
+				val filePath = './downloads/' + image.sopInstanceUID + '.dcm'
 				
 				resp.pause
-				sendBuffer.begin('./downloads/' + image.sopInstanceUID + '.dcm')[
-					println('Begin transfer: ' + image.sopInstanceUID)
+				sendBuffer.begin(filePath)[
+					println('Begin transfer: ' + filePath)
 					resp.resume
 				]
 				
 				resp.handler[
-					sendBuffer << byteBuf.nioBuffer
+					val buffer = byteBuf.nioBuffer
+					if (transform != null)
+						bufferCache.add(buffer)
+					else
+						sendBuffer << buffer
 				]
 				
 				resp.endHandler[
-					println('End transfer: ' + image.sopInstanceUID)
-					sendBuffer.end
+					if (transform != null) {
+						val size = bufferCache.fold(0)[ r, next | r + next.limit ]
+						
+						//TODO: process in parallel task?
+						val transformedBuffer = ByteBuffer.allocate(size)
+						val endBuffer = ByteBuffer.allocate(size)
+						bufferCache.forEach[ endBuffer.put(it) ]
+						endBuffer.flip
+						
+						transform.apply(endBuffer, transformedBuffer)
+						transformedBuffer.flip
+						
+						sendBuffer.sendSliced(transformedBuffer) [
+							println('End transfer: ' + filePath)
+							sendBuffer.end
+						]
+					} else {
+						println('End transfer: ' + filePath)
+						sendBuffer.end
+					}
 				]
 			]
 		]
-		
 	}
 }
