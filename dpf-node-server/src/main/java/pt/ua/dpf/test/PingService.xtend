@@ -36,7 +36,11 @@ class PingService {
 			]
 		], [ println('CHANNEL-REQ-ERROR: ' + it) ])
 		*/
-		
-		
+	}
+	
+	@Public
+	def TestDTO helloPing(String name) {
+		println('helloPing: ' + name)
+		return new TestDTO(name, 35)
 	}
 }

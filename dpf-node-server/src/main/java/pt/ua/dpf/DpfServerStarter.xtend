@@ -2,17 +2,18 @@ package pt.ua.dpf
 
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx
+import pt.ua.dpf.dicoogle.DicoogleClient
+import pt.ua.dpf.proxy.ServicePointProxy
 import pt.ua.dpf.test.PingService
+import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.pipeline.promise.AsyncUtils
+import rt.vertx.server.ChannelProxy
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.VertxAsyncUtils
 import rt.vertx.server.web.service.FileUploaderService
 import rt.vertx.server.web.service.WebFileService
-import pt.ua.dpf.dicoogle.DicoogleClient
-import pt.ua.dpf.proxy.ServicePointProxy
-import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
-import rt.vertx.server.ChannelProxy
-import rt.vertx.server.web.WebMethod
+
+import static rt.plugin.service.WebMethod.*
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -64,7 +65,7 @@ class DpfServerStarter extends AbstractVerticle {
 			webRouter => [
 				route('/*', 'http-file-request')
 				route('/file-upload', 'http-file-uploader')
-				rest(WebMethod.GET, '/user/:id', 'users', 'get', #{ 'id' -> 0 })
+				route(GET, '/ping/:hello', 'ping', 'helloPing', #['hello'])
 			]
 			
 			wsRouter => [
