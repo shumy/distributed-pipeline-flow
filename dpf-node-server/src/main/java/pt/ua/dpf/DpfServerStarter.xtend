@@ -65,7 +65,8 @@ class DpfServerStarter extends AbstractVerticle {
 			webRouter => [
 				route('/*', 'http-file-request')
 				route('/file-upload', 'http-file-uploader')
-				route(GET, '/ping/:hello', 'ping', 'helloPing', #['hello'])
+				route(GET, '/ping/:name', 'ping', 'helloPing', #['name'])
+				route(GET, '/ping/:first/name/:second', 'ping', 'hello2Ping', #['first', 'second'])
 			]
 			
 			wsRouter => [
