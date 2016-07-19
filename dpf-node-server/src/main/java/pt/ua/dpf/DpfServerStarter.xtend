@@ -13,8 +13,6 @@ import rt.vertx.server.VertxAsyncUtils
 import rt.vertx.server.web.service.FileUploaderService
 import rt.vertx.server.web.service.WebFileService
 
-import static rt.plugin.service.WebMethod.*
-
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
 //import io.vertx.core.VertxOptions
@@ -63,10 +61,11 @@ class DpfServerStarter extends AbstractVerticle {
 			]
 			
 			webRouter => [
-				route('/*', 'http-file-request')
-				route('/file-upload', 'http-file-uploader')
-				route(GET, '/ping/:name', 'ping', 'helloPing', #['name'])
-				route(GET, '/ping/:first/name/:second', 'ping', 'hello2Ping', #['first', 'second'])
+				vrtxRoute('/*', 'http-file-request')
+				vrtxRoute('/file-upload', 'http-file-uploader')
+				get('/ping/:name', 'ping', 'helloPing')
+				get('/ping/:first/name/:second/:age', 'ping', 'hello2Ping')
+				post('/ping', 'ping', 'hello3Ping')
 			]
 			
 			wsRouter => [

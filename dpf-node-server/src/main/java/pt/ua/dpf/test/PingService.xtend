@@ -44,7 +44,12 @@ class PingService {
 	}
 	
 	@Public
-	def TestDTO hello2Ping(String first, String second) {
-		return new TestDTO(first, second, 40)
+	def TestDTO hello2Ping(String first, String second, int age) {
+		return new TestDTO(first, second, age)
+	}
+	
+	@Public
+	def TestDTO hello3Ping(TestDTO dto) {
+		return dto
 	}
 }
