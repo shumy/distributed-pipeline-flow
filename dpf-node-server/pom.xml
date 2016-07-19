@@ -28,7 +28,21 @@
 			<artifactId>dpf-common-services</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>dcm4che</groupId>
+			<artifactId>dcm4che-core</artifactId>
+			<version>2.0.28</version>
+		</dependency>
 	</dependencies>
+	
+	<repositories>
+		<repository>
+			<id>dcm4che</id>
+			<name>dcm4che Repository</name>
+			<url>http://www.dcm4che.org/maven2</url>
+		</repository>
+	</repositories>
 	
 	<build>
 		<plugins>

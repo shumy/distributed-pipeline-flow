@@ -12,6 +12,7 @@ import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.VertxAsyncUtils
 import rt.vertx.server.web.service.FileUploaderService
 import rt.vertx.server.web.service.WebFileService
+import pt.ua.dpf.dicoogle.Anonymizer
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -87,11 +88,7 @@ class DpfServerStarter extends AbstractVerticle {
 							val reqInfo = new PipeChannelInfo(PipeChannelInfo.Type.SENDER)
 							channelProxy.request(reqInfo).then([ pipe |
 								println('CHANNEL-REQ-OK')
-								dicoogle.transferTo(allImages, pipe)[ in |
-									println('Transform P:' + in.position + ' L:' + in.limit)
-									in.position(in.limit)
-									return in
-								]
+								dicoogle.transferTo(allImages, pipe, Anonymizer.transform)
 							], [ println('CHANNEL-REQ-ERROR: ' + it) ])
 						]
 					]
