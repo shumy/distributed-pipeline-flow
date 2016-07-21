@@ -117,13 +117,17 @@ class DicoogleClient {
 						bufferCache.forEach[ endBuffer.put(it) ]
 						endBuffer.flip
 						
-						val transformedBuffer = transform.apply(endBuffer)
-						transformedBuffer.flip
-						
-						sendBuffer.sendSliced(transformedBuffer) [
-							println('End transfer: ' + filePath)
-							sendBuffer.end
-						]
+						try {
+							val transformedBuffer = transform.apply(endBuffer)
+							transformedBuffer.flip
+							
+							sendBuffer.sendSliced(transformedBuffer) [
+								println('End transfer: ' + filePath)
+								sendBuffer.end
+							]
+						} catch(Exception ex) {
+							sendBuffer.error('Transformation error: ' + ex.message)
+						}
 					} else {
 						println('End transfer: ' + filePath)
 						sendBuffer.end
