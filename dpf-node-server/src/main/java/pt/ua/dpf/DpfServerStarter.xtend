@@ -12,6 +12,9 @@ import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.web.service.FileUploaderService
 import rt.vertx.server.web.service.WebFileService
 
+import static extension rt.vertx.server.web.service.FileUploaderService.*
+import static extension rt.vertx.server.web.service.WebFileService.*
+
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
 //import io.vertx.core.VertxOptions
@@ -51,15 +54,14 @@ class DpfServerStarter extends AbstractVerticle {
 	override def start() {
 		val server = new DefaultVertxServer(vertx, '/clt', '') => [
 			pipeline => [
-				addService('http-file-request', new WebFileService('../dpf-ui')) //TODO: source code not protected 
-				addService('http-file-uploader', new FileUploaderService('./downloads'))
 				addService('ping', new PingService)
 				failHandler = [ println('PIPELINE-FAIL: ' + it) ]
 			]
 			
 			webRouter => [
-				vrtxRoute('/*', 'http-file-request')
-				vrtxRoute('/file-upload', 'http-file-uploader')
+				vrtxRoute('/*', WebFileService => [ folder = '../dpf-ui' ]) //TODO: source code not protected 
+				vrtxRoute('/file-upload', FileUploaderService => [ folder = './downloads' ])
+				
 				get('/ping/:name', 'ping', 'helloPing')
 				get('/ping/:first/name/:second/:age', 'ping', 'hello2Ping')
 				post('/ping', 'ping', 'hello3Ping')
@@ -68,7 +70,6 @@ class DpfServerStarter extends AbstractVerticle {
 			wsRouter => [
 				onOpen[
 					println('RESOURCE-OPEN: ' + it)
-					
 					
 					val channelProxy = createProxy('channel', ChannelProxy)
 					val srvPointProxy = createProxy('service-point', ServicePointProxy)
