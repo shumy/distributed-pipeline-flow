@@ -14,6 +14,7 @@ import rt.vertx.server.web.service.WebFileService
 
 import static extension rt.vertx.server.web.service.FileUploaderService.*
 import static extension rt.vertx.server.web.service.WebFileService.*
+import rt.vertx.server.web.service.SpecsService
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -52,19 +53,30 @@ class DpfServerStarter extends AbstractVerticle {
 	}
 	
 	override def start() {
-		val server = new DefaultVertxServer(vertx, '/clt', '') => [
+		val server = new DefaultVertxServer(vertx, '/clt', '')
+		
+		val srvSpecs = SpecsService.B => [
+			pipeline = server.pipeline
+			services = #[ 'ping' ]
+		] 
+		
+		server => [
 			pipeline => [
+				addService('specs', srvSpecs)
 				addService('ping', new PingService)
-				failHandler = [ println('PIPELINE-FAIL: ' + it) ]
+				failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 			]
 			
 			webRouter => [
 				vrtxRoute('/*', WebFileService => [ folder = '../dpf-ui' ]) //TODO: source code not protected 
 				vrtxRoute('/file-upload', FileUploaderService => [ folder = './downloads' ])
 				
-				get('/ping/:name', 'ping', 'helloPing')
-				get('/ping/:first/name/:second/:age', 'ping', 'hello2Ping')
-				post('/ping', 'ping', 'hello3Ping')
+				get('/specs', 'specs' -> 'specs')
+				get('/specs/:name', 'specs' -> 'srvSpec')
+				
+				get('/ping/:name', 'ping' -> 'helloPing')
+				get('/ping/:first/name/:second/:age', 'ping' -> 'hello2Ping')
+				post('/ping', 'ping' -> 'hello3Ping')
 			]
 			
 			wsRouter => [

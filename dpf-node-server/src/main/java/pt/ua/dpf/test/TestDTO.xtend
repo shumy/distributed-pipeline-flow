@@ -1,13 +1,10 @@
 package pt.ua.dpf.test
 
+import rt.data.Data
+
+@Data
 class TestDTO {
-	public val String firstName
-	public val String secondName
-	public val Integer age
-	
-	new(String firstName, String secondName, Integer age) {
-		this.firstName = firstName
-		this.secondName = secondName
-		this.age = age
-	}
+	val String firstName
+	val String secondName
+	val Integer age
 }

@@ -9,6 +9,8 @@ import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.vertx.server.ChannelProxy
 import rt.pipeline.pipe.channel.SendBuffer
 
+import static extension pt.ua.dpf.test.TestDTO.*
+
 @Service(PingInterface)
 class PingService {
 	
@@ -40,12 +42,12 @@ class PingService {
 	
 	@Public
 	def TestDTO helloPing(String name) {
-		return new TestDTO(name, 'none', 35)
+		TestDTO => [ firstName = name secondName = 'none' age = 35 ]
 	}
 	
 	@Public
-	def TestDTO hello2Ping(String first, String second, int age) {
-		return new TestDTO(first, second, age)
+	def TestDTO hello2Ping(String first, String second, int inAge) {
+		TestDTO => [ firstName = first secondName = second age = inAge ]
 	}
 	
 	@Public
