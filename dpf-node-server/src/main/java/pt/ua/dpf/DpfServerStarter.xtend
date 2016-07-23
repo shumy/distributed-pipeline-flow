@@ -7,15 +7,16 @@ import pt.ua.dpf.dicoogle.DicoogleClient
 import pt.ua.dpf.proxy.ServicePointProxy
 import pt.ua.dpf.test.PingService
 import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
+import rt.plugin.service.WebMethod
 import rt.vertx.server.ChannelProxy
 import rt.vertx.server.DefaultVertxServer
+import rt.vertx.server.web.service.DescriptorService
 import rt.vertx.server.web.service.FileUploaderService
+import rt.vertx.server.web.service.RouterService
 import rt.vertx.server.web.service.WebFileService
 
 import static extension rt.vertx.server.web.service.FileUploaderService.*
 import static extension rt.vertx.server.web.service.WebFileService.*
-import rt.vertx.server.web.service.SpecsService
-import rt.plugin.service.descriptor.IDescriptor
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -61,19 +62,14 @@ class DpfServerStarter extends AbstractVerticle {
 			]
 		]
 		
-		//should only execute after pipeline configuration...
-		server.pipeline.addService('specs', SpecsService.B => [
-			pipeline = server.pipeline
-			autoDetect = true
-		])
-		
 		server => [
 			webRouter => [
 				vrtxRoute('/*', WebFileService => [ folder = '../dpf-ui' ]) //TODO: source code not protected 
 				vrtxRoute('/file-upload', FileUploaderService => [ folder = './downloads' ])
 				
-				get('/specs', 'specs' -> 'specs')
-				get('/specs/:name', 'specs' -> 'srvSpec')
+				route(WebMethod.GET, '/routes', 'routes' -> 'routes')
+				route(WebMethod.GET, '/specs', 'specs' -> 'specs')
+				route(WebMethod.GET, '/specs/:name', 'specs' -> 'srvSpec')
 				
 				get('/ping/:name', 'ping' -> 'helloPing')
 				get('/ping/:first/name/:second/:age', 'ping' -> 'hello2Ping')
@@ -107,6 +103,16 @@ class DpfServerStarter extends AbstractVerticle {
 				onClose[ println('RESOURCE-CLOSE: ' + it) ]
 			]
 		]
+		
+		//should only execute after pipeline configuration...
+		server.pipeline.addService('specs', DescriptorService.B => [
+			pipeline = server.pipeline
+			autoDetect = true
+		])
+		
+		server.pipeline.addService('routes', RouterService.B => [
+			router = server.webRouter
+		])
 		
 		server.listen(port)
 		println('''DPF-SERVER available at port: «port»''')
