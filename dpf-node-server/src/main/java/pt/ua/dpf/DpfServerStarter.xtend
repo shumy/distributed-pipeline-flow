@@ -15,6 +15,7 @@ import rt.vertx.server.web.service.WebFileService
 import static extension rt.vertx.server.web.service.FileUploaderService.*
 import static extension rt.vertx.server.web.service.WebFileService.*
 import rt.vertx.server.web.service.SpecsService
+import rt.plugin.service.descriptor.IDescriptor
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -53,20 +54,20 @@ class DpfServerStarter extends AbstractVerticle {
 	}
 	
 	override def start() {
-		val server = new DefaultVertxServer(vertx, '/clt', '')
-		
-		val srvSpecs = SpecsService.B => [
-			pipeline = server.pipeline
-			services = #[ 'ping' ]
-		] 
-		
-		server => [
+		val server = new DefaultVertxServer(vertx, '/clt', '') => [
 			pipeline => [
-				addService('specs', srvSpecs)
 				addService('ping', new PingService)
 				failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 			]
-			
+		]
+		
+		//should only execute after pipeline configuration...
+		server.pipeline.addService('specs', SpecsService.B => [
+			pipeline = server.pipeline
+			autoDetect = true
+		])
+		
+		server => [
 			webRouter => [
 				vrtxRoute('/*', WebFileService => [ folder = '../dpf-ui' ]) //TODO: source code not protected 
 				vrtxRoute('/file-upload', FileUploaderService => [ folder = './downloads' ])
@@ -104,7 +105,7 @@ class DpfServerStarter extends AbstractVerticle {
 					
 				]
 				onClose[ println('RESOURCE-CLOSE: ' + it) ]
-			]	
+			]
 		]
 		
 		server.listen(port)
