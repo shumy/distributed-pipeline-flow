@@ -57,6 +57,7 @@ class DpfServerStarter extends AbstractVerticle {
 	override def start() {
 		val server = new DefaultVertxServer(vertx, '/clt', '') => [
 			pipeline => [
+				addService('api-ui', WebFileService => [ root = '/api' folder = '/api' resource = true ])
 				addService('ping', new PingService)
 				failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 			]
@@ -64,12 +65,13 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		server => [
 			webRouter => [
-				vrtxRoute('/*', WebFileService => [ folder = '../dpf-ui' ]) //TODO: source code not protected 
-				vrtxRoute('/file-upload', FileUploaderService => [ folder = './downloads' ])
+				vrtxService('/*', 'dpf-ui', WebFileService => [ folder = '../dpf-ui' ]) //TODO: source code not protected 
+				vrtxService('/file-upload', 'dpf-uploader', FileUploaderService => [ folder = './downloads' ])
 				
-				route(WebMethod.GET, '/routes', 'routes' -> 'routes')
-				route(WebMethod.GET, '/specs', 'specs' -> 'specs')
-				route(WebMethod.GET, '/specs/:name', 'specs' -> 'srvSpec')
+				route(WebMethod.GET, '/api/*', 'api-ui', 'file', #['ctx.path'])
+				route(WebMethod.GET, '/api/routes', 'routes' -> 'routes')
+				route(WebMethod.GET, '/api/specs', 'specs' -> 'specs')
+				route(WebMethod.GET, '/api/specs/:name', 'specs' -> 'srvSpec')
 				
 				get('/ping/:name', 'ping' -> 'helloPing')
 				get('/ping/:first/name/:second/:age', 'ping' -> 'hello2Ping')
