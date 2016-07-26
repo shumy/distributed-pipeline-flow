@@ -57,7 +57,8 @@ class DpfServerStarter extends AbstractVerticle {
 	override def start() {
 		val server = new DefaultVertxServer(vertx, '/clt', '') => [
 			pipeline => [
-				addService('api-ui', WebFileService => [ root = '/api' folder = '/api' resource = true ])
+				addService('dpf-ui', WebFileService => [ folder = '../dpf-ui' ])
+				addService('api-ui', WebFileService => [ folder = '/api' root = '/api' resource = true ])
 				addService('ping', new PingService)
 				failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 			]
@@ -65,9 +66,9 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		server => [
 			webRouter => [
-				vrtxService('/*', 'dpf-ui', WebFileService => [ folder = '../dpf-ui' ]) //TODO: source code not protected 
 				vrtxService('/file-upload', 'dpf-uploader', FileUploaderService => [ folder = './downloads' ])
 				
+				route(WebMethod.GET, '/*', 'dpf-ui', 'file', #['ctx.path'])
 				route(WebMethod.GET, '/api/*', 'api-ui', 'file', #['ctx.path'])
 				route(WebMethod.GET, '/api/routes', 'routes' -> 'routes')
 				route(WebMethod.GET, '/api/specs', 'specs' -> 'specs')
