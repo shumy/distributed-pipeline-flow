@@ -66,6 +66,8 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		server => [
 			webRouter => [
+				headersMap = #{ 'Cookie' -> 'cookie' }
+				
 				vrtxService('/file-upload', 'dpf-uploader', FileUploaderService => [ folder = './downloads' ])
 				
 				route(WebMethod.GET, '/*', 'dpf-ui', 'file', #['ctx.path'])

@@ -10,12 +10,16 @@ import rt.vertx.server.ChannelProxy
 import rt.pipeline.pipe.channel.SendBuffer
 
 import static extension pt.ua.dpf.test.TestDTO.*
+import rt.plugin.service.an.Context
+import rt.vertx.server.CtxHeaders
 
 @Service(PingInterface)
 class PingService {
 	
-	@Public
-	@Proxies(@Proxy(name = 'test', proxy = TestProxy), @Proxy(name = 'channel', proxy = ChannelProxy))
+	@Public(async = true)
+	@Proxy(name = 'test', type = TestProxy)
+	@Proxy(name = 'channel', type = ChannelProxy)
+	@Context(name = 'headers', type = CtxHeaders)
 	def void ping(String name) {
 		test.hello(name).then[
 			println('HELLO-OK: ' + it)
@@ -41,7 +45,11 @@ class PingService {
 	}
 	
 	@Public
+	@Context(name = 'headers', type = CtxHeaders)
 	def TestDTO helloPing(String name) {
+		println('helloPing:')
+		headers.printAll
+		
 		TestDTO => [ firstName = name secondName = 'none' age = 35 ]
 	}
 	

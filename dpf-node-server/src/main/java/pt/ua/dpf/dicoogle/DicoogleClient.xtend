@@ -41,7 +41,7 @@ class DicoogleClient {
 					promise.resolve(gson.fromJson(result, QueryResult))
 				]
 				
-				exceptionHandler[ promise.reject(message) ]
+				exceptionHandler[ promise.reject(it) ]
 			]
 		]
 		
@@ -57,7 +57,7 @@ class DicoogleClient {
 				val options = new OpenOptions => [ create = true write = true ]
 				vertx.fileSystem.open(filePath, options) [
 					if (failed) {
-						promise.reject(cause.message)
+						promise.reject(cause)
 					} else {
 						val file = result
 						val pump = Pump.pump(resp, file)
