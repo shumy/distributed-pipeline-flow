@@ -3,12 +3,12 @@ import { MessageBus, IMessage, CMD } from './rts-messagebus'
 
 export interface IServiceClientFactory {
   serviceClient: ServiceClient
-} 
+}
 
 export class ClientRouter implements IServiceClientFactory {
   private _ready = false
   private url: string
-  
+
   private resource: PipeResource = null
   private websocket: WebSocket
   private _serviceClient: ServiceClient
@@ -25,20 +25,20 @@ export class ClientRouter implements IServiceClientFactory {
 
   ready() { this._ready = true }
 
-	createProxy(srvName: string) {
-		return this._serviceClient.create('srv:' + srvName)
-	}
+  createProxy(srvName: string) {
+    return this._serviceClient.create('srv:' + srvName)
+  }
 
-	get serviceClient() {
+  get serviceClient() {
     return this._serviceClient
-	}
+  }
 
   connect() {
     console.log('TRY-OPEN: ', this.url)
     this.websocket = new WebSocket(this.url)
 
     this.websocket.onopen = (evt) => {
-		  this.onOpen()
+      this.onOpen()
     }
 
     this.websocket.onclose = () => {
@@ -61,14 +61,14 @@ export class ClientRouter implements IServiceClientFactory {
     if (this.resource !== null) {
       this.resource.release
       this.resource = null
-      
+
       if (this.websocket !== null) {
         this.websocket.close()
         this.websocket = null
-      } 
+      }
     }
-	}
-	
+  }
+
   private send(msg: any) {
     this.waitReady(() => this.websocket.send(JSON.stringify(msg)))
   }
@@ -82,12 +82,12 @@ export class ClientRouter implements IServiceClientFactory {
   }
 
   private onOpen() {
-		this.resource = this.pipeline.createResource(this.server, (msg) => this.send(msg), () => this.close())
-	}
+    this.resource = this.pipeline.createResource(this.server, (msg) => this.send(msg), () => this.close())
+  }
 
   private receive(msg: any) {
-		this.resource.process(msg, _ => _.setObject('IServiceClientFactory', this))
-	}
+    this.resource.process(msg, _ => _.setObject('IServiceClientFactory', this))
+  }
 }
 
 declare let Proxy: any
@@ -95,15 +95,15 @@ declare let Proxy: any
 export class ServiceClient {
   static clientSeq = 0
 
-	private uuid: string
-	private msgID = 0		      //increment for every new message
-	
-	constructor(private bus: MessageBus, private server: string, client: string) {
+  private uuid: string
+  private msgID = 0		      //increment for every new message
+
+  constructor(private bus: MessageBus, private server: string, client: string) {
     ServiceClient.clientSeq++
-		this.uuid = ServiceClient.clientSeq + ':' + client
-	}
-	
-	create(srvName: string): any {
+    this.uuid = ServiceClient.clientSeq + ':' + client
+  }
+
+  create(srvName: string): any {
     let srvPath = 'srv:' + srvName
     let srvClient = this
 
@@ -123,12 +123,12 @@ export class ServiceClient {
               } else {
                 reject.apply(replyMsg.res)
               }
-            })  
+            })
           })
         }
       }
     }
 
     return new Proxy({}, handler)
-	}
+  }
 }

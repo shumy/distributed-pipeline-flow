@@ -1,7 +1,7 @@
 <div class="ui main tiny menu">
   <div class="flex item">
     <div class="ui icon input">
-      <input type="text" placeholder="Dicoogle Search...">
+      <input type="text" placeholder="Dicoogle Search..." [ngFormControl]="query">
       <i class="search icon"></i>
     </div>
   </div>
@@ -33,6 +33,12 @@
   <table class="ui very basic table">
     <thead>
       <tr>
+        <th class="one wide">
+          <div class="ui checkbox">
+            <input type="checkbox" [checked]="allSelected" (click)="selectAll()">
+            <label></label>
+          </div>
+        </th>
         <th>Patient</th>
         <th>Studies</th>
         <th>Modalities</th>
@@ -40,6 +46,73 @@
       </tr>
     </thead>
     <tbody>
+      <template ngFor let-patient [ngForOf]="patients">
+        <tr>
+          <td class="collapsing">
+            <div class="ui checkbox">
+              <input type="checkbox" [checked]="patient.selected" (click)="selectPatient(patient)">
+              <label></label>
+            </div>
+          </td>
+          <td>
+            <h5 class="ui header">
+              <i class="{{patient.open ? 'down' : 'right'}} triangle link icon" (click)="patient.open = !patient.open"></i>
+              <i class="{{patient.gender == 'M' ? 'male' : 'female'}} icon"></i>
+              <div class="content">{{patient.name}}</div>
+            </h5>
+          </td>
+          <td>{{patient.nStudies}}</td>
+          <td>[<span *ngFor="let mod of patient.modalities"> {{mod}}</span> ]</td>
+          <td>
+            <div *ngIf="patient.nTransfered != 0" class="ui active progress" [attr.data-value]="patient.nTransfered" [attr.data-total]="patient.nStudies">
+              <div class="bar">
+                <div class="progress"></div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="patient.open">
+          <td colspan="5">
+            <div class="ui relaxed list" style="padding-left: 20px">
+              <div *ngFor="let study of patient.studies" class="item">
+                <i class="{{study.open ? 'down' : 'right'}} triangle link icon" (click)="study.open = !study.open"></i>
+                <div class="content">
+                  <div class="header">Study: {{study.studyInstanceUID}}</div>
+                  <div class="ui horizontal divided list">
+                    <div class="item">Date: {{study.studyDate}}</div>
+                    <div class="item">Series: {{study.series.length}}</div>
+                    <div class="item">Modality: {{study.modalities}}</div>
+                  </div>
+                  <div *ngIf="study.open" class="ui relaxed list" style="padding-left: 20px">
+                    <div *ngFor="let serie of study.series" class="item">
+                      <i class="{{serie.open ? 'down' : 'right'}} triangle link icon" (click)="serie.open = !serie.open"></i>
+                      <div class="content">
+                        <div class="header">Serie: {{serie.serieInstanceUID}}</div>
+                        <div class="ui horizontal divided list">
+                          <div class="item">Number: {{serie.serieNumber}}</div>
+                          <div class="item">Images: {{serie.images.length}}</div>
+                        </div>
+                        <div *ngIf="serie.open" class="ui relaxed list" style="padding-left: 20px">
+                          <div *ngFor="let image of serie.images" class="item">
+                            <div class="content">
+                              <div class="header">Image: {{image.sopInstanceUID}}</div>
+                              <div class="ui horizontal divided list">
+                                <div class="item">FileName: {{image.filename}}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </template>
+
+      <!--
       <tr>
         <td>
           <h5 class="ui header">
@@ -160,11 +233,22 @@
             </div>
           </div>
         </td>
-      </tr>
+      </tr>-->
     </tbody>
+    <!--<tfoot class="full-width">
+      <tr>
+        <th></th>
+        <th colspan="4">
+          <div class="ui right floated small primary labeled icon button">
+            <i class="user icon"></i> Add Results
+          </div>
+        </th>
+      </tr>
+    </tfoot>-->
   </table>
 </div>
 
+<!--
 <div class="ui content segment">
   
   <div class="ui relaxed divided list">
@@ -237,3 +321,4 @@
   </div>
 
 </div>
+-->

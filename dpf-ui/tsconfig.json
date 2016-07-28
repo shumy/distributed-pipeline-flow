@@ -23,6 +23,7 @@
 		"app/app.config.ts",
 		"app/app.routes.ts",
 		"app/app.ts",
+    "app/srv/dicoogle.srv.ts",
 		"app/srv/index.srv.ts",
 		"app/srv/notification.srv.ts",
 		"typings/index.d.ts"
