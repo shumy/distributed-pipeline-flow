@@ -1,5 +1,5 @@
 import { Observable, Subscriber } from 'rxjs/Rx';
-import { ClientRouter, ChangeObservables, Pipeline } from '../../lib/rts-ws-client';
+import { ClientRouter, RemoteObservers, Pipeline } from '../../lib/rts-ws-client';
 
 export * from '../../lib/rts-ws-client';
 
@@ -13,8 +13,8 @@ export function initServices() {
   pipeline.failHandler = error => console.log('PIPELINE-FAIL: ' + error)
 
   let router = new ClientRouter(server, client, pipeline)
-  let subs = new ChangeObservables(router)
-  subs.create().then(observable => {
+  let subs = new RemoteObservers(router)
+  /*subs.create().then(observable => {
     observable.subscribe(_ => console.log('SUB: ', _))
-  }).catch(error => console.log('Error: ', error))
+  }).catch(error => console.log('Error: ', error))*/
 }

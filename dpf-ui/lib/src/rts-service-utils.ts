@@ -1,61 +1,69 @@
 import { Observable, Subscriber } from 'rxjs/Rx';
 import { ClientRouter } from './rts-client-service';
 
-export type DeltaType = 'add' | 'upd' | 'rem'
+export type EventType = 'nxt' | 'clp'
+export type OperType = 'add' | 'upd' | 'rem'
 
-export interface ChangeEvent {
-  type: DeltaType
+export interface Event {
   uuid: string
-  data: any
+  type: EventType
+  event?: any
 }
 
-export class ChangeObservables {
-  proxy: ObservableProxy
-  subscribers = new Map<string, Subscriber<ChangeEvent>>()
+export interface Change {
+  oper: OperType
+  data?: any
+}
+
+export class RemoteObservers {
+  proxy: ObserverProxy
+  observers = new Map<string, RemoteObserver>()
 
   constructor(private router: ClientRouter) {
-    this.proxy = router.createProxy('observables') as ObservableProxy
+    this.proxy = router.createProxy('observables') as ObserverProxy
     router.pipeline.addService('events', (ctx) => {
-      let change = ctx.message.args[0] as ChangeEvent
-      this.fireChange(change)
+      let event = ctx.message.args[0] as Event
+      this.fireEvent(event)
     })
   }
 
-  create(): Promise<Observable<ChangeEvent>> {
-    return new Promise((resolve, reject) => {
-      this.proxy.register()
-        .then(uuid => {
-          console.log('created-observable: ', uuid)
-          let obs = new Observable<ChangeEvent>(sub => { this.subscribers.set(uuid, sub) })
-          resolve(obs)
-        }).catch(error => {
-          console.log('error-creating-observable: ', error)
-          reject(error)
-        })
-    })
-  }
-
-  delete(uuid: string) {
-    
-    let sub = this.subscribers.get(uuid)
-    if (sub) {
-      this.subscribers.delete(uuid)
-      this.proxy.unregister(uuid)
-        .then(_ => console.log('deleted-observable: ', uuid))
-        .catch(error => console.log('error-deleting-observable: ', uuid, error))
-    }
+  create(uuid: string): RemoteObserver {
+    console.log('created-observable: ', uuid)
+    return new RemoteObserver(this, uuid)
   }
  
-  fireChange(change: ChangeEvent) {
-    //console.log('fire-change: ', change)
-    let sub = this.subscribers.get(change.uuid)
-    if (sub) {
-      sub.next(change)
+  fireEvent(event: Event) {
+    console.log('fire-event: ', event)
+    let obs = this.observers.get(event.uuid)
+    if (obs) {
+      if (event.type === 'nxt')
+        obs.sub.next(event)
+      else
+        obs.sub.complete()
     }
   }
 }
 
-interface ObservableProxy {
-  register(): Promise<string>
+class RemoteObserver {
+  public sub: Subscriber<Event>
+  public obs: Observable<Event>
+
+  constructor(private parent: RemoteObservers, private uuid: string) {
+    this.obs = new Observable<Event>(sub => this.sub = sub )
+    this.parent.observers.set(uuid, this)
+  }
+
+  unregister() {
+    let sub = this.parent.observers.get(this.uuid)
+    if (sub) {
+      this.parent.observers.delete(this.uuid)
+      this.parent.proxy.unregister(this.uuid)
+        .then(_ => console.log('unregistered-observable: ', this.uuid))
+        .catch(error => console.log('error-unregistering-observable: ', this.uuid, error))
+    }
+  }
+}
+
+interface ObserverProxy {
   unregister(uuid: string): Promise<void>
 }
