@@ -3,32 +3,54 @@ export class MessageBus {
   private replyListeners = new Map<string, (msg: IMessage) => void>()
 
   publish(address: string, msg: IMessage) {
-    if (msg.cmd === CMD.OK || msg.cmd === CMD.ERROR) {
-      let replyFun = this.replyListeners.get(address)
-      if (replyFun) {
-        this.replyListeners.delete(address)
-        replyFun(msg)
-      }
-    } else {
-      let holder = this.listeners.get(address)
-      if (holder)
-        holder.forEach(_ => _.send(msg))
-    }
+		if (!msg.typ) msg.typ = TYP.PUBLISH
+    let addressListeners = this.listeners.get(address)
+    if (addressListeners)
+		  addressListeners.forEach(_ => _.send(msg))
   }
 
   send(address: string, msg: IMessage, replyCallback: (msg: IMessage) => void) {
     let replyID = msg.clt + '+' + msg.id
-    this.replyListeners.set(replyID, replyCallback)
+    this.replyListener(replyID, replyCallback)
 
-    this.publish(address, msg)
+	  msg.typ = TYP.SEND
+    let addressListeners = this.listeners.get(address)
+    if (addressListeners)
+		  addressListeners.forEach(_ => _.send(msg))
+		
     setTimeout(_ => {
-      let replyFun = this.replyListeners.get(replyID)
-      if (replyFun) {
-        this.replyListeners.delete(replyID)
-        let reply: IMessage = { id: msg.id, clt: msg.clt, cmd: CMD.ERROR, res: 'Timeout for ' + msg.path + '->' + msg.cmd }
-        replyFun(reply)
-      }
+      let replyTimeoutMsg: IMessage = { id: msg.id, clt: msg.clt, cmd: TYP.CMD_ERROR, res: 'Timeout for ' + msg.path + '->' + msg.cmd }
+      this.reply(replyTimeoutMsg)
     }, 3000)
+  }
+
+  reply(msg: IMessage) {
+    let replyID = msg.clt + '+' + msg.id
+
+    let rOKBackAddress = replyID + '/reply-ok'
+    let replyOKBackFun = this.replyListeners.get(rOKBackAddress)
+    this.replyListeners.delete(rOKBackAddress)
+
+    let rERRORBackAddress = replyID + '/reply-error'
+		let replyERRORBackFun = this.replyListeners.get(rERRORBackAddress)
+    this.replyListeners.delete(rERRORBackAddress)
+		
+		//process backward replies. In case of internal components need the information
+		if (msg.cmd == TYP.CMD_OK) {
+      if (replyOKBackFun) replyOKBackFun(msg)
+		} else {
+      if (replyERRORBackFun) replyERRORBackFun(msg)
+		}
+		
+    let replyFun = this.replyListeners.get(replyID)
+    if (replyFun) {
+      this.replyListeners.delete(replyID)
+      replyFun(msg)
+    }
+  }
+
+  replyListener(replyID: string, listener: (msg: IMessage) => void) {
+    this.replyListeners.set(replyID, listener)
   }
 
   listener(address: string, callback: (msg: IMessage) => void) {
@@ -61,17 +83,21 @@ export class Listener {
 
 export interface IMessage {
   id?: number
+  typ?: string
   clt?: string
   cmd?: string
   path?: string
 
   args?: any[]
-
   res?: any
-  error?: string
 }
 
-export class CMD {
-  static OK = 'ok'
-  static ERROR = 'error'
+export class TYP {
+  static PUBLISH = 'pub'
+  static SEND = 'snd'
+  static REPLY = 'rpl'
+
+  static CMD_OK = 'ok'
+  static CMD_ERROR = 'err'
+  static CMD_TIMEOUT = 'tout'
 }

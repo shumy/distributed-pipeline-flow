@@ -1,40 +1,26 @@
-import { enableProdMode, provide }              from '@angular/core';
-import { bootstrap }                            from '@angular/platform-browser-dynamic';
-import { disableDeprecatedForms, provideForms } from '@angular/forms';
-import { HTTP_PROVIDERS }                       from '@angular/http';
-
-import { APP_CONFIG, config } from './app/app.config';
-import { appRouterProviders } from './app/app.routes';
-
-import { Application }      from './app/app';
-
-// services
-import { DicoogleService }  from './app/srv/dicoogle.srv';
-
-//import { NotificationSrv }  from './app/srv/notification.srv';
-//import { IndexSrv }  from './app/srv/index.srv';
-
-//let notifSrv = new NotificationSrv(config)
-
+import './app/app.config';
 import "rxjs/Rx";
 
-//enableProdMode()
-bootstrap(Application, [
-  disableDeprecatedForms(), provideForms(),
-  HTTP_PROVIDERS, appRouterProviders,
-  provide(APP_CONFIG, { useValue: config }),
-  DicoogleService
-]).catch(err => console.log(err))
+import { enableProdMode, provide }              from '@angular/core';
+import { bootstrap }                            from '@angular/platform-browser-dynamic';
+//import { disableDeprecatedForms, provideForms } from '@angular/forms';
+import { HTTP_PROVIDERS, Http }                 from '@angular/http';
 
-/*bootstrap(Application, [
-  HTTP_PROVIDERS, ROUTER_PROVIDERS,
-  provide(APP_CONFIG, { useValue: config }),
-  provide(NotificationSrv, { useValue: notifSrv }),
-  provide(IndexSrv, { useValue: new IndexSrv(config) }),
+import { appRouterProviders }                   from './app/app.routes';
+import { Application }                          from './app/app';
+
+import { initServices, DicoogleService, TransferService }  from './app/srv/services';
+
+enableProdMode()
+bootstrap(Application, [
+  //disableDeprecatedForms(), provideForms(),
+  HTTP_PROVIDERS, appRouterProviders,
+  //provide(APP_CONFIG, { useValue: config }),
+  provide(DicoogleService, { useClass: DicoogleService }),
+  provide(TransferService, { useValue: new TransferService() })
 ])
-.then(() => {
-  console.log('---READY---')
-  notifSrv.ready()
+.then(_ => {
+  initServices()
+  console.log('---APP-READY---')
 })
 .catch(err => console.log(err))
-*/

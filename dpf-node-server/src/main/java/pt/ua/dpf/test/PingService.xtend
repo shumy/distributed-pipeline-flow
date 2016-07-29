@@ -21,6 +21,7 @@ class PingService {
 	@Proxy(name = 'channel', type = ChannelProxy)
 	@Context(name = 'headers', type = CtxHeaders)
 	def void ping(String name) {
+		println('ping: ' + name)
 		test.hello(name).then[
 			println('HELLO-OK: ' + it)
 		]

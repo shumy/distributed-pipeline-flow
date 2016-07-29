@@ -1,13 +1,18 @@
+import { config } from '../app.config';
+
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
 
 @Injectable()
 export class DicoogleService {
-  constructor (private http: Http) {}
+  public debounceDuration = 400
 
-  host = 'localhost:8080'
-  debounceDuration = 400
+  host: string
+  
+  constructor (private http: Http) {
+    this.host = config.dicoogleHost
+  }
 
   search(query: Observable<string>, transform?: (results: any) => void): Observable<any> {
     return query.debounceTime(this.debounceDuration)

@@ -1,15 +1,12 @@
-import { OpaqueToken } from '@angular/core';
-
-export let APP_CONFIG = new OpaqueToken('app.config');
-
 export interface Config {
   host: string
+  dicoogleHost: string
 }
 
 export let config: Config = {
-  host: 'localhost:9090'
+  host: 'localhost:9090',
+  dicoogleHost: 'localhost:8080'
 }
-
 
 //Toastr configs
 toastr.options = {

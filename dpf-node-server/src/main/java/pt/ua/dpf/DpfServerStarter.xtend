@@ -84,7 +84,7 @@ class DpfServerStarter extends AbstractVerticle {
 			wsRouter => [
 				onOpen[
 					println('RESOURCE-OPEN: ' + it)
-					
+					/*
 					val channelProxy = createProxy('channel', ChannelProxy)
 					val srvPointProxy = createProxy('service-point', ServicePointProxy)
 					
@@ -103,7 +103,7 @@ class DpfServerStarter extends AbstractVerticle {
 							], [ println('CHANNEL-REQ-ERROR: ' + it) ])
 						]
 					]
-					
+					*/
 				]
 				onClose[ println('RESOURCE-CLOSE: ' + it) ]
 			]

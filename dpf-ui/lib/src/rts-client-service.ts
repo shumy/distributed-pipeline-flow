@@ -1,5 +1,5 @@
 import { Pipeline, PipeResource } from './rts-pipeline'
-import { MessageBus, IMessage, CMD } from './rts-messagebus'
+import { MessageBus, IMessage, TYP } from './rts-messagebus'
 
 export interface IServiceClientFactory {
   serviceClient: ServiceClient
@@ -26,7 +26,7 @@ export class ClientRouter implements IServiceClientFactory {
   ready() { this._ready = true }
 
   createProxy(srvName: string) {
-    return this._serviceClient.create('srv:' + srvName)
+    return this._serviceClient.create(srvName)
   }
 
   get serviceClient() {
@@ -117,8 +117,8 @@ export class ServiceClient {
 
             //console.log('RUN-METH: ', srvMeth + JSON.stringify(srvArgs))
             srvClient.bus.send(srvClient.server, sendMsg, (replyMsg) => {
-              //console.log('METH-RETURN: ', srvMeth + '(' + replyMsg.cmd  + ') -> ' + JSON.stringify(replyMsg.res))
-              if (replyMsg.cmd === CMD.OK) {
+              console.log('REPLY id:' + replyMsg.id + ' clt:' + replyMsg.clt + ' cmd:' + replyMsg.cmd)
+              if (replyMsg.cmd === TYP.CMD_OK) {
                 resolve.apply(replyMsg.res)
               } else {
                 reject.apply(replyMsg.res)

@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Control, CORE_DIRECTIVES, FORM_DIRECTIVES } from '@angular/common';
 import { Observable } from 'rxjs/Observable';
 
-import { DicoogleService } from '../srv/dicoogle.srv';
+import { DicoogleService, TransferService } from '../srv/services';
 
 @Component({
   selector: 'search-view',
@@ -23,14 +23,14 @@ export class SearchView implements OnInit {
   allSelected = false
   patients = []
 
-  constructor(private dicoogleSrv: DicoogleService) {
+  constructor(private dicoogleSrv: DicoogleService, private transferSrv: TransferService) {
     this.initSearch()
   }
 
   initSearch() {
     let patients = this.dicoogleSrv.search(this.query.valueChanges, results => {
       results.forEach(patient => {
-        patient.nTransfered = 0
+        patient.nTransferred = 0
         patient.open = false
         patient.selected = false
         patient.studies.forEach(study => {
@@ -60,7 +60,6 @@ export class SearchView implements OnInit {
   }
 
   ngOnInit() {
-    console.log('jQueryInit')
     this.jQueryProgressBars()
 
     let dropdown: any = $('.ui.dropdown')

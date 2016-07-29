@@ -1,4 +1,4 @@
-import { MessageBus, Listener, IMessage, CMD } from './rts-messagebus'
+import { MessageBus, Listener, IMessage, TYP } from './rts-messagebus'
 
 export class Pipeline {
   private _failHandler: (String) => void = null
@@ -31,7 +31,7 @@ export class Pipeline {
 		  this.interceptors.push(interceptor)
   }
 
-  getServiceFromPath(path: string) {
+  getComponent(path: string) {
 		  return this.services.get(path)
   }
 
@@ -107,10 +107,15 @@ export class PipeContext {
 
   deliver() {
     if (!this.inFail) {
-      if (this.message.cmd === CMD.OK || this.message.cmd === CMD.ERROR)
-        this.deliverReply()
-      else
-        this.deliverRequest()
+      try {
+        if (this.message.typ === TYP.REPLY)
+          this.deliverReply()
+        else
+          this.deliverRequest()
+      } catch (error) {
+        console.error(error)
+        this.fail(error)
+      }
     }
   }
 
@@ -147,21 +152,29 @@ export class PipeContext {
     if (!this.inFail) {
       replyMsg.id = this.message.id
       replyMsg.clt = this.message.clt
+      replyMsg.typ = TYP.REPLY
 
       this.resource.send(replyMsg)
     }
   }
 
-  replyOK(result: any) {
+	replyOK() {
+		if (!this.inFail) {
+      let replyMsg: IMessage = { cmd: TYP.CMD_OK }
+			this.reply(replyMsg)
+		}
+	}
+	
+  replyResultOK(result: any) {
     if (!this.inFail) {
-      let replyMsg: IMessage = { cmd: CMD.OK, res: result }
+      let replyMsg: IMessage = { cmd: TYP.CMD_OK, res: result }
       this.reply(replyMsg)
     }
   }
 
-  replyError(err: string) {
+  replyError(error: string) {
     if (!this.inFail) {
-      let replyMsg: IMessage = { cmd: CMD.ERROR, error: err }
+      let replyMsg: IMessage = { cmd: TYP.CMD_ERROR, res: error }
       this.reply(replyMsg)
     }
   }
@@ -170,30 +183,20 @@ export class PipeContext {
     this.resource.disconnect()
   }
 
-  private publish(address: string) {
-    this.pipeline.mb.publish(address, this.message)
-  }
-
   private deliverRequest() {
-    let srv = this.pipeline.getServiceFromPath(this.message.path)
+    let srv = this.pipeline.getComponent(this.message.path)
     if (srv) {
       console.log('DELIVER(' + this.message.path + ')')
-      try {
-        srv(this)
-      } catch (error) {
-        console.error(error)
-        this.fail(error)
-      }
+      srv(this)
     } else {
       console.log('PUBLISH(' + this.message.path + ')')
-      this.publish(this.message.path)
+      this.pipeline.mb.publish(this.message.path, this.message)
     }
   }
 
   private deliverReply() {
-    let address = this.message.clt + '+' + this.message.id
-    console.log('REPLY(' + address + ')')
-    this.publish(address)
+		console.log('DELIVER-REPLY(' + this.message.clt + ', ' + this.message.id + ')')
+		this.pipeline.mb.reply(this.message)
   }
 }
 
