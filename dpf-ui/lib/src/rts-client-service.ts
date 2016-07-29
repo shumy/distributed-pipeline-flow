@@ -15,7 +15,7 @@ export class ClientRouter implements IServiceClientFactory {
 
   get bus() { return this.pipeline.mb }
 
-  constructor(private server: string, private client: string, private pipeline: Pipeline = new Pipeline) {
+  constructor(public server: string, public client: string, public pipeline: Pipeline = new Pipeline) {
     this.url = server + '?client=' + client
     this._serviceClient = new ServiceClient(this.bus, this.server, this.client)
 
@@ -115,13 +115,13 @@ export class ServiceClient {
             srvClient.msgID++
             let sendMsg: IMessage = { id: srvClient.msgID, clt: srvClient.uuid, path: srvPath, cmd: srvMeth, args: srvArgs }
 
-            //console.log('RUN-METH: ', srvMeth + JSON.stringify(srvArgs))
+            console.log('PROXY-SEND: ', sendMsg)
             srvClient.bus.send(srvClient.server, sendMsg, (replyMsg) => {
-              console.log('REPLY id:' + replyMsg.id + ' clt:' + replyMsg.clt + ' cmd:' + replyMsg.cmd)
+              console.log('PROXY-REPLY: ', replyMsg)
               if (replyMsg.cmd === TYP.CMD_OK) {
-                resolve.apply(replyMsg.res)
+                resolve(replyMsg.res)
               } else {
-                reject.apply(replyMsg.res)
+                reject(replyMsg.res)
               }
             })
           })

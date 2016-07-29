@@ -17,6 +17,7 @@ import rt.vertx.server.web.service.WebFileService
 
 import static extension rt.vertx.server.web.service.FileUploaderService.*
 import static extension rt.vertx.server.web.service.WebFileService.*
+import rt.vertx.server.web.service.ObservableService
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -60,6 +61,7 @@ class DpfServerStarter extends AbstractVerticle {
 				addService('dpf-ui', WebFileService => [ folder = '../dpf-ui' ])
 				addService('api-ui', WebFileService => [ folder = '/api' root = '/api' resource = true ])
 				addService('ping', new PingService)
+				addService('observables', ObservableService.create)
 				failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 			]
 		]
@@ -82,6 +84,8 @@ class DpfServerStarter extends AbstractVerticle {
 			]
 			
 			wsRouter => [
+				headersMap = #{ 'client' -> 'client' }
+				
 				onOpen[
 					println('RESOURCE-OPEN: ' + it)
 					/*

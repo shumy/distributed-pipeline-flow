@@ -1,5 +1,5 @@
 import { config } from '../app.config';
-import { ServiceObservable, ChangeEvent } from './service.common';
+import { ChangeEvent } from './service.common';
 
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
@@ -13,8 +13,8 @@ export class TransferService {
     return null
   }
 
-  srvPointUpdates(): ServiceObservable<ISrvPoint> {
-    return new ServiceObservable<ISrvPoint>('srv:address.method')
+  srvPointUpdates(): Observable<ChangeEvent> {
+    return null
   }
 
   transferPatients(patients: any, srvPointId: string) {
@@ -28,8 +28,8 @@ export class TransferService {
     return null
   }
 
-  patientTransferUpdates(srvPointId: string): ServiceObservable<IPatientTransfer> {
-    return new ServiceObservable<IPatientTransfer>('srv:address.method')
+  patientTransferUpdates(srvPointId: string): Observable<ChangeEvent> {
+    return null
   }
 }
 
