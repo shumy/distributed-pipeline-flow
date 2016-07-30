@@ -1,13 +1,12 @@
 import { Observable, Subscriber } from 'rxjs/Rx';
 import { ClientRouter } from './rts-client-service';
 
-export type EventType = 'nxt' | 'clp'
+export type CmdType = 'nxt' | 'clp'
 export type OperType = 'add' | 'upd' | 'rem'
 
 export interface Event {
   uuid: string
-  type: EventType
-  event?: any
+  data?: any
 }
 
 export interface Change {
@@ -22,8 +21,14 @@ export class RemoteObservers {
   constructor(private router: ClientRouter) {
     this.proxy = router.createProxy('observables') as ObserverProxy
     router.pipeline.addService('events', (ctx) => {
-      let event = ctx.message.args[0] as Event
-      this.fireEvent(event)
+      let event = ctx.message.res as Event
+      let obs = this.observers.get(event.uuid)
+      if (obs) {
+        if (ctx.message.cmd === 'nxt')
+          obs.sub.next(event.data)
+        else
+          obs.sub.complete()
+      }
     })
   }
 
@@ -31,25 +36,14 @@ export class RemoteObservers {
     console.log('created-observable: ', uuid)
     return new RemoteObserver(this, uuid)
   }
- 
-  fireEvent(event: Event) {
-    console.log('fire-event: ', event)
-    let obs = this.observers.get(event.uuid)
-    if (obs) {
-      if (event.type === 'nxt')
-        obs.sub.next(event)
-      else
-        obs.sub.complete()
-    }
-  }
 }
 
 class RemoteObserver {
-  public sub: Subscriber<Event>
-  public obs: Observable<Event>
+  sub: Subscriber<any>
+  obs: Observable<any>
 
   constructor(private parent: RemoteObservers, private uuid: string) {
-    this.obs = new Observable<Event>(sub => this.sub = sub )
+    this.obs = new Observable<any>(sub => this.sub = sub )
     this.parent.observers.set(uuid, this)
   }
 

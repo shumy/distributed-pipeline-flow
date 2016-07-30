@@ -1,11 +1,17 @@
 import { config } from '../app.config';
-import { Event } from './service.common';
+import { ClientRouter, RemoteObservers, Change } from '../../lib/rts-ws-client';
 
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 
 @Injectable()
 export class TransferService {
+  private proxy: TransferProxy
+
+  constructor(router: ClientRouter, private observers: RemoteObservers) {
+    this.proxy = router.createProxy('transfers') as TransferProxy
+  }
+
   srvPoints(): ISrvPoint[] {
     //TODO: consult dpf-server to aquire srv-points
     //TODO: cache results
@@ -13,8 +19,10 @@ export class TransferService {
     return null
   }
 
-  srvPointUpdates(): Observable<Event> {
-    return null
+  srvPointObserver(): Promise<Observable<Change>> {
+    return this.proxy.srvPointObserver()
+      .then(uuid => { return this.observers.create(uuid).obs })
+      .catch(error => console.log('ERROR srvPointObserver: ', error))
   }
 
   transferPatients(patients: any, srvPointId: string) {
@@ -28,7 +36,7 @@ export class TransferService {
     return null
   }
 
-  patientTransferUpdates(srvPointId: string): Observable<Event> {
+  patientTransferObserver(srvPointId: string): Promise<Observable<Change>> {
     return null
   }
 }
@@ -43,4 +51,8 @@ export interface IPatientTransfer {
   transferred: number
   errors: number
   lastErrorMessage: string
+}
+
+interface TransferProxy {
+  srvPointObserver(): Promise<string>
 }

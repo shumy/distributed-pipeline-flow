@@ -10,10 +10,10 @@ import java.nio.ByteBuffer
 import java.util.LinkedList
 import java.util.List
 import pt.ua.dpf.dicoogle.model.Image
+import rt.async.promise.Promise
+import rt.async.promise.PromiseResult
 import rt.pipeline.pipe.channel.IPipeChannel
 import rt.pipeline.pipe.channel.SendBuffer
-import rt.pipeline.promise.Promise
-import rt.pipeline.promise.PromiseResult
 
 class DicoogleClient {
 	val Gson gson = new Gson

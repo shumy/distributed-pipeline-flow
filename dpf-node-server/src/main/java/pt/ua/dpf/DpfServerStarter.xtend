@@ -2,22 +2,19 @@ package pt.ua.dpf
 
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx
-import pt.ua.dpf.dicoogle.Anonymizer
-import pt.ua.dpf.dicoogle.DicoogleClient
-import pt.ua.dpf.proxy.ServicePointProxy
+import pt.ua.dpf.srv.TransferService
 import pt.ua.dpf.test.PingService
-import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.plugin.service.WebMethod
-import rt.vertx.server.ChannelProxy
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.web.service.DescriptorService
 import rt.vertx.server.web.service.FileUploaderService
+import rt.vertx.server.web.service.ObserverService
+import rt.vertx.server.web.service.RemoteSubscriber
 import rt.vertx.server.web.service.RouterService
 import rt.vertx.server.web.service.WebFileService
 
 import static extension rt.vertx.server.web.service.FileUploaderService.*
 import static extension rt.vertx.server.web.service.WebFileService.*
-import rt.vertx.server.web.service.ObserverService
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -56,12 +53,13 @@ class DpfServerStarter extends AbstractVerticle {
 	}
 	
 	override def start() {
-		val server = new DefaultVertxServer(vertx, '/clt', '') => [
-			pipeline => [
+		val server = new DefaultVertxServer(vertx, '/clt', '') => [ srv |
+			srv.pipeline => [
 				addService('dpf-ui', WebFileService => [ folder = '../dpf-ui' ])
 				addService('api-ui', WebFileService => [ folder = '/api' root = '/api' resource = true ])
 				addService('ping', new PingService)
-				addService('observables', ObserverService.create)
+				addService('transfers', TransferService.create)
+				addService('observables', ObserverService.B => [ publisher = srv.pipeline.mb ], true)
 				failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 			]
 		]
@@ -88,6 +86,7 @@ class DpfServerStarter extends AbstractVerticle {
 				
 				onOpen[
 					println('RESOURCE-OPEN: ' + it)
+					resource.subscribe(RemoteSubscriber.ADDRESS)
 					/*
 					val channelProxy = createProxy('channel', ChannelProxy)
 					val srvPointProxy = createProxy('service-point', ServicePointProxy)

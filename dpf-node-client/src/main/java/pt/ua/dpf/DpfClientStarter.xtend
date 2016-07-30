@@ -1,12 +1,12 @@
 package pt.ua.dpf
 
+import pt.ua.dpf.services.ServicePointService
+import rt.async.AsyncUtils
 import rt.pipeline.pipe.channel.IPipeChannel
 import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.pipeline.pipe.channel.ReceiveBuffer
 import rt.pipeline.pipe.use.ChannelService
-import rt.pipeline.promise.AsyncUtils
 import rt.ws.client.ClientRouter
-import pt.ua.dpf.services.ServicePointService
 
 class DpfClientStarter {
 	def static void main(String[] args) {
