@@ -6,15 +6,12 @@ import pt.ua.dpf.srv.TransferService
 import pt.ua.dpf.test.PingService
 import rt.plugin.service.WebMethod
 import rt.vertx.server.DefaultVertxServer
-import rt.vertx.server.web.service.DescriptorService
-import rt.vertx.server.web.service.FileUploaderService
-import rt.vertx.server.web.service.ObserverService
-import rt.vertx.server.web.service.RemoteSubscriber
-import rt.vertx.server.web.service.RouterService
-import rt.vertx.server.web.service.WebFileService
-
-import static extension rt.vertx.server.web.service.FileUploaderService.*
-import static extension rt.vertx.server.web.service.WebFileService.*
+import rt.vertx.server.service.DescriptorService
+import rt.vertx.server.service.FileUploaderService
+import rt.vertx.server.service.RouterService
+import rt.vertx.server.service.SubscriberService
+import rt.vertx.server.service.WebFileService
+import pt.ua.dpf.srv.observer.ServicePointObserver
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -53,22 +50,27 @@ class DpfServerStarter extends AbstractVerticle {
 	}
 	
 	override def start() {
-		val server = new DefaultVertxServer(vertx, '/clt', '') => [ srv |
-			srv.pipeline => [
-				addService('dpf-ui', WebFileService => [ folder = '../dpf-ui' ])
-				addService('api-ui', WebFileService => [ folder = '/api' root = '/api' resource = true ])
-				addService('ping', new PingService)
-				addService('transfers', TransferService.create)
-				addService('observables', ObserverService.B => [ publisher = srv.pipeline.mb ], true)
-				failHandler = [ println('PIPELINE-FAIL: ' + message) ]
-			]
+		val server = new DefaultVertxServer(vertx, '/clt', '')
+		
+		server.mb => [
+			addObserver('srvPointObserver', ServicePointObserver.B => [ publisher = server.mb ])
+		]
+		
+		server.pipeline => [
+			addService('dpf-ui', WebFileService.B => [ folder = '../dpf-ui' ])
+			addService('api-ui', WebFileService.B => [ folder = '/api' root = '/api' resource = true ])
+			addService('ping', new PingService)
+			addService('subscriber', new SubscriberService)
+			addService('transfers', TransferService.create)
+			
+			failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 		]
 		
 		server => [
 			webRouter => [
 				headersMap = #{ 'Cookie' -> 'cookie' }
 				
-				vrtxService('/file-upload', 'dpf-uploader', FileUploaderService => [ folder = './downloads' ])
+				vrtxService('/file-upload', 'dpf-uploader', FileUploaderService.B => [ folder = './downloads' ])
 				
 				route(WebMethod.GET, '/*', 'dpf-ui', 'file', #['ctx.path'])
 				route(WebMethod.GET, '/api/*', 'api-ui', 'file', #['ctx.path'])
@@ -85,8 +87,7 @@ class DpfServerStarter extends AbstractVerticle {
 				headersMap = #{ 'client' -> 'client' }
 				
 				onOpen[
-					println('RESOURCE-OPEN: ' + it)
-					resource.subscribe(RemoteSubscriber.ADDRESS)
+					println('RESOURCE-OPEN: ' + client)
 					/*
 					val channelProxy = createProxy('channel', ChannelProxy)
 					val srvPointProxy = createProxy('service-point', ServicePointProxy)
@@ -108,6 +109,7 @@ class DpfServerStarter extends AbstractVerticle {
 					]
 					*/
 				]
+				
 				onClose[ println('RESOURCE-CLOSE: ' + it) ]
 			]
 		]

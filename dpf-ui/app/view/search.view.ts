@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Control, CORE_DIRECTIVES, FORM_DIRECTIVES } from '@angular/common';
 import { Observable } from 'rxjs/Observable';
 
-import { DicoogleService, TransferService } from '../srv/services';
+import { DicoogleService, SubscriberService } from '../srv/services';
 
 @Component({
   selector: 'search-view',
@@ -23,11 +23,11 @@ export class SearchView implements OnInit {
   allSelected = false
   patients = []
 
-  constructor(private dicoogleSrv: DicoogleService, private transferSrv: TransferService) {
+  constructor(private dicoogleSrv: DicoogleService, private subscriberSrv: SubscriberService) {
     this.initSearch()
 
-    transferSrv.srvPointObserver().then(obs => {
-      obs.subscribe(_ => console.log('CHANGE: ', _))
+    this.subscriberSrv.subscribe('srvPointObserver').then(ro => {
+      ro.obs.subscribe(_ => console.log('CHANGE: ', _))
     })
   }
 

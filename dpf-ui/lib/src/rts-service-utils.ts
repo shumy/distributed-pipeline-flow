@@ -5,7 +5,7 @@ export type CmdType = 'nxt' | 'clp'
 export type OperType = 'add' | 'upd' | 'rem'
 
 export interface Event {
-  uuid: string
+  address: string
   data?: any
 }
 
@@ -14,15 +14,15 @@ export interface Change {
   data?: any
 }
 
-export class RemoteObservers {
-  proxy: ObserverProxy
+export class SubscriberService {
+  proxy: SubscriberProxy
   observers = new Map<string, RemoteObserver>()
 
   constructor(private router: ClientRouter) {
-    this.proxy = router.createProxy('observables') as ObserverProxy
+    this.proxy = router.createProxy('subscriber') as SubscriberProxy
     router.pipeline.addService('events', (ctx) => {
       let event = ctx.message.res as Event
-      let obs = this.observers.get(event.uuid)
+      let obs = this.observers.get(event.address)
       if (obs) {
         if (ctx.message.cmd === 'nxt')
           obs.sub.next(event.data)
@@ -32,9 +32,11 @@ export class RemoteObservers {
     })
   }
 
-  create(uuid: string): RemoteObserver {
-    console.log('created-observable: ', uuid)
-    return new RemoteObserver(this, uuid)
+  subscribe(address: string): Promise<RemoteObserver> {
+    console.log('subscribe: ', address)
+    return this.proxy.subscribe(address)
+      .then(_ => { return new RemoteObserver(this, address) })
+      .catch(error => console.log('error-subscribe: ', address, error))
   }
 }
 
@@ -42,22 +44,23 @@ class RemoteObserver {
   sub: Subscriber<any>
   obs: Observable<any>
 
-  constructor(private parent: RemoteObservers, private uuid: string) {
+  constructor(private parent: SubscriberService, private address: string) {
     this.obs = new Observable<any>(sub => this.sub = sub )
-    this.parent.observers.set(uuid, this)
+    this.parent.observers.set(address, this)
   }
 
-  unregister() {
-    let sub = this.parent.observers.get(this.uuid)
+  unsubscribe() {
+    let sub = this.parent.observers.get(this.address)
     if (sub) {
-      this.parent.observers.delete(this.uuid)
-      this.parent.proxy.unregister(this.uuid)
-        .then(_ => console.log('unregistered-observable: ', this.uuid))
-        .catch(error => console.log('error-unregistering-observable: ', this.uuid, error))
+      this.parent.observers.delete(this.address)
+      this.parent.proxy.unsubscribe(this.address)
+        .then(_ => console.log('unsubscribe: ', this.address))
+        .catch(error => console.log('error-unsubscribe: ', this.address, error))
     }
   }
 }
 
-interface ObserverProxy {
-  unregister(uuid: string): Promise<void>
+interface SubscriberProxy {
+  subscribe(address: string): Promise<void>
+  unsubscribe(address: string): Promise<void>
 }
