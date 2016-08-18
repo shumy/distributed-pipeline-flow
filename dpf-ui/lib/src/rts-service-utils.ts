@@ -16,7 +16,7 @@ export interface Change {
 
 export class SubscriberService {
   proxy: SubscriberProxy
-  observers = new Map<string, RemoteObserver>()
+  observers = new Map<string, RemoteObservable>()
 
   constructor(private router: ClientRouter) {
     this.proxy = router.createProxy('subscriber') as SubscriberProxy
@@ -32,20 +32,19 @@ export class SubscriberService {
     })
   }
 
-  subscribe(address: string): Promise<RemoteObserver> {
+  subscribe(address: string): Promise<RemoteObservable> {
     console.log('subscribe: ', address)
     return this.proxy.subscribe(address)
-      .then(_ => { return new RemoteObserver(this, address) })
+      .then(_ => { return new RemoteObservable(this, address) })
       .catch(error => console.log('error-subscribe: ', address, error))
   }
 }
 
-class RemoteObserver {
+class RemoteObservable extends Observable<any> {
   sub: Subscriber<any>
-  obs: Observable<any>
 
   constructor(private parent: SubscriberService, private address: string) {
-    this.obs = new Observable<any>(sub => this.sub = sub )
+    super(sub => this.sub = sub)
     this.parent.observers.set(address, this)
   }
 

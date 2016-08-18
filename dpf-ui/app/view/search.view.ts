@@ -26,8 +26,8 @@ export class SearchView implements OnInit {
   constructor(private dicoogleSrv: DicoogleService, private subscriberSrv: SubscriberService) {
     this.initSearch()
 
-    this.subscriberSrv.subscribe('srvPointObserver').then(ro => {
-      ro.obs.subscribe(_ => console.log('CHANGE: ', _))
+    this.subscriberSrv.subscribe('srvPointObserver').then(obs => {
+      obs.subscribe(_ => console.log('CHANGE: ', _))
     })
   }
 
