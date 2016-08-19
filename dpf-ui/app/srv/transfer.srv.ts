@@ -1,4 +1,3 @@
-import { config } from '../app.config';
 import { ClientRouter } from '../../lib/rts-ws-client';
 
 import { Injectable } from '@angular/core';
@@ -12,28 +11,19 @@ export class TransferService {
     this.proxy = router.createProxy('transfers') as TransferProxy
   }
 
-  srvPoints(): Promise<ISrvPoint[]> {
-    //TODO: cache results
-    //TODO: srvPointObserver will update this cache?
-    return this.proxy.srvPoints()
-      .catch(error => console.log('ERROR srvPoints: ', error))
-  }
-
-  transferPatients(patients: any, srvPointId: string) {
+  transferPatients(patientIds: any, srvPointId: string) {
     //TODO: transfer patients dataset, selected from the search view?
+    return this.proxy.transferPatients(patientIds, srvPointId)
+      .catch(error => console.log('ERROR transferPatients: ', error))
   }
 
-  patientTransfers(srvPointId: string): IPatientTransfer[] {
+  patientTransfers(srvPointId: string): Promise<IPatientTransfer[]> {
     //TODO: consult dpf-server to aquire srv-point transfers
     //TODO: cache results
     //TODO: patientTransferUpdates will update this cache?
-    return null
+    return this.proxy.patientTransfers(srvPointId)
+      .catch(error => console.log('ERROR patientTransfers: ', error))
   }
-}
-
-export interface ISrvPoint {
-  id: string
-  name: string
 }
 
 export interface IPatientTransfer {
@@ -44,5 +34,6 @@ export interface IPatientTransfer {
 }
 
 interface TransferProxy {
-  srvPoints(): Promise<ISrvPoint[]>
+  transferPatients(patientIds: any[], srvPointId: string): Promise<void>
+  patientTransfers(srvPointId: string): Promise<IPatientTransfer[]>
 }

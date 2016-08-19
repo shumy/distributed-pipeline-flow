@@ -1,8 +1,11 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Inject } from '@angular/core';
 import { Control, CORE_DIRECTIVES, FORM_DIRECTIVES } from '@angular/common';
 import { Observable } from 'rxjs/Observable';
 
-import { DicoogleService, SubscriberService } from '../srv/services';
+import {
+  DicoogleService, SubscriberService, TransferService,
+  ServicePointToken, ServicePointService
+} from '../srv/services';
 
 @Component({
   selector: 'search-view',
@@ -11,22 +14,26 @@ import { DicoogleService, SubscriberService } from '../srv/services';
   styles: ['.main.menu { margin: 60px 20px 5px; }']
 })
 export class SearchView implements OnInit {
-  selectedSrvPoint: any = { id: 1, name: 'Download', selected: true }
-  srvPoints = [
-    this.selectedSrvPoint,
-    { id: 2, name: 'SP 1', icon: true },
-    { id: 3, name: 'SP 2', icon: true },
-    { id: 4, name: 'SP 3', icon: true }
-  ]
+  selectedSrvPoint: any = { id: 0, name: 'Download', selected: true }
+  srvPoints = [ this.selectedSrvPoint ]
 
   query = new Control()
   allSelected = false
   patients = []
 
-  constructor(private dicoogleSrv: DicoogleService, private subscriberSrv: SubscriberService) {
+  constructor(
+    private dicoogleSrv: DicoogleService,
+    private subsSrv: SubscriberService,
+    private trfSrv: TransferService,
+    @Inject(ServicePointToken) private srvPointSrv: ServicePointService
+  ) {
     this.initSearch()
 
-    this.subscriberSrv.subscribe('srvPointObserver').then(obs => {
+    this.srvPointSrv.srvPoints()
+      .then(_ => _.forEach(sp => this.srvPoints.push({ id: sp.id, name: sp.name, icon: true })))
+      .catch(error => console.log('ERROR requesting service-point: ', error))
+
+    this.subsSrv.subscribe('srvPointObserver').then(obs => {
       obs.subscribe(_ => console.log('CHANGE: ', _))
     })
   }
@@ -101,10 +108,12 @@ export class SearchView implements OnInit {
   }
 
   transfer() {
-    if (this.selectedSrvPoint.id != 1) {
+    if (this.selectedSrvPoint.id != 0) {
       let modal: any = $('.ui.modal')
       modal.modal('setting', 'onApprove', _ => {
-        toastr.success('Dataset submitted')
+        let patientIds = this.patients.filter(_ => _.selected == true).map(_ => _.id)
+        console.log('Transfer Selected: ', patientIds)
+        this.trfSrv.transferPatients(patientIds, this.selectedSrvPoint.id).then(_ => toastr.success('Dataset submitted'))
       })
 
       modal.modal('show')

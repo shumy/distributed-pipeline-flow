@@ -11,6 +11,8 @@ import rt.vertx.server.service.RemoteSubscriber
 class ServicePointObserver implements IObserver {
 	val IPublisher publisher
 	
+	//transient val RemoteSubscriber ro
+	
 	override onCreate(String inAddress) {
 		println('onCreate-' + inAddress)
 		val ro = RemoteSubscriber.B => [ address = inAddress publisher = this.publisher ]

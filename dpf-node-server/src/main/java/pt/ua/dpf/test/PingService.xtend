@@ -1,30 +1,25 @@
 package pt.ua.dpf.test
 
-import rt.plugin.service.an.Service
-import rt.plugin.service.an.Public
-import pt.ua.dpf.services.PingInterface
-import rt.plugin.service.an.Proxy
-import rt.plugin.service.an.Proxies
-import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
-import rt.vertx.server.ChannelProxy
-import rt.pipeline.pipe.channel.SendBuffer
-
-import static extension pt.ua.dpf.test.TestDTO.*
 import rt.plugin.service.an.Context
+import rt.plugin.service.an.Proxy
+import rt.plugin.service.an.Public
+import rt.plugin.service.an.Service
+import rt.vertx.server.ChannelProxy
 import rt.vertx.server.CtxHeaders
 
-@Service(PingInterface)
+import static extension pt.ua.dpf.test.TestDTO.*
+
+@Service
 class PingService {
 	
 	@Public(async = true)
-	@Proxy(name = 'test', type = TestProxy)
 	@Proxy(name = 'channel', type = ChannelProxy)
 	@Context(name = 'headers', type = CtxHeaders)
 	def void ping(String name) {
 		println('ping: ' + name)
-		test.hello(name).then[
+		/*test.hello(name).then[
 			println('HELLO-OK: ' + it)
-		]
+		]*/
 		
 		/*
 		val reqInfo = new PipeChannelInfo(PipeChannelInfo.Type.SENDER)

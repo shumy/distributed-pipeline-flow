@@ -4,5 +4,6 @@
         <entry type="srv" ref="pt.ua.dpf.test.PingService"/>
         <entry type="srv" ref="rt.vertx.server.web.service.TransferService"/>
         <entry type="srv" ref="pt.ua.dpf.srv.TransferService"/>
+        <entry type="srv" ref="pt.ua.dpf.srv.ServicePointService"/>
     </entries>
 </config>

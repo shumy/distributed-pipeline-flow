@@ -1,5 +1,4 @@
-import './app/app.config';
-import "rxjs/Rx";
+import 'rxjs/Rx';
 
 import { enableProdMode, provide }              from '@angular/core';
 import { bootstrap }                            from '@angular/platform-browser-dynamic';
@@ -10,7 +9,11 @@ import { appRouterProviders }                   from './app/app.routes';
 import { Application }                          from './app/app';
 
 import { ClientRouter, Pipeline }               from './lib/rts-ws-client';
-import { DicoogleService, SubscriberService, TransferService }  from './app/srv/services';
+
+import {
+  DicoogleService, SubscriberService, TransferService,
+  ServicePointToken, ServicePointService
+}  from './app/srv/services';
 
 /**
  * Fast UUID generator, RFC4122 version 4 compliant.
@@ -46,16 +49,17 @@ let router = new ClientRouter(server, client, pipeline)
 console.log('---INIT-SERVICES---')
 let subscriberSrv = new SubscriberService(router)
 let trfSrv = new TransferService(router)
+let srvPointSrv = router.createProxy('service-point')
 
 enableProdMode()
 bootstrap(Application, [
   //disableDeprecatedForms(), provideForms(),
   HTTP_PROVIDERS, appRouterProviders,
-  //provide(APP_CONFIG, { useValue: config }),
   provide(ClientRouter, { useValue: router }),
   provide(DicoogleService, { useClass: DicoogleService }),
   provide(SubscriberService, { useValue: subscriberSrv }),
-  provide(TransferService, { useValue: trfSrv })
+  provide(TransferService, { useValue: trfSrv }),
+  provide(ServicePointToken, { useValue: srvPointSrv })
 ])
 .then(_ => { console.log('---APP-READY---') })
 .catch(err => console.log(err))

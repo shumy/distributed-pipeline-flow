@@ -2,8 +2,10 @@ package pt.ua.dpf
 
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx
+import pt.ua.dpf.dicoogle.DicoogleClient
+import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
-import pt.ua.dpf.test.PingService
+import pt.ua.dpf.srv.observer.ServicePointObserver
 import rt.plugin.service.WebMethod
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.DescriptorService
@@ -11,7 +13,6 @@ import rt.vertx.server.service.FileUploaderService
 import rt.vertx.server.service.RouterService
 import rt.vertx.server.service.SubscriberService
 import rt.vertx.server.service.WebFileService
-import pt.ua.dpf.srv.observer.ServicePointObserver
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -52,6 +53,9 @@ class DpfServerStarter extends AbstractVerticle {
 	override def start() {
 		val server = new DefaultVertxServer(vertx, '/clt', '')
 		
+		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
+		val srvPointSrv = ServicePointService.create
+		
 		server.mb => [
 			addObserver('srvPointObserver', ServicePointObserver.B => [ publisher = server.mb ])
 		]
@@ -59,9 +63,9 @@ class DpfServerStarter extends AbstractVerticle {
 		server.pipeline => [
 			addService('dpf-ui', WebFileService.B => [ folder = '../dpf-ui' ])
 			addService('api-ui', WebFileService.B => [ folder = '/api' root = '/api' resource = true ])
-			addService('ping', new PingService)
-			addService('subscriber', new SubscriberService)
-			addService('transfers', TransferService.create)
+			addService('subscriber', SubscriberService.create)
+			addService('service-point', srvPointSrv)
+			addService('transfers', TransferService.B => [ dicoogle = dicoogleClient srvPoint = srvPointSrv ])
 			
 			failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 		]
@@ -78,39 +82,22 @@ class DpfServerStarter extends AbstractVerticle {
 				route(WebMethod.GET, '/api/specs', 'specs' -> 'specs')
 				route(WebMethod.GET, '/api/specs/:name', 'specs' -> 'srvSpec')
 				
+				/*
 				get('/ping/:name', 'ping' -> 'helloPing')
 				get('/ping/:first/name/:second/:age', 'ping' -> 'hello2Ping')
 				post('/ping', 'ping' -> 'hello3Ping')
+				*/
 			]
 			
 			wsRouter => [
 				headersMap = #{ 'client' -> 'client' }
 				
-				onOpen[
-					println('RESOURCE-OPEN: ' + client)
-					/*
-					val channelProxy = createProxy('channel', ChannelProxy)
-					val srvPointProxy = createProxy('service-point', ServicePointProxy)
-					
-					srvPointProxy.info.then[ srvPoint |
-						println('ServicePoint connected: ' + srvPoint.address)
-						//println('Nodes-Type: ' + nodes.class)
-						
-						val dicoogle = new DicoogleClient(vertx, 'localhost', 8080)
-						dicoogle.query('Modality:OP').then[
-							
-							//transfer files to the ServicePoint
-							val reqInfo = new PipeChannelInfo(PipeChannelInfo.Type.SENDER)
-							channelProxy.request(reqInfo).then([ pipe |
-								println('CHANNEL-REQ-OK')
-								dicoogle.transferTo(allImages, pipe, Anonymizer.transform)
-							], [ println('CHANNEL-REQ-ERROR: ' + it) ])
-						]
-					]
-					*/
-				]
+				onOpen[ println('RESOURCE-OPEN: ' + client) ]
 				
-				onClose[ println('RESOURCE-CLOSE: ' + it) ]
+				onClose[
+					println('RESOURCE-CLOSE: ' + it)
+					srvPointSrv.destroy(it)
+				]
 			]
 		]
 		

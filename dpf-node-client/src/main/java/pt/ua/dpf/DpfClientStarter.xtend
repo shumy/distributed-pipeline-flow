@@ -1,7 +1,8 @@
 package pt.ua.dpf
 
-import pt.ua.dpf.services.ServicePointService
-import rt.async.AsyncUtils
+import java.util.UUID
+import pt.ua.dpf.proxy.ServicePointProxy
+import pt.ua.dpf.services.SrvPoint
 import rt.pipeline.pipe.channel.IPipeChannel
 import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.pipeline.pipe.channel.ReceiveBuffer
@@ -20,15 +21,13 @@ class DpfClientStarter {
 	}
 	
 	val String server
-	val String client = 'sss-client'
+	val String client = 'ss-' + UUID.randomUUID.toString
 	
 	new(String server) {
 		this.server = server
 	}
 	
 	def void start() {
-		AsyncUtils.setDefault
-		
 		val srvChannel = new ChannelService {
 			override request(PipeChannelInfo chInfo) {
 				//throw new RuntimeException('Channel rejected!')
@@ -47,12 +46,19 @@ class DpfClientStarter {
 		}
 		
 		//TODO: router should have the client credentials...
-		new ClientRouter(server, client) => [
+		val cltr = new ClientRouter(server, client) => [
 			pipeline => [
 				addChannelService(srvChannel)
-				addService('service-point', new ServicePointService)
 				failHandler = [ println('PIPELINE-FAIL: ' + it) ]
 			]
+			
+			val spProxy = createProxy('service-point', ServicePointProxy)
+			onOpen[
+				println('CLIENT-OPEN: ' + client)
+				spProxy.create(SrvPoint.B => [ id = client name = 'SP Test' ])
+			]
 		]
+		
+		cltr.run
 	}
 }
