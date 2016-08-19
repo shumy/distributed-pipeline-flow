@@ -29,8 +29,7 @@ export class TransferService {
 export interface IPatientTransfer {
   id: string  //PatientID
   transferred: number
-  errors: number
-  lastErrorMessage: string
+  error?: string
 }
 
 interface TransferProxy {

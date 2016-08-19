@@ -5,14 +5,16 @@ import io.vertx.core.Vertx
 import pt.ua.dpf.dicoogle.DicoogleClient
 import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
-import pt.ua.dpf.srv.observer.ServicePointObserver
 import rt.plugin.service.WebMethod
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.DescriptorService
 import rt.vertx.server.service.FileUploaderService
+import rt.vertx.server.service.RemoteSubscriber
 import rt.vertx.server.service.RouterService
 import rt.vertx.server.service.SubscriberService
 import rt.vertx.server.service.WebFileService
+import rt.data.DataRepository
+import pt.ua.dpf.srv.PatientTransfer
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -52,20 +54,28 @@ class DpfServerStarter extends AbstractVerticle {
 	
 	override def start() {
 		val server = new DefaultVertxServer(vertx, '/clt', '')
-		
 		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
-		val srvPointSrv = ServicePointService.create
 		
-		server.mb => [
+		//observers...
+		//val roSrvPoint = RemoteSubscriber.B => [ address = 'srvPointObserver' publisher = server.mb ]
+		val roPatientTransfers = RemoteSubscriber.B => [ address = 'patientTransfersObserver' publisher = server.mb ]
+		
+		//services...
+		val subscriverSrv = SubscriberService.create
+		val servicePointSrv = ServicePointService.create
+		val transfersSrv = TransferService.B => [ repo = new DataRepository<PatientTransfer>(roPatientTransfers.link) dicoogle = dicoogleClient srvPoint = servicePointSrv ]
+		
+		/*server.mb => [
 			addObserver('srvPointObserver', ServicePointObserver.B => [ publisher = server.mb ])
-		]
+		]*/
 		
 		server.pipeline => [
 			addService('dpf-ui', WebFileService.B => [ folder = '../dpf-ui' ])
 			addService('api-ui', WebFileService.B => [ folder = '/api' root = '/api' resource = true ])
-			addService('subscriber', SubscriberService.create)
-			addService('service-point', srvPointSrv)
-			addService('transfers', TransferService.B => [ dicoogle = dicoogleClient srvPoint = srvPointSrv ])
+			
+			addService('subscriber', subscriverSrv)
+			addService('service-point', servicePointSrv)
+			addService('transfers', transfersSrv)
 			
 			failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 		]
@@ -96,7 +106,7 @@ class DpfServerStarter extends AbstractVerticle {
 				
 				onClose[
 					println('RESOURCE-CLOSE: ' + it)
-					srvPointSrv.destroy(it)
+					servicePointSrv.destroy(it)
 				]
 			]
 		]

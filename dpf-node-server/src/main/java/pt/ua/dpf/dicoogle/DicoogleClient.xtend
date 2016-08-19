@@ -14,6 +14,7 @@ import rt.async.promise.Promise
 import rt.async.promise.PromiseResult
 import rt.pipeline.pipe.channel.IPipeChannel
 import rt.pipeline.pipe.channel.SendBuffer
+import java.util.concurrent.atomic.AtomicInteger
 
 class DicoogleClient {
 	val Gson gson = new Gson
@@ -76,64 +77,72 @@ class DicoogleClient {
 		return pResult.promise
 	}
 	
-	def void transferTo(List<Image> images, IPipeChannel writePipe) {
-		transferTo(images, writePipe, null)
+	def Promise<Integer> transferTo(List<Image> images, IPipeChannel writePipe) {
+		return transferTo(images, writePipe, null)
 	}
 	
-	def void transferTo(List<Image> images, IPipeChannel writePipe, (ByteBuffer) => ByteBuffer transform) {
-		val sendBuffer = writePipe.buffer as SendBuffer
-		
-		images.forEach[ image |
-			httpClient.getNow('/legacy/file?uid=' + image.sopInstanceUID)[ resp |
-				println('TransferTo status: ' + resp.statusCode)
-				if (resp.statusCode != 200) {
-					println(resp.statusMessage)
-					return
-				}
-				
-				val bufferCache = new LinkedList<ByteBuffer>
-				val filePath = './downloads/' + image.sopInstanceUID + '.dcm'
-				
-				resp.pause
-				sendBuffer.begin(filePath)[
-					println('Begin transfer: ' + filePath)
-					resp.resume
-				]
-				
-				resp.handler[
-					val buffer = byteBuf.nioBuffer
-					if (transform != null)
-						bufferCache.add(buffer)
-					else
-						sendBuffer << buffer
-				]
-				
-				resp.endHandler[
-					if (transform != null) {
-						val size = bufferCache.fold(0)[ r, next | r + next.limit ]
-						
-						//TODO: process in parallel task?
-						val endBuffer = ByteBuffer.allocate(size)
-						bufferCache.forEach[ endBuffer.put(it) ]
-						endBuffer.flip
-						
-						try {
-							val transformedBuffer = transform.apply(endBuffer)
-							transformedBuffer.flip
-							
-							sendBuffer.sendSliced(transformedBuffer) [
-								println('End transfer: ' + filePath)
-								sendBuffer.end
-							]
-						} catch(Exception ex) {
-							sendBuffer.error('Transformation error: ' + ex.message)
-						}
-					} else {
-						println('End transfer: ' + filePath)
-						sendBuffer.end
+	def Promise<Integer> transferTo(List<Image> images, IPipeChannel writePipe, (ByteBuffer) => ByteBuffer transform) {
+		val PromiseResult<Integer> pResult = [ promise |
+			val sendBuffer = writePipe.buffer as SendBuffer
+			
+			val tranferred = new AtomicInteger(0)
+			images.forEach[ image |
+				httpClient.getNow('/legacy/file?uid=' + image.sopInstanceUID)[ resp |
+					println('TransferTo status: ' + resp.statusCode)
+					if (resp.statusCode != 200) {
+						promise.reject(new RuntimeException(resp.statusMessage))
+						return
 					}
+					
+					val bufferCache = new LinkedList<ByteBuffer>
+					val filePath = './downloads/' + image.sopInstanceUID + '.dcm'
+					
+					resp.pause
+					sendBuffer.begin(filePath)[
+						println('Begin transfer: ' + filePath)
+						resp.resume
+					]
+					
+					resp.handler[
+						val buffer = byteBuf.nioBuffer
+						if (transform != null)
+							bufferCache.add(buffer)
+						else
+							sendBuffer << buffer
+					]
+					
+					resp.endHandler[
+						if (transform != null) {
+							val size = bufferCache.fold(0)[ r, next | r + next.limit ]
+							
+							//TODO: process in parallel task?
+							val endBuffer = ByteBuffer.allocate(size)
+							bufferCache.forEach[ endBuffer.put(it) ]
+							endBuffer.flip
+							
+							try {
+								val transformedBuffer = transform.apply(endBuffer)
+								transformedBuffer.flip
+								
+								sendBuffer.sendSliced(transformedBuffer) [
+									println('End transfer: ' + filePath)
+									sendBuffer.end
+									promise.resolve(tranferred.incrementAndGet)
+								]
+							} catch(Exception ex) {
+								sendBuffer.error('Transformation error: ' + ex.message)
+								promise.reject(ex)
+							}
+						} else {
+							println('End transfer: ' + filePath)
+							sendBuffer.end
+							promise.resolve(tranferred.incrementAndGet)
+						}
+					]
 				]
-			]
+			]	
 		]
+		
+		return pResult.promise
 	}
 }

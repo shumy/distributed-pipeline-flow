@@ -33,7 +33,7 @@ export class SearchView implements OnInit {
       .then(_ => _.forEach(sp => this.srvPoints.push({ id: sp.id, name: sp.name, icon: true })))
       .catch(error => console.log('ERROR requesting service-point: ', error))
 
-    this.subsSrv.subscribe('srvPointObserver').then(obs => {
+    this.subsSrv.subscribe('patientTransfersObserver').then(obs => {
       obs.subscribe(_ => console.log('CHANGE: ', _))
     })
   }

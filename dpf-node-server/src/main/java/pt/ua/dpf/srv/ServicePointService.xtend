@@ -30,9 +30,11 @@ class ServicePointService {
 	}
 	
 	def void destroy(String srvPointId) {
-		println('DESTROY-SRV-POINT: ' + srvPointId)
-		srvPoints.remove(srvPointId)
-		srvPointChannels.remove(srvPointId)
+		val sp = srvPoints.remove(srvPointId)
+		if (sp != null) {
+			println('DESTROY-SRV-POINT: ' + srvPointId)
+			srvPointChannels.remove(srvPointId)
+		}
 	}
 	
 	def ChannelProxy getSrvPointChannel(String srvPointId) {
