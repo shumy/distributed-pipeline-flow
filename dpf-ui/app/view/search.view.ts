@@ -1,10 +1,10 @@
-import { Component, OnInit, Input, Inject } from '@angular/core';
+import { Component, OnInit, Input, Inject, ChangeDetectorRef } from '@angular/core';
 import { Control, CORE_DIRECTIVES, FORM_DIRECTIVES } from '@angular/common';
 import { Observable } from 'rxjs/Observable';
 
 import {
   DicoogleService, SubscriberService, TransferService,
-  ServicePointToken, ServicePointService
+  ServicePointToken, ServicePointService, IPatientTransfer
 } from '../srv/services';
 
 @Component({
@@ -22,6 +22,7 @@ export class SearchView implements OnInit {
   patients = []
 
   constructor(
+    private ref: ChangeDetectorRef,
     private dicoogleSrv: DicoogleService,
     private subsSrv: SubscriberService,
     private trfSrv: TransferService,
@@ -33,17 +34,17 @@ export class SearchView implements OnInit {
       .then(_ => _.forEach(sp => this.srvPoints.push({ id: sp.id, name: sp.name, icon: true })))
       .catch(error => console.log('ERROR requesting service-point: ', error))
 
-    this.subsSrv.subscribe('patientTransfersObserver').then(obs => {
-      obs.subscribe(_ => console.log('CHANGE: ', _))
-    })
+    this.subsSrv.subscribe('patientTransfersObserver')
+      .then(_ => _.subscribe(change => this.onChange(change)))
+      .catch(error => console.log('ERROR requesting subscription: ', error))
   }
 
   initSearch() {
     let patients = this.dicoogleSrv.search(this.query.valueChanges, results => {
       results.forEach(patient => {
-        patient.nTransferred = 0
         patient.open = false
         patient.selected = false
+        patient.transfer = false
         patient.studies.forEach(study => {
           study.open = false
           study.series.forEach(serie => {
@@ -63,7 +64,6 @@ export class SearchView implements OnInit {
       this.patients.push(...newData)
 
       this.checkIfAllSelected()
-      setTimeout(_ => this.jQueryProgressBars())
     }, error => {
       toastr.error('Dicoogle query error: ' + error)
       this.initSearch()
@@ -71,8 +71,6 @@ export class SearchView implements OnInit {
   }
 
   ngOnInit() {
-    this.jQueryProgressBars()
-
     let dropdown: any = $('.ui.dropdown')
     dropdown.dropdown({
       on: 'click',
@@ -82,14 +80,6 @@ export class SearchView implements OnInit {
         srv.selected = true
         this.selectedSrvPoint = srv
       }
-    })
-  }
-
-  jQueryProgressBars() {
-    let pBars: any = $('.ui.progress')
-    pBars.progress({
-      label: 'ratio',
-      text: { ratio: '{value} of {total}' }
     })
   }
 
@@ -112,11 +102,36 @@ export class SearchView implements OnInit {
       let modal: any = $('.ui.modal')
       modal.modal('setting', 'onApprove', _ => {
         let patientIds = this.patients.filter(_ => _.selected == true).map(_ => _.id)
-        console.log('Transfer Selected: ', patientIds)
-        this.trfSrv.transferPatients(patientIds, this.selectedSrvPoint.id).then(_ => toastr.success('Dataset submitted'))
+        this.trfSrv.transferPatients(patientIds, this.selectedSrvPoint.id)
+          .then(_ => toastr.success('Dataset submitted'))
+          .catch(error => toastr.error(error.message))
       })
 
       modal.modal('show')
+    }
+  }
+
+  onChange(change: any) {
+    console.log('CHANGE: ', change)
+    let transfer = change.data as IPatientTransfer
+    let pChanged = this.patients.find(_ => _.id === transfer.id)
+    if (change.oper === 'put') {
+      pChanged.transfer = true
+      this.ref.detectChanges()
+
+      let pBar: any = $('#progress_' + pChanged.id)
+      if (change.error) {
+        toastr.error('Transfer problem in patient: ' + pChanged.id)
+        pBar.addClass('error')
+        return
+      }
+
+      pBar.progress({
+        label: 'ratio',
+        text: { ratio: '{value} of {total}' },
+        value: transfer.value,
+        total: transfer.total
+      })
     }
   }
 }

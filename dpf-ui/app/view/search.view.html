@@ -64,7 +64,7 @@
           <td>{{patient.nStudies}}</td>
           <td>[<span *ngFor="let mod of patient.modalities"> {{mod}}</span> ]</td>
           <td>
-            <div *ngIf="patient.nTransferred != 0" class="ui active progress" [attr.data-value]="patient.nTransferred" [attr.data-total]="patient.nStudies">
+            <div *ngIf="patient.transfer" class="ui active progress" attr.id="progress_{{patient.id}}">
               <div class="bar">
                 <div class="progress"></div>
               </div>

@@ -14,7 +14,7 @@ export class TransferService {
   transferPatients(patientIds: any, srvPointId: string) {
     //TODO: transfer patients dataset, selected from the search view?
     return this.proxy.transferPatients(patientIds, srvPointId)
-      .catch(error => console.log('ERROR transferPatients: ', error))
+      //.catch(error => console.log('ERROR transferPatients: ', error))
   }
 
   patientTransfers(srvPointId: string): Promise<IPatientTransfer[]> {
@@ -28,7 +28,8 @@ export class TransferService {
 
 export interface IPatientTransfer {
   id: string  //PatientID
-  transferred: number
+	total: number
+  value: number
   error?: string
 }
 
