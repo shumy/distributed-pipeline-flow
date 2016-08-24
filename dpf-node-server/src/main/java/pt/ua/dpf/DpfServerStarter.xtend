@@ -9,12 +9,9 @@ import rt.plugin.service.WebMethod
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.DescriptorService
 import rt.vertx.server.service.FileUploaderService
-import rt.vertx.server.service.RemoteSubscriber
 import rt.vertx.server.service.RouterService
 import rt.vertx.server.service.SubscriberService
 import rt.vertx.server.service.WebFileService
-import rt.data.DataRepository
-import pt.ua.dpf.srv.PatientTransfer
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -58,12 +55,12 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		//observers...
 		//val roSrvPoint = RemoteSubscriber.B => [ address = 'srvPointObserver' publisher = server.mb ]
-		val roPatientTransfers = RemoteSubscriber.B => [ address = 'patientTransfersObserver' publisher = server.mb ]
+		//val roPatientTransfers = RemoteSubscriber.B => [ address = 'patientTransfersObserver' publisher = server.mb ]
 		
 		//services...
 		val subscriverSrv = SubscriberService.create
 		val servicePointSrv = ServicePointService.create
-		val transfersSrv = TransferService.B => [ repo = new DataRepository<PatientTransfer>(roPatientTransfers.link) dicoogle = dicoogleClient srvPoint = servicePointSrv ]
+		val transfersSrv = TransferService.B => [ publisher = server.mb dicoogle = dicoogleClient srvPoint = servicePointSrv ]
 		
 		/*server.mb => [
 			addObserver('srvPointObserver', ServicePointObserver.B => [ publisher = server.mb ])

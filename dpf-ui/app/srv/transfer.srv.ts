@@ -3,17 +3,19 @@ import { ClientRouter } from '../../lib/rts-ws-client';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 
+import { SubscriberService } from '../srv/services';
+
 @Injectable()
 export class TransferService {
   private proxy: TransferProxy
 
-  constructor(router: ClientRouter) {
+  constructor(private subsSrv: SubscriberService, router: ClientRouter) {
     this.proxy = router.createProxy('transfers') as TransferProxy
   }
 
   transferPatients(patientIds: any, srvPointId: string) {
-    //TODO: transfer patients dataset, selected from the search view?
     return this.proxy.transferPatients(patientIds, srvPointId)
+      .then(address => this.subsSrv.create(address))
       //.catch(error => console.log('ERROR transferPatients: ', error))
   }
 
@@ -28,12 +30,11 @@ export class TransferService {
 
 export interface IPatientTransfer {
   id: string  //PatientID
-	total: number
   value: number
   error?: string
 }
 
 interface TransferProxy {
-  transferPatients(patientIds: any[], srvPointId: string): Promise<void>
+  transferPatients(patientIds: any[], srvPointId: string): Promise<string>
   patientTransfers(srvPointId: string): Promise<IPatientTransfer[]>
 }

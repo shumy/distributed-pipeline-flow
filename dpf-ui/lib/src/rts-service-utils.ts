@@ -24,12 +24,18 @@ export class SubscriberService {
       let event = ctx.message.res as Event
       let obs = this.observers.get(event.address)
       if (obs) {
-        if (ctx.message.cmd === 'nxt')
+        if (ctx.message.cmd === 'nxt') {
           obs.sub.next(event.data)
-        else
+        } else {
           obs.sub.complete()
+          obs.remove()
+        }
       }
     })
+  }
+
+  create(address: string): RemoteObservable {
+    return new RemoteObservable(this, address, false)
   }
 
   subscribe(address: string): Promise<RemoteObservable> {
@@ -43,18 +49,20 @@ export class SubscriberService {
 class RemoteObservable extends Observable<any> {
   sub: Subscriber<any>
 
-  constructor(private parent: SubscriberService, private address: string) {
+  constructor(private parent: SubscriberService, private address: string, private isRemoteSubscription = true) {
     super(sub => this.sub = sub)
     this.parent.observers.set(address, this)
   }
 
-  unsubscribe() {
+  remove() {
     let sub = this.parent.observers.get(this.address)
     if (sub) {
       this.parent.observers.delete(this.address)
-      this.parent.proxy.unsubscribe(this.address)
-        .then(_ => console.log('unsubscribe: ', this.address))
-        .catch(error => console.log('error-unsubscribe: ', this.address, error))
+      if (this.isRemoteSubscription) {
+        this.parent.proxy.unsubscribe(this.address)
+          .then(_ => console.log('unsubscribe: ', this.address))
+          .catch(error => console.log('error-unsubscribe: ', this.address, error))
+      }
     }
   }
 }

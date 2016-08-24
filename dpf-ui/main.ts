@@ -46,20 +46,15 @@ pipeline.failHandler = error => console.log('PIPELINE-FAIL: ' + error)
 
 let router = new ClientRouter(server, client, pipeline)
 
-console.log('---INIT-SERVICES---')
-let subscriberSrv = new SubscriberService(router)
-let trfSrv = new TransferService(router)
-let srvPointSrv = router.createProxy('service-point')
-
 enableProdMode()
 bootstrap(Application, [
   //disableDeprecatedForms(), provideForms(),
   HTTP_PROVIDERS, appRouterProviders,
   provide(ClientRouter, { useValue: router }),
   provide(DicoogleService, { useClass: DicoogleService }),
-  provide(SubscriberService, { useValue: subscriberSrv }),
-  provide(TransferService, { useValue: trfSrv }),
-  provide(ServicePointToken, { useValue: srvPointSrv })
+  provide(SubscriberService, { useValue: new SubscriberService(router) }),
+  provide(TransferService, { useClass: TransferService }),
+  provide(ServicePointToken, { useValue: router.createProxy('service-point') })
 ])
 .then(_ => { console.log('---APP-READY---') })
 .catch(err => console.log(err))

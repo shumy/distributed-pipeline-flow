@@ -3,7 +3,7 @@ import { Control, CORE_DIRECTIVES, FORM_DIRECTIVES } from '@angular/common';
 import { Observable } from 'rxjs/Observable';
 
 import {
-  DicoogleService, SubscriberService, TransferService,
+  DicoogleService, TransferService,
   ServicePointToken, ServicePointService, IPatientTransfer
 } from '../srv/services';
 
@@ -24,7 +24,6 @@ export class SearchView implements OnInit {
   constructor(
     private ref: ChangeDetectorRef,
     private dicoogleSrv: DicoogleService,
-    private subsSrv: SubscriberService,
     private trfSrv: TransferService,
     @Inject(ServicePointToken) private srvPointSrv: ServicePointService
   ) {
@@ -33,10 +32,6 @@ export class SearchView implements OnInit {
     this.srvPointSrv.srvPoints()
       .then(_ => _.forEach(sp => this.srvPoints.push({ id: sp.id, name: sp.name, icon: true })))
       .catch(error => console.log('ERROR requesting service-point: ', error))
-
-    this.subsSrv.subscribe('patientTransfersObserver')
-      .then(_ => _.subscribe(change => this.onChange(change)))
-      .catch(error => console.log('ERROR requesting subscription: ', error))
   }
 
   initSearch() {
@@ -44,11 +39,13 @@ export class SearchView implements OnInit {
       results.forEach(patient => {
         patient.open = false
         patient.selected = false
-        patient.transfer = false
+        patient.nTransferred = 0
+        patient.nTotal = 0
         patient.studies.forEach(study => {
           study.open = false
           study.series.forEach(serie => {
             serie.open = false
+            serie.images.forEach(image => patient.nTotal += 1)
           })
         })
       })
@@ -103,7 +100,10 @@ export class SearchView implements OnInit {
       modal.modal('setting', 'onApprove', _ => {
         let patientIds = this.patients.filter(_ => _.selected == true).map(_ => _.id)
         this.trfSrv.transferPatients(patientIds, this.selectedSrvPoint.id)
-          .then(_ => toastr.success('Dataset submitted'))
+          .then(obs => {
+            toastr.success('Dataset submitted')
+            obs.subscribe(notif => this.onTransferred(notif))
+          })
           .catch(error => toastr.error(error.message))
       })
 
@@ -111,27 +111,25 @@ export class SearchView implements OnInit {
     }
   }
 
-  onChange(change: any) {
-    console.log('CHANGE: ', change)
-    let transfer = change.data as IPatientTransfer
-    let pChanged = this.patients.find(_ => _.id === transfer.id)
-    if (change.oper === 'put') {
-      pChanged.transfer = true
-      this.ref.detectChanges()
+  onTransferred(notif: IPatientTransfer) {
+    console.log('TRANFERRED: ', notif)
+    let pChanged = this.patients.find(_ => _.id === notif.id)
+      
+    pChanged.nTransferred += notif.value
+    this.ref.detectChanges()
 
-      let pBar: any = $('#progress_' + pChanged.id)
-      if (change.error) {
-        toastr.error('Transfer problem in patient: ' + pChanged.id)
-        pBar.addClass('error')
-        return
-      }
-
-      pBar.progress({
-        label: 'ratio',
-        text: { ratio: '{value} of {total}' },
-        value: transfer.value,
-        total: transfer.total
-      })
+    let pBar: any = $('#progress_' + pChanged.id)
+    if (notif.error) {
+      toastr.error('Transfer problem in patient: ' + pChanged.id)
+      pBar.addClass('error')
+      return
     }
+
+    pBar.progress({
+      label: 'ratio',
+      text: { ratio: '{value} of {total}' },
+      value: pChanged.nTransferred,
+      total: pChanged.nTotal
+    })
   }
 }
