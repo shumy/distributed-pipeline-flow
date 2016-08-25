@@ -29,8 +29,7 @@ export class TransferService {
 }
 
 export interface IPatientTransfer {
-  id: string  //PatientID
-  value: number
+  id?: string  //PatientID
   error?: string
 }
 

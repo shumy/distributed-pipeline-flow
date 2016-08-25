@@ -3,10 +3,10 @@ package pt.ua.dpf.srv
 import java.util.List
 import java.util.UUID
 import pt.ua.dpf.dicoogle.DicoogleClient
+import pt.ua.dpf.dicoogle.TransferException
 import rt.async.pubsub.IPublisher
 import rt.async.pubsub.IResource
 import rt.data.Data
-import rt.data.Default
 import rt.data.Optional
 import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.plugin.service.ServiceException
@@ -33,23 +33,29 @@ class TransferService {
 		val respAddress = UUID.randomUUID.toString
 		val ro = RemoteSubscriber.B => [ address = respAddress publisher = this.publisher ]
 		
-		val reqInfo = new PipeChannelInfo(PipeChannelInfo.Type.SENDER)
-		channel.request(reqInfo).then[ pipe |
-			println('CHANNEL-REQ-OK')
-			dicoogle.findPatients(patientIds).then[ qr |
-				println('TRANSFER-PATIENTS: ' + qr.numResults)
+		dicoogle.findPatients(patientIds).thenTry[ qr |
+			println('TRANSFER-PATIENTS: ' + qr.numResults)
+			val reqInfo = new PipeChannelInfo(PipeChannelInfo.Type.SENDER)
+			channel.request(reqInfo).then[ pipe |
+				println('CHANNEL-REQ-OK')
 				dicoogle.transferTo(qr.allImages, pipe).next[ sopUID |
 					ro.next(PatientTransfer.B => [ id = qr.findSopUID(sopUID).id ])
+					if (qr.findSopUID(sopUID).id == '1') {
+						ro.next(PatientTransfer.B => [ id = '1' error = 'Test error!' ])
+					}
 				].complete[
 					ro.complete
 					resource.unsubscribe(respAddress)
 					pipe.close
+				].error[
+					val tex = it as TransferException
+					println('TRANFER ERROR: ' + tex.message)
+					ro.next(PatientTransfer.B => [ id = qr.findSopUID(tex.sopUID).id error = tex.message ])
 				]
-				//TODO: how to forward errors with Promise and Observable?
 			]
-		].error[
-			println('TRANFER ERROR: ' + message)
-			printStackTrace
+		].error[ ex |
+			println('CHANNEL-ERROR: ' + ex.message)
+			ro.next(PatientTransfer.B => [ error = ex.message ])
 		]
 		
 		resource.subscribe(respAddress)
@@ -64,8 +70,6 @@ class TransferService {
 
 @Data
 class PatientTransfer {
-	val String id	//PatientID
-	
-	@Default('1') val int value
+	@Optional val String id	//PatientID
 	@Optional val String error
 }

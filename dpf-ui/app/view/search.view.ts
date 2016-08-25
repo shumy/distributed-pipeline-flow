@@ -39,6 +39,7 @@ export class SearchView implements OnInit {
       results.forEach(patient => {
         patient.open = false
         patient.selected = false
+        patient.transfer = false
         patient.nTransferred = 0
         patient.nTotal = 0
         patient.studies.forEach(study => {
@@ -96,35 +97,37 @@ export class SearchView implements OnInit {
 
   transfer() {
     if (this.selectedSrvPoint.id != 0) {
-      let modal: any = $('.ui.modal')
-      modal.modal('setting', 'onApprove', _ => {
-        let patientIds = this.patients.filter(_ => _.selected == true).map(_ => _.id)
-        this.trfSrv.transferPatients(patientIds, this.selectedSrvPoint.id)
-          .then(obs => {
-            toastr.success('Dataset submitted')
-            obs.subscribe(notif => this.onTransferred(notif))
-          })
-          .catch(error => toastr.error(error.message))
-      })
+      //let modal: any = $('.ui.modal')
+      //modal.modal('setting', 'onApprove', _ => {
+        let selectedPts = this.patients.filter(_ => _.selected == true)
+        selectedPts.forEach(_ => _.nTransferred = 0)
 
-      modal.modal('show')
+        let selectedIds = selectedPts.map(_ => _.id)
+        this.trfSrv.transferPatients(selectedIds, this.selectedSrvPoint.id).then(obs => {
+            toastr.success('Transfer request submitted')
+            obs.subscribe(notif => this.onTransferred(notif))
+        }).catch(error => toastr.error(error.message))
+      //})
+
+      //modal.modal('show')
     }
   }
 
   onTransferred(notif: IPatientTransfer) {
     console.log('TRANFERRED: ', notif)
+    
     let pChanged = this.patients.find(_ => _.id === notif.id)
-      
-    pChanged.nTransferred += notif.value
+    pChanged.transfer = true
     this.ref.detectChanges()
 
     let pBar: any = $('#progress_' + pChanged.id)
     if (notif.error) {
-      toastr.error('Transfer problem in patient: ' + pChanged.id)
+      toastr.error('Transfer problem: ' + notif.error)
       pBar.addClass('error')
       return
     }
 
+    pChanged.nTransferred++
     pBar.progress({
       label: 'ratio',
       text: { ratio: '{value} of {total}' },

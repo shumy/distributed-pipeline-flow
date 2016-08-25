@@ -17,6 +17,8 @@ import rt.async.promise.Promise
 import rt.async.promise.PromiseResult
 import rt.pipeline.pipe.channel.IPipeChannel
 import rt.pipeline.pipe.channel.SendBuffer
+import java.util.concurrent.atomic.AtomicBoolean
+import rt.async.AsyncUtils
 
 class DicoogleClient {
 	val Gson gson = new Gson
@@ -101,69 +103,86 @@ class DicoogleClient {
 		val ObservableResult<String> pResult = [ sub |
 			val sendBuffer = writePipe.buffer as SendBuffer
 			
+			val ready = new AtomicBoolean(true)
 			val transferred = new AtomicInteger(0)
 			images.forEach[ image |
-				httpClient.getNow('/legacy/file?uid=' + image.sopInstanceUID)[ resp |
-					if (resp.statusCode != 200) {
-						sub.error(new RuntimeException(resp.statusMessage))
-						return
-					}
-					
-					val bufferCache = new LinkedList<ByteBuffer>
-					val filePath = './downloads/' + image.sopInstanceUID + '.dcm'
-					
-					resp.pause
-					
-					sendBuffer.begin(filePath)[
-						onEnd[
-							println('End transfer: ' + image.sopInstanceUID)
-							sub.next(image.sopInstanceUID)
-							if (transferred.incrementAndGet == images.size)
-								sub.complete
-						]
-						
-						onError[
-							println('Error transfer: ' + image.sopInstanceUID)
-							sub.error(new Exception(it))
-						]
-						
-						println('Begin transfer: ' + image.sopInstanceUID)
-						resp.resume
-					]
-					
-					resp.handler[
-						val buffer = byteBuf.nioBuffer
-						if (transform != null)
-							bufferCache.add(buffer)
-						else
-							sendBuffer << buffer
-					]
-					
-					resp.endHandler[
-						if (transform != null) {
-							val size = bufferCache.fold(0)[ r, next | r + next.limit ]
-							
-							//TODO: process in parallel task?
-							val endBuffer = ByteBuffer.allocate(size)
-							bufferCache.forEach[ endBuffer.put(it) ]
-							endBuffer.flip
-							
-							try {
-								val transformedBuffer = transform.apply(endBuffer)
-								transformedBuffer.flip
-								
-								sendBuffer.sendSliced(transformedBuffer)[ sendBuffer.end ]
-							} catch(Exception ex) {
-								sendBuffer.error('Transformation error: ' + ex.message)
-							}
-						} else {
-							sendBuffer.end
+				AsyncUtils.waitUntil([ready.get],[
+					ready.set(false)
+					httpClient.getNow('/legacy/file?uid=' + image.sopInstanceUID)[ resp |
+						if (resp.statusCode != 200) {
+							sub.error(new TransferException(image.sopInstanceUID, resp.statusMessage))
+							return
 						}
-					]
-				]
+						
+						val bufferCache = new LinkedList<ByteBuffer>
+						val filePath = './downloads/' + image.sopInstanceUID + '.dcm'
+						
+						println('Ready: ' + image.sopInstanceUID)
+						resp.pause
+						
+						sendBuffer.begin(filePath)[
+							onEnd[
+								println('End transfer: ' + image.sopInstanceUID)
+								sub.next(image.sopInstanceUID)
+								if (transferred.incrementAndGet == images.size)
+									sub.complete
+								
+								ready.set(true)
+							]
+							
+							onError[
+								println('Error transfer: ' + image.sopInstanceUID)
+								sub.error(new TransferException(image.sopInstanceUID,it))
+								ready.set(true)
+							]
+							
+							println('Begin transfer: ' + image.sopInstanceUID)
+							resp.resume
+						]
+						
+						resp.handler[
+							val buffer = byteBuf.nioBuffer
+							if (transform != null)
+								bufferCache.add(buffer)
+							else
+								sendBuffer << buffer
+						]
+						
+						resp.endHandler[
+							if (transform != null) {
+								val size = bufferCache.fold(0)[ r, next | r + next.limit ]
+								
+								//TODO: process in parallel task?
+								val endBuffer = ByteBuffer.allocate(size)
+								bufferCache.forEach[ endBuffer.put(it) ]
+								endBuffer.flip
+								
+								try {
+									val transformedBuffer = transform.apply(endBuffer)
+									transformedBuffer.flip
+									
+									sendBuffer.sendSliced(transformedBuffer)[ sendBuffer.end ]
+								} catch(Exception ex) {
+									sendBuffer.error('Transformation error: ' + ex.message)
+								}
+							} else {
+								sendBuffer.end
+							}
+						]
+					]	
+				])
 			]	
 		]
 		
 		return pResult.observe
+	}
+}
+
+class TransferException extends RuntimeException {
+	public val String sopUID
+	
+	new(String sopUID, String message) {
+		super(message)
+		this.sopUID = sopUID
 	}
 }
