@@ -14,6 +14,8 @@ import rt.plugin.service.an.Context
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
 import rt.vertx.server.service.RemoteSubscriber
+import rt.plugin.service.an.Authorize
+import rt.plugin.service.an.UserInfo
 
 @Service
 @Data(metadata = false)
@@ -24,11 +26,15 @@ class TransferService {
 	val ServicePointService srvPoint
 	
 	@Public
+	@Authorize(#['admin'])
 	@Context(name = 'resource', type = IResource)
+	@Context(name = 'user', type = UserInfo)
 	def String transferPatients(List<String> patientIds, String srvPointId) {
 		val channel = srvPoint.getSrvPointChannel(srvPointId)
 		if (channel === null)
 			throw new ServiceException(500, 'No ServicePoint-ID available: ' + srvPointId)
+		
+		//TODO: verify if this user has transfer authorization to this srvPointId ?
 		
 		val respAddress = UUID.randomUUID.toString
 		val ro = RemoteSubscriber.B => [ address = respAddress publisher = this.publisher ]
