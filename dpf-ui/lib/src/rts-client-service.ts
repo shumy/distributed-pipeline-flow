@@ -1,5 +1,6 @@
 import { Pipeline, PipeResource } from './rts-pipeline'
 import { MessageBus, IMessage, TYP } from './rts-messagebus'
+import { IAuthManager } from './rts-auth'
 
 export interface IServiceClientFactory {
   serviceClient: ServiceClient
@@ -12,6 +13,8 @@ export class ClientRouter implements IServiceClientFactory {
   private resource: PipeResource = null
   private websocket: WebSocket
   private _serviceClient: ServiceClient
+
+  public authMgr: IAuthManager
 
   get bus() { return this.pipeline.mb }
 
@@ -70,6 +73,11 @@ export class ClientRouter implements IServiceClientFactory {
   }
 
   private send(msg: any) {
+    if (this.authMgr && this.authMgr.isLogged) {
+      let info = this.authMgr.authInfo
+      msg.auth = { type: info.type, idp: info.idp, token: info.token }
+    }
+
     this.waitReady(() => this.websocket.send(JSON.stringify(msg)))
   }
 

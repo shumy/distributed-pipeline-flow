@@ -1,16 +1,11 @@
 import { Observable, Subscriber } from 'rxjs/Rx';
 import { ClientRouter } from './rts-client-service';
 
-export type CmdType = 'nxt' | 'clp'
-export type OperType = 'add' | 'upd' | 'rem'
+export { ClientRouter } from './rts-client-service';
+export * from './rts-auth';
 
 export interface Event {
   address: string
-  data?: any
-}
-
-export interface Change {
-  oper: OperType
   data?: any
 }
 

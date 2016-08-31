@@ -7,6 +7,17 @@
   <a [routerLink]="['/results']" class="header item">
     Results
   </a>
+
+  <div class="right menu" style="padding-right: 5px;">
+    <a *ngIf="auth.isLogged" class="item">
+      <img class="ui avatar image" [src]="auth.userInfo.avatar">
+      <span>{{auth.userInfo.name}}</span>  
+    </a>
+    <div class="item">
+      <div *ngIf="!auth.isLogged" class="ui primary button" (click)="auth.login()">Log In</div>
+      <div *ngIf="auth.isLogged" class="ui primary button" (click)="auth.logout()">Log Out</div>
+    </div>
+  </div>
 </div>
 <router-outlet></router-outlet>
 

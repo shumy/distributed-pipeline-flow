@@ -40,9 +40,6 @@ class TransferService {
 				println('CHANNEL-REQ-OK')
 				dicoogle.transferTo(qr.allImages, pipe).next[ sopUID |
 					ro.next(PatientTransfer.B => [ id = qr.findSopUID(sopUID).id ])
-					if (qr.findSopUID(sopUID).id == '1') {
-						ro.next(PatientTransfer.B => [ id = '1' error = 'Test error!' ])
-					}
 				].complete[
 					ro.complete
 					resource.unsubscribe(respAddress)

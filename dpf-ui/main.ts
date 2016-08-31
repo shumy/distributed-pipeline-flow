@@ -11,6 +11,7 @@ import { Application }                          from './app/app';
 import { ClientRouter, Pipeline }               from './lib/rts-ws-client';
 
 import {
+  AuthService,
   DicoogleService, SubscriberService, TransferService,
   ServicePointToken, ServicePointService
 }  from './app/srv/services';
@@ -45,6 +46,7 @@ let pipeline = new Pipeline
 pipeline.failHandler = error => console.log('PIPELINE-FAIL: ' + error)
 
 let router = new ClientRouter(server, client, pipeline)
+router.authMgr = new AuthService('google', '61929327789-7an73tpqqk1rrt2veopv1brsfcoetmrj.apps.googleusercontent.com')
 
 enableProdMode()
 bootstrap(Application, [

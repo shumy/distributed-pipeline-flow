@@ -7,6 +7,7 @@ import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
 import rt.plugin.service.WebMethod
 import rt.vertx.server.DefaultVertxServer
+import rt.vertx.server.intercept.GoogleAuthIntercept
 import rt.vertx.server.service.DescriptorService
 import rt.vertx.server.service.FileUploaderService
 import rt.vertx.server.service.RouterService
@@ -53,10 +54,6 @@ class DpfServerStarter extends AbstractVerticle {
 		val server = new DefaultVertxServer(vertx, '/clt', '')
 		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
 		
-		//observers...
-		//val roSrvPoint = RemoteSubscriber.B => [ address = 'srvPointObserver' publisher = server.mb ]
-		//val roPatientTransfers = RemoteSubscriber.B => [ address = 'patientTransfersObserver' publisher = server.mb ]
-		
 		//services...
 		val subscriverSrv = SubscriberService.create
 		val servicePointSrv = ServicePointService.create
@@ -67,6 +64,8 @@ class DpfServerStarter extends AbstractVerticle {
 		]*/
 		
 		server.pipeline => [
+			addInterceptor(new GoogleAuthIntercept(vertx))
+			
 			addService('dpf-ui', WebFileService.B => [ folder = '../dpf-ui' ])
 			addService('api-ui', WebFileService.B => [ folder = '/api' root = '/api' resource = true ])
 			

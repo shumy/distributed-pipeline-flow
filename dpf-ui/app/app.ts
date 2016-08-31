@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { ROUTER_DIRECTIVES } from '@angular/router';
+
+import { ClientRouter, IAuthManager } from './srv/services';
 
 @Component({
   selector: 'body[app]',
@@ -7,6 +9,13 @@ import { ROUTER_DIRECTIVES } from '@angular/router';
   templateUrl: './app/app.html'
 })
 export class Application {
+  auth: IAuthManager
+  
+  constructor(ref: ChangeDetectorRef, router: ClientRouter) {
+    this.auth = router.authMgr
+    this.auth.onChange(_ => ref.detectChanges())
+  }
+
   jQueryInit() {
     let modal: any = $('.ui.modal')
     modal.modal({
