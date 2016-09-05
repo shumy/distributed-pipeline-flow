@@ -3,7 +3,6 @@ export type ChangeEvent = 'login' | 'logout'
 export interface AuthInfo {  
   type: string
   token: string
-  idp?: string
 }
 
 export interface UserInfo {

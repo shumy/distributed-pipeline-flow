@@ -73,10 +73,8 @@ export class ClientRouter implements IServiceClientFactory {
   }
 
   private send(msg: any) {
-    if (this.authMgr && this.authMgr.isLogged) {
-      let info = this.authMgr.authInfo
-      msg.auth = { type: info.type, idp: info.idp, token: info.token }
-    }
+    if (this.authMgr && this.authMgr.isLogged)
+      msg.auth = this.authMgr.authInfo
 
     this.waitReady(() => this.websocket.send(JSON.stringify(msg)))
   }

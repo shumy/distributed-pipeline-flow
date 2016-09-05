@@ -13,10 +13,11 @@ export class AuthService implements IAuthManager {
     let clt = {}
     clt[this.idp] = this.clientId 
     
-    hello.init(clt, { scope: 'email' })
+    hello.init(clt, { scope: 'email openid', response_type: 'token id_token' })
 
     let authResp = hello(this.idp).getAuthResponse()
     if (authResp) {
+      console.log('AUTH: ', authResp)
       this.setAuthInfo()
       this.setUserInfo()
     }
@@ -55,7 +56,7 @@ export class AuthService implements IAuthManager {
 
   private setAuthInfo() {
     let authResp = hello(this.idp).getAuthResponse()
-    this.authInfo = { type: 'oauth2', token: authResp.access_token, idp: this.idp }
+    this.authInfo = { type: 'jwt', token: authResp.id_token }
   }
 
   private setLogin() {

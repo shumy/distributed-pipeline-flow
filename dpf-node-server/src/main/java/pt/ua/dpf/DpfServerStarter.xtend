@@ -7,12 +7,12 @@ import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
 import rt.plugin.service.WebMethod
 import rt.vertx.server.DefaultVertxServer
-import rt.vertx.server.intercept.GoogleAuthIntercept
 import rt.vertx.server.service.DescriptorService
 import rt.vertx.server.service.FileUploaderService
 import rt.vertx.server.service.RouterService
 import rt.vertx.server.service.SubscriberService
 import rt.vertx.server.service.WebFileService
+import rt.vertx.server.intercept.JwtAuthInterceptor
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -64,7 +64,7 @@ class DpfServerStarter extends AbstractVerticle {
 		]*/
 		
 		server.pipeline => [
-			addInterceptor(new GoogleAuthIntercept(vertx))
+			addInterceptor(new JwtAuthInterceptor)
 			
 			addService('dpf-ui', WebFileService.B => [ folder = '../dpf-ui' ])
 			addService('api-ui', WebFileService.B => [ folder = '/api' root = '/api' resource = true ])
