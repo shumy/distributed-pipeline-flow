@@ -55,6 +55,8 @@ class TransferService {
 				]
 			]
 		].error[ ex |
+			ex.printStackTrace
+			
 			println('CHANNEL-ERROR: ' + ex.message)
 			ro.error(ex.message)
 		]

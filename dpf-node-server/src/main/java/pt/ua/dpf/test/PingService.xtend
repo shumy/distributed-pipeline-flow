@@ -1,11 +1,11 @@
 package pt.ua.dpf.test
 
+import rt.plugin.service.CtxHeaders
 import rt.plugin.service.an.Context
 import rt.plugin.service.an.Proxy
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
 import rt.vertx.server.ChannelProxy
-import rt.vertx.server.CtxHeaders
 
 import static extension pt.ua.dpf.test.TestDTO.*
 
