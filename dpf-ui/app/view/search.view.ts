@@ -105,7 +105,10 @@ export class SearchView implements OnInit {
         let selectedIds = selectedPts.map(_ => _.id)
         this.trfSrv.transferPatients(selectedIds, this.selectedSrvPoint.id).then(obs => {
             toastr.success('Transfer request submitted')
-            obs.subscribe(notif => this.onTransferred(notif))
+            obs.subscribe(
+              notif => this.onTransferred(notif),
+              error => toastr.error(error)
+            )
         }).catch(error => toastr.error(error.message))
       //})
 
@@ -115,7 +118,7 @@ export class SearchView implements OnInit {
 
   onTransferred(notif: IPatientTransfer) {
     console.log('TRANFERRED: ', notif)
-    
+
     let pChanged = this.patients.find(_ => _.id === notif.id)
     pChanged.transfer = true
     this.ref.detectChanges()

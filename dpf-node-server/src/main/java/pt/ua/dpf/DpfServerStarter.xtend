@@ -5,14 +5,18 @@ import io.vertx.core.Vertx
 import pt.ua.dpf.dicoogle.DicoogleClient
 import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
+import rt.data.DataRepository
+import rt.pipeline.UserInfo
 import rt.plugin.service.WebMethod
 import rt.vertx.server.DefaultVertxServer
+import rt.vertx.server.intercept.GoogleJwtProvider
+import rt.vertx.server.intercept.JwtAuthInterceptor
 import rt.vertx.server.service.DescriptorService
-import rt.vertx.server.service.FileUploaderService
+import rt.vertx.server.service.FolderManagerService
 import rt.vertx.server.service.RouterService
 import rt.vertx.server.service.SubscriberService
+import rt.vertx.server.service.UsersService
 import rt.vertx.server.service.WebFileService
-import rt.vertx.server.intercept.JwtAuthInterceptor
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -55,7 +59,9 @@ class DpfServerStarter extends AbstractVerticle {
 		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
 		
 		//services...
+		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' ]
 		val subscriverSrv = SubscriberService.create
+		val usersSrv = UsersService.create
 		val servicePointSrv = ServicePointService.create
 		val transfersSrv = TransferService.B => [ publisher = server.mb dicoogle = dicoogleClient srvPoint = servicePointSrv ]
 		
@@ -63,13 +69,22 @@ class DpfServerStarter extends AbstractVerticle {
 			addObserver('srvPointObserver', ServicePointObserver.B => [ publisher = server.mb ])
 		]*/
 		
+		//repositories...
+		val usersRepo = new DataRepository<UserInfo> => [
+			//TODO: just demo data, replace with K/V DB
+			put('micaelpedrosa@gmail.com', new UserInfo('micaelpedrosa@gmail.com', #['admin']))
+		]
+		
+		
 		server.pipeline => [
-			addInterceptor(new JwtAuthInterceptor)
+			addInterceptor(JwtAuthInterceptor.B => [ provider = new GoogleJwtProvider users = usersRepo ])
 			
 			addService('dpf-ui', WebFileService.B => [ folder = '../dpf-ui' ])
 			addService('api-ui', WebFileService.B => [ folder = '/api' root = '/api' resource = true ])
 			
+			addService('folder-manager', folderManagerSrv, #{ 'list' -> 'all', 'download' -> 'admin', 'upload' -> 'admin' })
 			addService('subscriber', subscriverSrv)
+			addService('users', usersSrv)
 			addService('service-point', servicePointSrv)
 			addService('transfers', transfersSrv)
 			
@@ -78,15 +93,29 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		server => [
 			webRouter => [
-				headersMap = #{ 'Cookie' -> 'cookie' }
-				
-				vrtxService('/file-upload', 'dpf-uploader', FileUploaderService.B => [ folder = './downloads' ])
+				headersProcessor = [ reqHeaders, ctxHeaders |
+					ctxHeaders => [
+						val cookie = reqHeaders.get('Cookie')
+						if (cookie !== null)
+							add('cookie', cookie)
+						
+						val auth = reqHeaders.get('Authorization')
+						if(auth !== null) {
+							add('auth', 'jwt')
+							add('token', auth.split(' ').get(1))
+						}
+					]
+				]
 				
 				route(WebMethod.GET, '/*', 'dpf-ui', 'file', #['ctx.path'])
 				route(WebMethod.GET, '/api/*', 'api-ui', 'file', #['ctx.path'])
 				route(WebMethod.GET, '/api/routes', 'routes' -> 'routes')
 				route(WebMethod.GET, '/api/specs', 'specs' -> 'specs')
 				route(WebMethod.GET, '/api/specs/:name', 'specs' -> 'srvSpec')
+				
+				get('/file-list/:path', 'folder-manager' -> 'list')
+				get('/file-download/:filename', 'folder-manager', 'download', #['ctx.request', 'filename'])
+				post('/file-upload', 'folder-manager', 'upload', #['ctx.request'])
 				
 				/*
 				get('/ping/:name', 'ping' -> 'helloPing')
@@ -96,8 +125,6 @@ class DpfServerStarter extends AbstractVerticle {
 			]
 			
 			wsRouter => [
-				headersMap = #{ 'client' -> 'client' }
-				
 				onOpen[ println('RESOURCE-OPEN: ' + client) ]
 				
 				onClose[

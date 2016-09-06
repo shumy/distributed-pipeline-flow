@@ -8,14 +8,13 @@ import rt.async.pubsub.IPublisher
 import rt.async.pubsub.IResource
 import rt.data.Data
 import rt.data.Optional
+import rt.pipeline.UserInfo
 import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.plugin.service.ServiceException
 import rt.plugin.service.an.Context
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
 import rt.vertx.server.service.RemoteSubscriber
-import rt.plugin.service.an.Authorize
-import rt.plugin.service.an.UserInfo
 
 @Service
 @Data(metadata = false)
@@ -26,7 +25,6 @@ class TransferService {
 	val ServicePointService srvPoint
 	
 	@Public
-	@Authorize(#['admin'])
 	@Context(name = 'resource', type = IResource)
 	@Context(name = 'user', type = UserInfo)
 	def String transferPatients(List<String> patientIds, String srvPointId) {
@@ -58,7 +56,7 @@ class TransferService {
 			]
 		].error[ ex |
 			println('CHANNEL-ERROR: ' + ex.message)
-			ro.next(PatientTransfer.B => [ error = ex.message ])
+			ro.error(ex.message)
 		]
 		
 		resource.subscribe(respAddress)

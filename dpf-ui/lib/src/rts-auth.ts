@@ -1,7 +1,7 @@
 export type ChangeEvent = 'login' | 'logout'
 
 export interface AuthInfo {  
-  type: string
+  auth: string
   token: string
 }
 

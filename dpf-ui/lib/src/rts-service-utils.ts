@@ -19,10 +19,13 @@ export class SubscriberService {
       let event = ctx.message.res as Event
       let obs = this.observers.get(event.address)
       if (obs) {
-        if (ctx.message.cmd === 'nxt') {
+        if (ctx.message.cmd === 'ev:nxt') {
           obs.sub.next(event.data)
-        } else {
+        } else if (ctx.message.cmd === 'ev:clp') {
           obs.sub.complete()
+          obs.remove()
+        } else if (ctx.message.cmd === 'ev:err') {
+          obs.sub.error(event.data)
           obs.remove()
         }
       }

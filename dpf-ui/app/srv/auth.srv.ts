@@ -56,7 +56,7 @@ export class AuthService implements IAuthManager {
 
   private setAuthInfo() {
     let authResp = hello(this.idp).getAuthResponse()
-    this.authInfo = { type: 'jwt', token: authResp.id_token }
+    this.authInfo = { auth: 'jwt', token: authResp.id_token }
   }
 
   private setLogin() {

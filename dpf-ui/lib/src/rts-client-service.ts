@@ -73,10 +73,18 @@ export class ClientRouter implements IServiceClientFactory {
   }
 
   private send(msg: any) {
-    if (this.authMgr && this.authMgr.isLogged)
-      msg.auth = this.authMgr.authInfo
+    if (this.authMgr && this.authMgr.isLogged) {
+      //add auth headers, do not override...
+      if (!msg.headers) msg.headers = {}
 
-    this.waitReady(() => this.websocket.send(JSON.stringify(msg)))
+      msg.headers.auth = this.authMgr.authInfo.auth
+      msg.headers.token = this.authMgr.authInfo.token
+    }
+    
+    this.waitReady(() => {
+      console.log('SEND: ', msg)
+      this.websocket.send(JSON.stringify(msg))
+    })
   }
 
   private waitReady(callback: () => void) {
