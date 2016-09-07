@@ -1,7 +1,7 @@
 package pt.ua.dpf.services
 
-import java.util.List
 import rt.data.Data
+import java.util.List
 
 interface ServicePointInterface {
 	def void create(SrvPoint srvPoint)
@@ -10,6 +10,5 @@ interface ServicePointInterface {
 
 @Data
 class SrvPoint {
-	val String id
 	val String name
 }

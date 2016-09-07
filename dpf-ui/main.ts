@@ -11,8 +11,8 @@ import { Application }                          from './app/app';
 import { ClientRouter, Pipeline }               from './lib/rts-ws-client';
 
 import {
-  AuthService,
-  DicoogleService, SubscriberService, TransferService,
+  AuthService, EventsService, SubscriberService, RepositoryService,
+  DicoogleService, TransferService,
   ServicePointToken, ServicePointService
 }  from './app/srv/services';
 
@@ -39,22 +39,32 @@ let UUID = (function() {
   return self
 })()
 
+//configs...
+let authProvider = 'google'
+let authClient = '61929327789-7an73tpqqk1rrt2veopv1brsfcoetmrj.apps.googleusercontent.com'
 let server = 'ws://localhost:9090/clt'
 let client = 'web-' + UUID.generate()
 
 let pipeline = new Pipeline
-pipeline.failHandler = error => console.log('PIPELINE-FAIL: ' + error)
+pipeline.failHandler(error => console.log('PIPELINE-FAIL: ' + error))
 
 let router = new ClientRouter(server, client, pipeline)
-router.authMgr = new AuthService('google', '61929327789-7an73tpqqk1rrt2veopv1brsfcoetmrj.apps.googleusercontent.com')
+router.authMgr = new AuthService(authProvider, authClient)
+
+let evtSrv = new EventsService(router)
+let subSrv = new SubscriberService(router, evtSrv)
+let repoSrv = new RepositoryService(router, evtSrv)
+  repoSrv.create('srv-points').connect()
 
 enableProdMode()
 bootstrap(Application, [
   //disableDeprecatedForms(), provideForms(),
   HTTP_PROVIDERS, appRouterProviders,
   provide(ClientRouter, { useValue: router }),
+  provide(SubscriberService, { useValue: subSrv }),
+  provide(RepositoryService, { useValue: repoSrv }),
+
   provide(DicoogleService, { useClass: DicoogleService }),
-  provide(SubscriberService, { useValue: new SubscriberService(router) }),
   provide(TransferService, { useClass: TransferService }),
   provide(ServicePointToken, { useValue: router.createProxy('service-point') })
 ])

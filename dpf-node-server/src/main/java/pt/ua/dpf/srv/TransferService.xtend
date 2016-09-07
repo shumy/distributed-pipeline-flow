@@ -8,31 +8,34 @@ import rt.async.pubsub.IPublisher
 import rt.async.pubsub.IResource
 import rt.data.Data
 import rt.data.Optional
-import rt.pipeline.UserInfo
 import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.plugin.service.ServiceException
 import rt.plugin.service.an.Context
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
 import rt.vertx.server.service.RemoteSubscriber
+import rt.data.Validation
+import rt.plugin.service.ServiceUtils
 
 @Service
 @Data(metadata = false)
 class TransferService {
-	val IPublisher publisher
+	transient var IPublisher publisher
 	
 	val DicoogleClient dicoogle
 	val ServicePointService srvPoint
 	
+	@Validation
+	def void constructor() {
+		publisher = ServiceUtils.publisher
+	}
+	
 	@Public
 	@Context(name = 'resource', type = IResource)
-	@Context(name = 'user', type = UserInfo)
 	def String transferPatients(List<String> patientIds, String srvPointId) {
 		val channel = srvPoint.getSrvPointChannel(srvPointId)
 		if (channel === null)
 			throw new ServiceException(500, 'No ServicePoint-ID available: ' + srvPointId)
-		
-		//TODO: verify if this user has transfer authorization to this srvPointId ?
 		
 		val respAddress = UUID.randomUUID.toString
 		val ro = RemoteSubscriber.B => [ address = respAddress publisher = this.publisher ]

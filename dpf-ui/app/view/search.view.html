@@ -9,8 +9,8 @@
     <div class="item">
       <div class="ui teal buttons">
         <div class="ui button" (click)="transfer()">
-          <i *ngIf="selectedSrvPoint.icon" class="cube icon"></i>
-          {{selectedSrvPoint.name}}
+          <i *ngIf="srvPointsRepo.selected.data.icon" class="cube icon"></i>
+          {{srvPointsRepo.selected.data.name}}
         </div>
         <div class="ui dropdown icon button">
           <i class="dropdown icon"></i>
@@ -19,8 +19,8 @@
               <i class="search icon"></i>
               <input type="text" name="search" placeholder="Service Point...">
             </div>
-            <div *ngFor="let srv of srvPoints" id="{{srv.id}}" class="item {{ srv.selected ? 'active selected' : '' }}">
-              <i *ngIf="srv.icon" class="cube icon"></i> {{srv.name}}
+            <div *ngFor="let entry of srvPointsRepo | async" id="{{entry.id}}" class="item {{ entry.data.selected ? 'active selected' : '' }}">
+              <i *ngIf="entry.data.icon" class="cube icon"></i> {{entry.data.name}}
             </div>
           </div>
         </div>

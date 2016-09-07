@@ -45,17 +45,16 @@ class DpfClientStarter {
 			}
 		}
 		
-		//TODO: router should have the client credentials...
 		val cltr = new ClientRouter(server, client) => [
 			pipeline => [
-				addChannelService(srvChannel)
+				addComponent(ChannelService.name, srvChannel)
 				failHandler = [ println('PIPELINE-FAIL: ' + it) ]
 			]
 			
 			val spProxy = createProxy('service-point', ServicePointProxy)
 			onOpen[
 				println('CLIENT-OPEN: ' + client)
-				spProxy.create(SrvPoint.B => [ id = client name = 'SP Test' ])
+				spProxy.create(SrvPoint.B => [ name = 'SP Test' ])
 			]
 		]
 		

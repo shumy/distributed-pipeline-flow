@@ -6,11 +6,11 @@ export class Pipeline {
   private interceptors: ((ctx: PipeContext) => void)[] = []
   private services = new Map<string, (ctx: PipeContext) => void>()
 
-  set failHandler(callback: (error: String) => void) {
+  constructor(public mb: MessageBus = new MessageBus) { }
+
+  failHandler(callback: (error: String) => void) {
     this._failHandler = callback
   }
-
-  constructor(public mb: MessageBus = new MessageBus) { }
 
   process(resource: PipeResource, msg: IMessage, onContextCreated?: (ctx: PipeContext) => void) {
     let ctx = new PipeContext(this, resource, msg, new Iterator(this.interceptors))
@@ -114,7 +114,7 @@ export class PipeContext {
           this.deliverRequest()
       } catch (error) {
         console.error(error)
-        this.fail(error)
+        if (this.message.typ !== TYP.PUBLISH) this.fail(error)
       }
     }
   }

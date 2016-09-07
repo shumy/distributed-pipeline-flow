@@ -3,8 +3,10 @@ import { Control, CORE_DIRECTIVES, FORM_DIRECTIVES } from '@angular/common';
 import { Observable } from 'rxjs/Observable';
 
 import {
-  DicoogleService, TransferService,
-  ServicePointToken, ServicePointService, IPatientTransfer
+  DicoogleService, RepositoryService,
+  ServicePointToken, ServicePointService, ISrvPoint,
+  TransferService, IPatientTransfer,
+  Repository
 } from '../srv/services';
 
 @Component({
@@ -14,8 +16,7 @@ import {
   styles: ['.main.menu { margin: 60px 20px 5px; }']
 })
 export class SearchView implements OnInit {
-  selectedSrvPoint: any = { id: 0, name: 'Download', selected: true }
-  srvPoints = [ this.selectedSrvPoint ]
+  srvPointsRepo: Repository
 
   query = new Control()
   allSelected = false
@@ -25,13 +26,18 @@ export class SearchView implements OnInit {
     private ref: ChangeDetectorRef,
     private dicoogleSrv: DicoogleService,
     private trfSrv: TransferService,
+    private repoSrv: RepositoryService,
     @Inject(ServicePointToken) private srvPointSrv: ServicePointService
   ) {
     this.initSearch()
 
-    this.srvPointSrv.srvPoints()
-      .then(_ => _.forEach(sp => this.srvPoints.push({ id: sp.id, name: sp.name, icon: true })))
-      .catch(error => console.log('ERROR requesting service-point: ', error))
+    this.srvPointsRepo = repoSrv.get('srv-points')
+    this.srvPointsRepo
+      .on('add', _ => _.data.icon = true)
+      .on('select', _ =>  _.data.selected = true)
+      .on('unselect', _ => _.data.selected = false)
+      .init({ id: '0', data: { name: 'Download' }})
+      .defaultSelect('0')
   }
 
   initSearch() {
@@ -74,9 +80,7 @@ export class SearchView implements OnInit {
       on: 'click',
       onChange: (text, value, selectedItem) => {
         let srvID = selectedItem.attr('id')
-        let srv = this.srvPoints.find( _ => _.id == srvID )
-        srv.selected = true
-        this.selectedSrvPoint = srv
+        this.srvPointsRepo.select(srvID)
       }
     })
   }
@@ -96,17 +100,17 @@ export class SearchView implements OnInit {
   }
 
   transfer() {
-    if (this.selectedSrvPoint.id != 0) {
+    if (this.srvPointsRepo.selected.id !== '0') {
       //let modal: any = $('.ui.modal')
       //modal.modal('setting', 'onApprove', _ => {
         let selectedPts = this.patients.filter(_ => _.selected == true)
         selectedPts.forEach(_ => _.nTransferred = 0)
 
         let selectedIds = selectedPts.map(_ => _.id)
-        this.trfSrv.transferPatients(selectedIds, this.selectedSrvPoint.id).then(obs => {
+        this.trfSrv.transferPatients(selectedIds, this.srvPointsRepo.selected.id).then(obs => {
             toastr.success('Transfer request submitted')
             obs.subscribe(
-              notif => this.onTransferred(notif),
+              notif => this.onTransferredNotif(notif),
               error => toastr.error(error)
             )
         }).catch(error => toastr.error(error.message))
@@ -116,8 +120,8 @@ export class SearchView implements OnInit {
     }
   }
 
-  onTransferred(notif: IPatientTransfer) {
-    console.log('TRANFERRED: ', notif)
+  onTransferredNotif(notif: IPatientTransfer) {
+    console.log('onTransferredNotif: ', notif)
 
     let pChanged = this.patients.find(_ => _.id === notif.id)
     pChanged.transfer = true

@@ -5,7 +5,7 @@ import io.vertx.core.Vertx
 import pt.ua.dpf.dicoogle.DicoogleClient
 import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
-import rt.data.DataRepository
+import rt.data.Repository
 import rt.pipeline.UserInfo
 import rt.plugin.service.WebMethod
 import rt.vertx.server.DefaultVertxServer
@@ -13,6 +13,7 @@ import rt.vertx.server.intercept.GoogleJwtProvider
 import rt.vertx.server.intercept.JwtAuthInterceptor
 import rt.vertx.server.service.DescriptorService
 import rt.vertx.server.service.FolderManagerService
+import rt.vertx.server.service.RepositoryService
 import rt.vertx.server.service.RouterService
 import rt.vertx.server.service.SubscriberService
 import rt.vertx.server.service.UsersService
@@ -59,20 +60,18 @@ class DpfServerStarter extends AbstractVerticle {
 		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
 		
 		//services...
-		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' ]
-		val subscriverSrv = SubscriberService.create
 		val usersSrv = UsersService.create
-		val servicePointSrv = ServicePointService.create
-		val transfersSrv = TransferService.B => [ publisher = server.mb dicoogle = dicoogleClient srvPoint = servicePointSrv ]
+		val subsSrv = SubscriberService.create
+		val reposSrv = RepositoryService.B => [ repos = #[ 'srv-points' ] ]
 		
-		/*server.mb => [
-			addObserver('srvPointObserver', ServicePointObserver.B => [ publisher = server.mb ])
-		]*/
+		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' ]
+		val servicePointSrv = ServicePointService.B => [ repo = reposSrv.getRepo('srv-points') ]
+		val transfersSrv = TransferService.B => [ dicoogle = dicoogleClient srvPoint = servicePointSrv ]
 		
-		//repositories...
-		val usersRepo = new DataRepository<UserInfo> => [
+		//private repositories (not published) ...
+		val usersRepo = new Repository<UserInfo> => [
 			//TODO: just demo data, replace with K/V DB
-			put('micaelpedrosa@gmail.com', new UserInfo('micaelpedrosa@gmail.com', #['admin']))
+			add('micaelpedrosa@gmail.com', new UserInfo('micaelpedrosa@gmail.com', #['admin']))
 		]
 		
 		
@@ -82,9 +81,11 @@ class DpfServerStarter extends AbstractVerticle {
 			addService('dpf-ui', WebFileService.B => [ folder = '../dpf-ui' ])
 			addService('api-ui', WebFileService.B => [ folder = '/api' root = '/api' resource = true ])
 			
-			addService('folder-manager', folderManagerSrv, #{ 'list' -> 'all', 'download' -> 'admin', 'upload' -> 'admin' })
-			addService('subscriber', subscriverSrv)
 			addService('users', usersSrv)
+			addService('subscriber', subsSrv)
+			addService('repository', reposSrv)
+			
+			addService('folder-manager', folderManagerSrv, #{ 'list' -> 'all', 'download' -> 'admin', 'upload' -> 'admin' })
 			addService('service-point', servicePointSrv)
 			addService('transfers', transfersSrv)
 			
@@ -125,7 +126,9 @@ class DpfServerStarter extends AbstractVerticle {
 			]
 			
 			wsRouter => [
-				onOpen[ println('RESOURCE-OPEN: ' + client) ]
+				onOpen[
+					println('RESOURCE-OPEN: ' + client)
+				]
 				
 				onClose[
 					println('RESOURCE-CLOSE: ' + it)
