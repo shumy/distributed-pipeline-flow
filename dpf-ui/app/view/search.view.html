@@ -19,7 +19,7 @@
               <i class="search icon"></i>
               <input type="text" name="search" placeholder="Service Point...">
             </div>
-            <div *ngFor="let entry of srvPointsRepo | async" id="{{entry.id}}" class="item {{ entry.data.selected ? 'active selected' : '' }}">
+            <div *ngFor="let entry of srvPointsRepo | async" id="{{entry.id}}" class="item {{ entry.selected ? 'active selected' : '' }}">
               <i *ngIf="entry.data.icon" class="cube icon"></i> {{entry.data.name}}
             </div>
           </div>

@@ -34,8 +34,6 @@ export class SearchView implements OnInit {
     this.srvPointsRepo = repoSrv.get('srv-points')
     this.srvPointsRepo
       .on('add', _ => _.data.icon = true)
-      .on('select', _ =>  _.data.selected = true)
-      .on('unselect', _ => _.data.selected = false)
       .init({ id: '0', data: { name: 'Download' }})
       .defaultSelect('0')
   }

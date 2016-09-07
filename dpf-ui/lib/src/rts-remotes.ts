@@ -43,9 +43,11 @@ abstract class BaseObservable<D> extends Observable<D> implements EventProcessor
 export type OperType = 'add' | 'remove' | 'select' | 'unselect'
 export type ChangeOper = 'init' | 'add' | 'rem'
 
-export class Entry {
+export interface Entry {
   id: any
 	data: any
+
+  selected?: boolean
 }
 
 export class Repository extends BaseObservable<any[]> {
@@ -63,10 +65,10 @@ export class Repository extends BaseObservable<any[]> {
     this.data.clear()
 
     if (entries.constructor === Array) {
-      (entries as Entry[]).forEach(entry => this.data.set(entry.id, entry.data))
+      (entries as Entry[]).forEach(entry => this.setEntry(entry))
     } else {
       let entry = entries as Entry
-      this.data.set(entry.id, entry.data)
+      this.setEntry(entry)
     }
 
     this.reqCallback(this, 'init')
@@ -80,8 +82,9 @@ export class Repository extends BaseObservable<any[]> {
   }
 
   select(id: any) {
-    console.log('SELECT: ', id)
     if (this.selected) {
+      this.selected.selected = false
+      
       let onUnSelect = this.operCallback['unselect']
       if (onUnSelect)
         onUnSelect(this.selected)
@@ -90,6 +93,8 @@ export class Repository extends BaseObservable<any[]> {
     let dataSelected = this.data.get(id)
     if (dataSelected) {
       this.selected = { id: id, data: dataSelected }
+      this.selected.selected = true
+
       let onSelect = this.operCallback['select']
       if (onSelect)
         onSelect(this.selected)
@@ -147,14 +152,20 @@ export class Repository extends BaseObservable<any[]> {
     } else if (chOper === 'init') {
       let onAdd = this.operCallback['add']
       Object.keys(_evt.data).forEach(key => {
-        let entry: Entry = { id: key, data: _evt.data[key] } 
-        this.data.set(entry.id, entry.data)
+        let entry: Entry = { id: key, data: _evt.data[key] }
+        this.setEntry(entry)
         if (onAdd)
           onAdd(entry)
       })
     }
 
     this.notify()
+  }
+
+  private setEntry(entry: Entry) {
+    this.data.set(entry.id, entry.data)
+    if (!entry.selected)
+      entry.selected = false
   }
 }
 
