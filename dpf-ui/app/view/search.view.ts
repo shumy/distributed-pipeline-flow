@@ -3,11 +3,9 @@ import { Control, CORE_DIRECTIVES, FORM_DIRECTIVES } from '@angular/common';
 import { Observable } from 'rxjs/Observable';
 
 import {
-  DicoogleService, RepositoryService,
-  ServicePointToken, ServicePointService, ISrvPoint,
-  TransferService, IPatientTransfer,
-  Repository
-} from '../srv/services';
+  RepositoryService, Repository,
+  DicoogleService, TransferService, IPatientTransfer
+} from '../app.imports';
 
 @Component({
   selector: 'search-view',
@@ -24,10 +22,9 @@ export class SearchView implements OnInit {
 
   constructor(
     private ref: ChangeDetectorRef,
-    private dicoogleSrv: DicoogleService,
-    private trfSrv: TransferService,
     private repoSrv: RepositoryService,
-    @Inject(ServicePointToken) private srvPointSrv: ServicePointService
+    private dicoogleSrv: DicoogleService,
+    private trfSrv: TransferService
   ) {
     this.initSearch()
 

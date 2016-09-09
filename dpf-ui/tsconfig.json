@@ -17,13 +17,12 @@
 	],
 	"files": [
 		"main.ts",
-		"lib/rts-ws-client.ts",
 		"app/view/search.view.ts",
 		"app/view/results.view.ts",
+    "app/app.ts",
+    "app/app.imports.ts",
 		"app/app.config.ts",
 		"app/app.routes.ts",
-		"app/app.ts",
-    "app/srv/services.ts",
 		"typings/index.d.ts"
 	]
 }

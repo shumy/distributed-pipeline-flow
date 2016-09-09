@@ -1,4 +1,4 @@
-import { IAuthManager, AuthInfo, UserInfo, ChangeEvent } from '../../lib/src/rts-auth';
+import { IAuthManager, AuthInfo, UserInfo, ChangeEvent } from '../app.imports';
 
 declare var hello: any
 

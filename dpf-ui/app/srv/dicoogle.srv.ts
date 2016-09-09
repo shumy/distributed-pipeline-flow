@@ -1,8 +1,8 @@
-import { config } from '../app.config';
-
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
+
+import { config } from '../app.config';
 
 @Injectable()
 export class DicoogleService {

@@ -26,6 +26,7 @@
     "semantic-ui": "^2.1.8",
     "systemjs": "^0.19.29",
     "toastr": "^2.1.2",
-    "zone.js": "^0.6.12"
+    "zone.js": "^0.6.12",
+    "rts-ts-client": "file:../../remote-entity/rts-ts-client"
   }
 }

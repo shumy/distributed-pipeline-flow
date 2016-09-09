@@ -87,7 +87,7 @@ class DpfServerStarter extends AbstractVerticle {
 			
 			addService('folder-manager', folderManagerSrv, #{ 'list' -> 'all', 'download' -> 'admin', 'upload' -> 'admin' })
 			addService('service-point', servicePointSrv)
-			addService('transfers', transfersSrv)
+			addService('transfers', transfersSrv, #{ 'all' -> 'admin' })
 			
 			failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 		]
@@ -132,7 +132,7 @@ class DpfServerStarter extends AbstractVerticle {
 				
 				onClose[
 					println('RESOURCE-CLOSE: ' + it)
-					servicePointSrv.destroy(it)
+					servicePointSrv.delete(it)
 				]
 			]
 		]

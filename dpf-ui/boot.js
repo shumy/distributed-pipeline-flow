@@ -2,17 +2,19 @@
 
   // map tells the System loader where to look for things
   var map = {
-    'main':                       'dist',
-    'rxjs':                       'node_modules/rxjs',
-    'dropzone':                   'node_modules/dropzone/dist/min',
-    '@angular':                   'node_modules/@angular'
+    'main':                         'dist',
+    'rxjs':                         'node_modules/rxjs',
+    'dropzone':                     'node_modules/dropzone/dist/min',
+    '@angular':                     'node_modules/@angular',
+    'rts-ts-client':                'node_modules/rts-ts-client/dist'
   };
 
   // packages tells the System loader how to load when no filename and/or no extension
   var packages = {
-    'main':                       { main: 'main.js', defaultExtension: 'js' },
-    'rxjs':                       { defaultExtension: 'js' },
-    'dropzone':                   { main: 'dropzone.min.js', defaultExtension: 'js' }
+    'main':                         { main: 'main.js', defaultExtension: 'js' },
+    'rxjs':                         { defaultExtension: 'js' },
+    'dropzone':                     { main: 'dropzone.min.js', defaultExtension: 'js' },
+    'rts-ts-client':                { main: 'rts-ts-client.js', defaultExtension: 'js' }
   };
 
   var packageNames = [
@@ -33,13 +35,17 @@
 
   var config = {
     map: map,
-    packages: packages
+    packages: packages,
+    meta: {
+      "rts-ts-client": { "format": "register" }
+    }
   }
 
   // filterSystemConfig - index.html's chance to modify config before we register it.
   if (global.filterSystemConfig) { global.filterSystemConfig(config); }
 
   System.config(config);
+  console.log('LOAD rts-ts-client')
+  //System.import('rts-ts-client').catch(function(err){ console.error(err); });
   System.import('main').catch(function(err){ console.error(err); });
-
 })(this);

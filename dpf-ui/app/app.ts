@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { ROUTER_DIRECTIVES } from '@angular/router';
 
-import { ClientRouter, IAuthManager } from './srv/services';
+import { ClientRouter, IAuthManager } from './app.imports';
 
 @Component({
   selector: 'body[app]',

@@ -1,9 +1,7 @@
-import { ClientRouter } from '../../lib/rts-ws-client';
-
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 
-import { SubscriberService } from '../srv/services';
+import { ClientRouter, SubscriberService } from '../app.imports';
 
 @Injectable()
 export class TransferService {

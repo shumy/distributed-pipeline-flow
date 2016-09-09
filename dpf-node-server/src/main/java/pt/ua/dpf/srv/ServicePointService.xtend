@@ -21,6 +21,11 @@ class ServicePointService {
 	val Repository<SrvPoint> repo
 	
 	@Public
+	def List<SrvPoint> srvPoints() {
+		return repo.list
+	}
+	
+	@Public
 	@Proxy(name = 'channel', type = ChannelProxy)
 	@Context(name = 'resource', type = IResource)
 	def void create(SrvPoint srvPoint) {
@@ -30,12 +35,7 @@ class ServicePointService {
 		srvPointChannels.put(uuid, channel)
 	}
 	
-	@Public
-	def List<SrvPoint> srvPoints() {
-		return repo.list
-	}
-	
-	def void destroy(String srvPointId) {
+	def void delete(String srvPointId) {
 		val sp = repo.remove(srvPointId)
 		if (sp != null) {
 			srvPointChannels.remove(srvPointId)

@@ -1,20 +1,16 @@
 import 'rxjs/Rx';
 
-import { enableProdMode, provide }              from '@angular/core';
-import { bootstrap }                            from '@angular/platform-browser-dynamic';
-//import { disableDeprecatedForms, provideForms } from '@angular/forms';
-import { HTTP_PROVIDERS, Http }                 from '@angular/http';
+import { enableProdMode, provide }                                          from '@angular/core';
+import { bootstrap }                                                        from '@angular/platform-browser-dynamic';
+//import { disableDeprecatedForms, provideForms }                           from '@angular/forms';
+import { HTTP_PROVIDERS, Http }                                             from '@angular/http';
 
-import { appRouterProviders }                   from './app/app.routes';
-import { Application }                          from './app/app';
+import { ClientRouter, Pipeline }                                           from 'rts-ts-client';
+import { EventsService, SubscriberService, RepositoryService }              from 'rts-ts-client';
 
-import { ClientRouter, Pipeline }               from './lib/rts-ws-client';
-
-import {
-  AuthService, EventsService, SubscriberService, RepositoryService,
-  DicoogleService, TransferService,
-  ServicePointToken, ServicePointService
-}  from './app/srv/services';
+import { Application }                                                      from './app/app';
+import { appRouterProviders }                                               from './app/app.routes';
+import { AuthService, DicoogleService, TransferService }                    from './app/app.imports';
 
 /**
  * Fast UUID generator, RFC4122 version 4 compliant.
@@ -45,6 +41,8 @@ let authClient = '61929327789-7an73tpqqk1rrt2veopv1brsfcoetmrj.apps.googleuserco
 let server = 'ws://localhost:9090/clt'
 let client = 'web-' + UUID.generate()
 
+console.log(Pipeline)
+
 let pipeline = new Pipeline
 pipeline.failHandler(error => console.log('PIPELINE-FAIL: ' + error))
 
@@ -65,8 +63,7 @@ bootstrap(Application, [
   provide(RepositoryService, { useValue: repoSrv }),
 
   provide(DicoogleService, { useClass: DicoogleService }),
-  provide(TransferService, { useClass: TransferService }),
-  provide(ServicePointToken, { useValue: router.createProxy('service-point') })
+  provide(TransferService, { useClass: TransferService })
 ])
 .then(_ => { console.log('---APP-READY---') })
 .catch(err => console.log(err))
