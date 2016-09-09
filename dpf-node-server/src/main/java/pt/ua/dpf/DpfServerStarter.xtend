@@ -58,6 +58,7 @@ class DpfServerStarter extends AbstractVerticle {
 	override def start() {
 		val server = new DefaultVertxServer(vertx, '/clt', '')
 		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
+		val certProvider = new GoogleJwtProvider(vertx, '61929327789-7an73tpqqk1rrt2veopv1brsfcoetmrj.apps.googleusercontent.com')
 		
 		//services...
 		val usersSrv = UsersService.create
@@ -76,7 +77,7 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		
 		server.pipeline => [
-			addInterceptor(JwtAuthInterceptor.B => [ provider = new GoogleJwtProvider users = usersRepo ])
+			addInterceptor(JwtAuthInterceptor.B => [ provider = certProvider users = usersRepo ])
 			
 			addService('dpf-ui', WebFileService.B => [ folder = '../dpf-ui' ])
 			addService('api-ui', WebFileService.B => [ folder = '/api' root = '/api' resource = true ])
