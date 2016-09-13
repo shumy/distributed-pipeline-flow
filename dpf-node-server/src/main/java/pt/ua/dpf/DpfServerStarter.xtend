@@ -9,8 +9,6 @@ import rt.data.Repository
 import rt.pipeline.UserInfo
 import rt.plugin.service.WebMethod
 import rt.vertx.server.DefaultVertxServer
-import rt.vertx.server.intercept.GoogleJwtProvider
-import rt.vertx.server.intercept.JwtAuthInterceptor
 import rt.vertx.server.service.DescriptorService
 import rt.vertx.server.service.FolderManagerService
 import rt.vertx.server.service.RepositoryService
@@ -18,7 +16,7 @@ import rt.vertx.server.service.RouterService
 import rt.vertx.server.service.SubscriberService
 import rt.vertx.server.service.UsersService
 import rt.vertx.server.service.WebFileService
-import rt.vertx.server.intercept.KeycloakJwtProvider
+import rt.vertx.server.intercept.JwtAuthInterceptor
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -59,8 +57,13 @@ class DpfServerStarter extends AbstractVerticle {
 	override def start() {
 		val server = new DefaultVertxServer(vertx, '/clt', '')
 		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
-		//val certProvider = new GoogleJwtProvider(vertx, '61929327789-7an73tpqqk1rrt2veopv1brsfcoetmrj.apps.googleusercontent.com')
-		val certProvider = new KeycloakJwtProvider(vertx, 'screen-dr')
+		
+		//interceptors
+		val jwtAuth = JwtAuthInterceptor.B => [
+			jwksUrl = 'http://localhost:8081/auth/realms/dev/protocol/openid-connect/certs'
+			issuer = 'http://localhost:8081/auth/realms/dev'
+			audience = 'screen-dr'
+		]
 		
 		//services...
 		val usersSrv = UsersService.create
@@ -79,7 +82,7 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		
 		server.pipeline => [
-			addInterceptor(JwtAuthInterceptor.B => [ provider = certProvider users = usersRepo ])
+			addInterceptor(jwtAuth)
 			
 			addService('dpf-ui', WebFileService.B => [ folder = '../dpf-ui' ])
 			addService('api-ui', WebFileService.B => [ folder = '/api' root = '/api' resource = true ])
