@@ -18,6 +18,7 @@ import rt.vertx.server.service.RouterService
 import rt.vertx.server.service.SubscriberService
 import rt.vertx.server.service.UsersService
 import rt.vertx.server.service.WebFileService
+import rt.vertx.server.intercept.KeycloakJwtProvider
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -58,7 +59,8 @@ class DpfServerStarter extends AbstractVerticle {
 	override def start() {
 		val server = new DefaultVertxServer(vertx, '/clt', '')
 		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
-		val certProvider = new GoogleJwtProvider(vertx, '61929327789-7an73tpqqk1rrt2veopv1brsfcoetmrj.apps.googleusercontent.com')
+		//val certProvider = new GoogleJwtProvider(vertx, '61929327789-7an73tpqqk1rrt2veopv1brsfcoetmrj.apps.googleusercontent.com')
+		val certProvider = new KeycloakJwtProvider(vertx, 'screen-dr')
 		
 		//services...
 		val usersSrv = UsersService.create
@@ -72,7 +74,7 @@ class DpfServerStarter extends AbstractVerticle {
 		//private repositories (not published) ...
 		val usersRepo = new Repository<UserInfo> => [
 			//TODO: just demo data, replace with K/V DB
-			add('micaelpedrosa@gmail.com', new UserInfo('micaelpedrosa@gmail.com', #['admin']))
+			add('micaelpedrosa@gmail.com', new UserInfo('micaelpedrosa@gmail.com', #['/srv-transfer']))
 		]
 		
 		
@@ -88,7 +90,7 @@ class DpfServerStarter extends AbstractVerticle {
 			
 			addService('folder-manager', folderManagerSrv, #{ 'list' -> 'all', 'download' -> 'admin', 'upload' -> 'admin' })
 			addService('service-point', servicePointSrv)
-			addService('transfers', transfersSrv, #{ 'all' -> 'admin' })
+			addService('transfers', transfersSrv, #{ 'all' -> '/srv-transfer' })
 			
 			failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 		]

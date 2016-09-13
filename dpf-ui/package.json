@@ -22,11 +22,11 @@
     "hellojs": "^1.13.4",
     "jquery": "^2.2.4",
     "reflect-metadata": "^0.1.3",
+    "rts-ts-client": "file:../../remote-entity/rts-ts-client",
     "rxjs": "^5.0.0-beta.6",
     "semantic-ui": "^2.1.8",
     "systemjs": "^0.19.29",
     "toastr": "^2.1.2",
-    "zone.js": "^0.6.12",
-    "rts-ts-client": "file:../../remote-entity/rts-ts-client"
+    "zone.js": "^0.6.12"
   }
 }

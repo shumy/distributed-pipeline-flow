@@ -17,6 +17,7 @@
 	],
 	"files": [
 		"main.ts",
+    "lib/openid-connect.ts",
 		"app/view/search.view.ts",
 		"app/view/results.view.ts",
     "app/app.ts",

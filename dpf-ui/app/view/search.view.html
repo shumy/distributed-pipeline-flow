@@ -56,8 +56,9 @@
           </td>
           <td>
             <h5 class="ui header">
+              <i class="large blue tags link icon"></i>
+              <!--<i class="{{patient.gender == 'M' ? 'male' : 'female'}} icon"></i>-->
               <i class="{{patient.open ? 'down' : 'right'}} triangle link icon" (click)="patient.open = !patient.open"></i>
-              <i class="{{patient.gender == 'M' ? 'male' : 'female'}} icon"></i>
               <div class="content">{{patient.name}}</div>
             </h5>
           </td>
@@ -73,11 +74,13 @@
         </tr>
         <tr *ngIf="patient.open">
           <td colspan="5">
-            <div class="ui relaxed list" style="padding-left: 20px">
+            <!--link incon color #014cde -->
+            <div class="ui relaxed list" style="padding-left: 40px">
               <div *ngFor="let study of patient.studies" class="item">
+                <i class="large blue tags link icon"></i>
                 <i class="{{study.open ? 'down' : 'right'}} triangle link icon" (click)="study.open = !study.open"></i>
                 <div class="content">
-                  <div class="header">Study: {{study.studyInstanceUID}}</div>
+                  <a class="header">Study: {{study.studyInstanceUID}}</a>
                   <div class="ui horizontal divided list">
                     <div class="item">Date: {{study.studyDate}}</div>
                     <div class="item">Series: {{study.series.length}}</div>
@@ -85,6 +88,7 @@
                   </div>
                   <div *ngIf="study.open" class="ui relaxed list" style="padding-left: 20px">
                     <div *ngFor="let serie of study.series" class="item">
+                      <i class="large blue tags link icon"></i>
                       <i class="{{serie.open ? 'down' : 'right'}} triangle link icon" (click)="serie.open = !serie.open"></i>
                       <div class="content">
                         <div class="header">Serie: {{serie.serieInstanceUID}}</div>
@@ -94,6 +98,8 @@
                         </div>
                         <div *ngIf="serie.open" class="ui relaxed list" style="padding-left: 20px">
                           <div *ngFor="let image of serie.images" class="item">
+                            <i class="large blue tags link icon"></i>
+                            <i class="large blue unhide link icon"></i>
                             <div class="content">
                               <div class="header">Image: {{image.sopInstanceUID}}</div>
                               <div class="ui horizontal divided list">

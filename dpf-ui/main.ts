@@ -36,8 +36,12 @@ let UUID = (function() {
 })()
 
 //configs...
-let authProvider = 'google'
-let authClient = '61929327789-7an73tpqqk1rrt2veopv1brsfcoetmrj.apps.googleusercontent.com'
+//let authProvider = 'https://accounts.google.com/'
+//let authClient = '61929327789-7an73tpqqk1rrt2veopv1brsfcoetmrj.apps.googleusercontent.com'
+
+let authProvider = 'http://localhost:8081/auth/realms/dev/'
+let authClient = 'screen-dr'
+
 let server = 'ws://localhost:9090/clt'
 let client = 'web-' + UUID.generate()
 

@@ -1,8 +1,8 @@
 import { IAuthManager, AuthInfo, UserInfo, ChangeEvent } from '../app.imports';
-
-declare var hello: any
+import { OIDC, OIDCClient } from '../../lib/openid-connect'
 
 export class AuthService implements IAuthManager {
+  _client: OIDCClient
   _onChange: (evt: ChangeEvent) => void
 
   public isLogged = false
@@ -10,34 +10,29 @@ export class AuthService implements IAuthManager {
   public userInfo: UserInfo
 
   constructor(private idp: string, private clientId: string) {
-    let clt = {}
-    clt[this.idp] = this.clientId 
-    
-    hello.init(clt, { scope: 'email openid', response_type: 'token id_token' })
-
-    let authResp = hello(this.idp).getAuthResponse()
-    if (authResp) {
-      console.log('AUTH: ', authResp)
-      this.setAuthInfo()
-      this.setUserInfo()
-    }
+    OIDC.discover(idp).then(issuer => {
+      this._client = issuer.createClient(clientId)
+      if (this._client.authInfo) {
+        this.setAuthInfo()
+        this.setUserInfo()
+      }
+    })
   }
 
   login() {
-    hello(this.idp).login().then(_ => {
+    this._client.login().then(info => {
+      console.log('AuthInfo: ', info)
       this.setAuthInfo()
       this.setUserInfo()
     }, e => {
-      console.log('Login: ', e.error)
+      console.error('Login: ', e.error)
       this.setLogout()
     })
   }
 
   logout() {
     this.setLogout()
-
-    hello(this.idp).logout().then(_ => {
-    }, e => console.log('Logout: ', e.error))
+    this._client.logout()
   }
 
   onChange(callback: (evt: ChangeEvent) => void) {
@@ -45,8 +40,12 @@ export class AuthService implements IAuthManager {
   }
 
   private setUserInfo() {
-    hello(this.idp).api('me').then((info) => {
+    this._client.userInfo().then((info) => {
+      console.log('UserInfo: ', info)
       this.userInfo = { name: info.name, email: info.email, avatar: info.picture }
+      if (!this.userInfo.avatar)
+        this.userInfo.avatar = 'res/img/default_user.png'
+      
       this.setLogin()
     }, e => {
       console.error('UserInfo: ', e.error)
@@ -55,7 +54,7 @@ export class AuthService implements IAuthManager {
   }
 
   private setAuthInfo() {
-    let authResp = hello(this.idp).getAuthResponse()
+    let authResp = this._client.authInfo
     this.authInfo = { auth: 'jwt', token: authResp.id_token }
   }
 
