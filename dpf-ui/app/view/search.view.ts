@@ -2,6 +2,8 @@ import { Component, OnInit, Input, Inject, ChangeDetectorRef } from '@angular/co
 import { Control, CORE_DIRECTIVES, FORM_DIRECTIVES } from '@angular/common';
 import { Observable } from 'rxjs/Observable';
 
+import { config } from '../app.config';
+
 import {
   RepositoryService, Repository,
   DicoogleService, TransferService, IPatientTransfer
@@ -47,7 +49,10 @@ export class SearchView implements OnInit {
           study.open = false
           study.series.forEach(serie => {
             serie.open = false
-            serie.images.forEach(image => patient.nTotal += 1)
+            serie.images.forEach(image => {
+              patient.nTotal += 1
+              image.url = 'http://' + config.dicoogleHost + '/dic2png?SOPInstanceUID=' + image.sopInstanceUID
+            })
           })
         })
       })
@@ -77,6 +82,19 @@ export class SearchView implements OnInit {
         let srvID = selectedItem.attr('id')
         this.srvPointsRepo.select(srvID)
       }
+    })
+  }
+
+  openSerie(serie: any) {
+    serie.open = !serie.open
+    this.ref.detectChanges()
+
+    serie.images.forEach(image => {
+      let popup: any = $('i[id="image_link_' + image.sopInstanceUID + '"]')
+      popup.popup({
+        hoverable: true,
+        popup: $('div[id="image_' + image.sopInstanceUID + '"]')
+      })
     })
   }
 
