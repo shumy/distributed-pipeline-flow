@@ -16,65 +16,91 @@ export class OIDCIssuer {
   }
 }
 
-
 export class OIDCClient {
+  private redirectUri: string
+
   private authEndpoint: string
   private userInfoEndpoint: string
-  private revogationEndpoint: string
+  private endSessionEndpoint: string
 
   authHeader: string
   authInfo: AuthInfoResponse
 
-  constructor(issuer: OIDCIssuer , clientId: string) {
+  constructor(private issuer: OIDCIssuer, private clientId: string) {
     //TODO: use UUID for nonce ?
     let nonce = 'xpto'
 
-    let redirectUri = window.location.protocol + '//' + window.location.host + '/'
+    this.redirectUri = window.location.protocol + '//' + window.location.host + '/'
 
-    this.authEndpoint = issuer.discover.authorization_endpoint + '?scope=email+openid&response_type=token+id_token&nonce=' + nonce + '&redirect_uri=' + redirectUri + '&client_id=' + clientId
+    this.authEndpoint = issuer.discover.authorization_endpoint + '?scope=email+openid&response_type=token+id_token&nonce=' + nonce + '&redirect_uri=' + this.redirectUri + '&client_id=' + clientId
     this.userInfoEndpoint = issuer.discover.userinfo_endpoint
-    this.revogationEndpoint = issuer.discover.revocation_endpoint
+    this.endSessionEndpoint = issuer.discover.end_session_endpoint
+
+    //load from cookies...
+    let authCookie = Cookies.get(clientId)
+    if (authCookie) {
+      let parsedCookie = JSON.parse(authCookie)
+      if (parsedCookie.access_token) {
+        this.authInfo = parsedCookie
+        this.setAuthHeader()
+      }
+    }
   }
 
   login(): Promise<AuthInfoResponse> {
-    return new Promise<AuthInfoResponse>((resolve, reject) => {
-      let authWin = window.open(this.authEndpoint, 'OAuth2', 'height=500,width=550')
+    return this.idpRequest(this.authEndpoint).then(hash => {
+      console.log('Logged in...')
+      this.authInfo = parseHash(hash)
+      Cookies.set(this.clientId, JSON.stringify(this.authInfo))
+      this.setAuthHeader()
+      return this.authInfo
+    })
+  }
+
+  logout(): void {
+    let logoutURL = this.endSessionEndpoint + '?id_token_hint=' + this.authInfo.id_token + '&post_logout_redirect_uri=' + this.redirectUri
+    Cookies.remove(this.clientId)
+    delete this.authHeader
+    delete this.authInfo
+
+    this.idpRequest(logoutURL).then(_ => console.log('Logged out...'))
+  }
+
+  userInfo(): Promise<UserInfoResponse> {
+    return new Promise<UserInfoResponse>((resolve, reject) => {
+      $.ajax({ headers: { 'Authorization': this.authHeader }, url: this.userInfoEndpoint})
+        .done(res => resolve(res))
+        .fail(error => reject(error))
+    })
+  }
+
+  private idpRequest(url: string) {
+    return new Promise<string>((resolve, reject) => {
+      console.log('IDP Request: ', url)
+      let authWin = window.open(url, 'OAuth2', 'height=500,width=550')
       let intervalId = setInterval(_ => {
         if (!authWin) {
           clearInterval(intervalId)
-          reject('Login not completed!')
+          reject('Request not completed!')
         }
 
         try {
-          if (authWin.location.hash) {
+          if (authWin.location.hostname === window.location.hostname) {
+            console.log(authWin.location)
             clearInterval(intervalId)
-            this.authInfo = parseHash(authWin.location.hash)
-            this.authHeader = this.authInfo.token_type + ' ' + this.authInfo.access_token
-
+            let hash = authWin.location.hash
             authWin.close()
-            resolve(this.authInfo)
+            resolve(hash)
           }
         } catch(error) {
-          console.log('Waiting for login...')
+          /*ignore error, this means that login/logout is not ready*/
         }
       })
     })
   }
 
-  logout(): void {
-    $.ajax({ url: this.revogationEndpoint, headers: { 'Authorization': this.authHeader }})
-      .done(res => console.log('Logout: ', res))
-    
-    delete this.authHeader
-    delete this.authInfo
-  }
-
-  userInfo(): Promise<UserInfoResponse> {
-    return new Promise<UserInfoResponse>((resolve, reject) => {
-      $.ajax({ url: this.userInfoEndpoint, headers: { 'Authorization': this.authHeader }})
-        .done(res => resolve(res))
-        .fail(error => reject(error))
-    })
+  private setAuthHeader() {
+    this.authHeader = this.authInfo.token_type + ' ' + this.authInfo.access_token
   }
 }
 
@@ -82,7 +108,7 @@ interface DiscoverResponse {
  issuer: string
  
  authorization_endpoint: string
- revocation_endpoint: string
+ end_session_endpoint: string
 
  token_endpoint: string
  userinfo_endpoint: string
