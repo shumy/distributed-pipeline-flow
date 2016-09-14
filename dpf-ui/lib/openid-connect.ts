@@ -59,9 +59,7 @@ export class OIDCClient {
 
   logout(): void {
     let logoutURL = this.endSessionEndpoint + '?id_token_hint=' + this.authInfo.id_token + '&post_logout_redirect_uri=' + this.redirectUri
-    Cookies.remove(this.clientId)
-    delete this.authHeader
-    delete this.authInfo
+    this.clear()
 
     this.idpRequest(logoutURL).then(_ => console.log('Logged out...'))
   }
@@ -70,8 +68,17 @@ export class OIDCClient {
     return new Promise<UserInfoResponse>((resolve, reject) => {
       $.ajax({ headers: { 'Authorization': this.authHeader }, url: this.userInfoEndpoint})
         .done(res => resolve(res))
-        .fail(error => reject(error))
+        .fail(error => {
+          this.clear()
+          reject(error)
+        })
     })
+  }
+
+  private clear() {
+    Cookies.remove(this.clientId)
+    delete this.authHeader
+    delete this.authInfo
   }
 
   private idpRequest(url: string) {

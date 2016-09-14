@@ -93,6 +93,7 @@ export class SearchView implements OnInit {
       let popup: any = $('i[id="image_link_' + image.sopInstanceUID + '"]')
       popup.popup({
         hoverable: true,
+        position: 'right center',
         popup: $('div[id="image_' + image.sopInstanceUID + '"]')
       })
     })
