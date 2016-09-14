@@ -14,15 +14,25 @@ export class DicoogleService {
     this.host = config.dicoogleHost
   }
 
+  tagsFor(uid: string) {
+    return this.http
+      .get('http://' + this.host + '/dump?uid=' + uid)
+      .map(_ => _.json().results.fields)
+      .map(fields => {
+        let res = []
+        Object.keys(fields).forEach(key => res.push([ key, fields[key] ]))
+        return res
+      })
+  }
+
   search(query: Observable<string>, transform?: (results: any) => void): Observable<any> {
     return query.debounceTime(this.debounceDuration)
-                .distinctUntilChanged()
-                .filter(_ => { if (_) return true })
-                .switchMap(_ => this.rawSearch(_).map(transform))
+      .distinctUntilChanged()
+      .filter(_ => { if (_) return true })
+      .switchMap(_ => this.rawSearch(_).map(transform))
   }
 
   rawSearch(query: string): Observable<any> {
-    console.log('Dicoogle search: ', query)
     return this.http
       .get('http://' + this.host + '/searchDIM?query=' + query + '&keyword=true')
       .map(_ => _.json().results)

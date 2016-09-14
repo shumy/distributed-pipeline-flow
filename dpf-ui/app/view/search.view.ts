@@ -20,7 +20,9 @@ export class SearchView implements OnInit {
 
   query = new Control()
   allSelected = false
+  
   patients = []
+  tags = {}
 
   constructor(
     private ref: ChangeDetectorRef,
@@ -85,18 +87,32 @@ export class SearchView implements OnInit {
     })
   }
 
-  openSerie(serie: any) {
+  toggleSerie(serie: any) {
     serie.open = !serie.open
-    this.ref.detectChanges()
+    serie.images.forEach(image => this.tags[image.sopInstanceUID] = this.dicoogleSrv.tagsFor(image.sopInstanceUID))
+  }
 
-    serie.images.forEach(image => {
-      let popup: any = $('i[id="image_link_' + image.sopInstanceUID + '"]')
-      popup.popup({
-        hoverable: true,
-        position: 'right center',
-        popup: $('div[id="image_' + image.sopInstanceUID + '"]')
-      })
+  openImagePopup(uid: string) {
+    console.log('openImagePopup: ', uid)
+    let imagePopup: any = $('i[id="image_link_' + uid + '"]')
+    imagePopup.popup({
+      position: 'right center',
+      lastResort: 'right center',
+      popup: $('div[id="image_' + uid + '"]')
     })
+
+    imagePopup.popup('show')
+  }
+
+  closeImagePopup(uid: string) {
+    console.log('closeImagePopup: ', uid)
+    let imagePopup: any = $('i[id="image_link_' + uid + '"]')
+    imagePopup.popup('hide')
+  }
+
+  openTagsModel(uid: string) {
+    let tagsModal: any = $('div[id="tags_' + uid + '"]')
+    tagsModal.modal('show')
   }
 
   checkIfAllSelected() {
