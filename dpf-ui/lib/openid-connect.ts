@@ -1,10 +1,7 @@
 export class OIDC {
   static discover(url: string): Promise<OIDCIssuer> {
-    return new Promise<OIDCIssuer>((resolve, reject) => {
-      $.ajax(url + '.well-known/openid-configuration')
-        .done(res => resolve(new OIDCIssuer(res)))
-        .fail(error => reject(error))
-    })
+    return get(url + '.well-known/openid-configuration', 3000)
+      .then(res => new OIDCIssuer(res))
   }
 }
 
@@ -22,6 +19,7 @@ export class OIDCClient {
   private authEndpoint: string
   private userInfoEndpoint: string
   private endSessionEndpoint: string
+  private revocationEndpoint: string
 
   authHeader: string
   authInfo: AuthInfoResponse
@@ -35,6 +33,7 @@ export class OIDCClient {
     this.authEndpoint = issuer.discover.authorization_endpoint + '?scope=email+openid&response_type=token+id_token&nonce=' + nonce + '&redirect_uri=' + this.redirectUri + '&client_id=' + clientId
     this.userInfoEndpoint = issuer.discover.userinfo_endpoint
     this.endSessionEndpoint = issuer.discover.end_session_endpoint
+    this.revocationEndpoint = issuer.discover.revocation_endpoint
 
     //load from cookies...
     let authCookie = Cookies.get(clientId)
@@ -58,21 +57,17 @@ export class OIDCClient {
   }
 
   logout(): void {
-    let logoutURL = this.endSessionEndpoint + '?id_token_hint=' + this.authInfo.id_token + '&post_logout_redirect_uri=' + this.redirectUri
+    let id_token = this.authInfo.id_token
     this.clear()
 
-    this.idpRequest(logoutURL).then(_ => console.log('Logged out...'))
+    if (this.endSessionEndpoint) {
+      let logoutURL = this.endSessionEndpoint + '?id_token_hint=' + id_token + '&post_logout_redirect_uri=' + this.redirectUri
+      this.idpRequest(logoutURL).then(_ => console.log('Logged out...'))  
+    }
   }
 
   userInfo(): Promise<UserInfoResponse> {
-    return new Promise<UserInfoResponse>((resolve, reject) => {
-      $.ajax({ headers: { 'Authorization': this.authHeader }, url: this.userInfoEndpoint})
-        .done(res => resolve(res))
-        .fail(error => {
-          this.clear()
-          reject(error)
-        })
-    })
+    return get(this.userInfoEndpoint, 3000, { 'Authorization': this.authHeader })
   }
 
   private clear() {
@@ -93,7 +88,6 @@ export class OIDCClient {
 
         try {
           if (authWin.location.hostname === window.location.hostname) {
-            console.log(authWin.location)
             clearInterval(intervalId)
             let hash = authWin.location.hash
             authWin.close()
@@ -116,6 +110,7 @@ interface DiscoverResponse {
  
  authorization_endpoint: string
  end_session_endpoint: string
+ revocation_endpoint: string
 
  token_endpoint: string
  userinfo_endpoint: string
@@ -135,6 +130,30 @@ interface UserInfoResponse {
   email_verified: boolean
   name: string
   picture: string
+}
+
+function get(url: string, timeout: number, headers?: {}): Promise<any> {
+  return new Promise<any>((resolve, reject) => {
+    let xhr = new XMLHttpRequest()
+    xhr.ontimeout = _ => reject('Timeout error for request: ' + url)
+
+    xhr.onload = _ => {
+      if (xhr.readyState === 4) {
+          if (xhr.status === 200)
+            resolve(JSON.parse(xhr.response))
+          else
+            reject(xhr.statusText)
+      }
+    }
+    
+    xhr.open('GET', url, true)
+    xhr.timeout = timeout
+
+    if (headers)
+      Object.keys(headers).forEach(key => xhr.setRequestHeader(key, headers[key]))
+    
+    xhr.send(null)
+  })
 }
 
 function parseHash(hash: string) {

@@ -45,8 +45,6 @@ let authClient = 'screen-dr'
 let server = 'ws://localhost:9090/clt'
 let client = 'web-' + UUID.generate()
 
-console.log(Pipeline)
-
 let pipeline = new Pipeline
 pipeline.failHandler(error => console.log('PIPELINE-FAIL: ' + error))
 

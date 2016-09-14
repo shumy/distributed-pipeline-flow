@@ -45,7 +45,5 @@
   if (global.filterSystemConfig) { global.filterSystemConfig(config); }
 
   System.config(config);
-  console.log('LOAD rts-ts-client')
-  //System.import('rts-ts-client').catch(function(err){ console.error(err); });
   System.import('main').catch(function(err){ console.error(err); });
 })(this);
