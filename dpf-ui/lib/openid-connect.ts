@@ -77,9 +77,12 @@ export class OIDCClient {
   }
 
   private idpRequest(url: string) {
+    let x = screen.width/2 - 700/2;
+    let y = screen.height/2 - 450/2;
+
     return new Promise<string>((resolve, reject) => {
       console.log('IDP Request: ', url)
-      let authWin = window.open(url, 'OAuth2', 'height=500,width=550')
+      let authWin = window.open(url, 'OAuth2', 'width=800, height=500, left=' + x + ',top=' + y)
       let intervalId = setInterval(_ => {
         if (!authWin) {
           clearInterval(intervalId)

@@ -6,19 +6,23 @@ import io.vertx.core.file.OpenOptions
 import io.vertx.core.http.HttpClient
 import io.vertx.core.http.HttpClientOptions
 import io.vertx.core.streams.Pump
+import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.util.LinkedList
 import java.util.List
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.zip.Deflater
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import pt.ua.dpf.dicoogle.model.Image
+import rt.async.AsyncUtils
 import rt.async.observable.Observable
 import rt.async.observable.ObservableResult
 import rt.async.promise.Promise
 import rt.async.promise.PromiseResult
 import rt.pipeline.pipe.channel.IPipeChannel
 import rt.pipeline.pipe.channel.SendBuffer
-import java.util.concurrent.atomic.AtomicBoolean
-import rt.async.AsyncUtils
 
 class DicoogleClient {
 	val Gson gson = new Gson
@@ -95,6 +99,54 @@ class DicoogleClient {
 		return pResult.promise
 	}
 	
+	def Observable<String> download(List<Image> images, String zipFilePath) {
+		val ObservableResult<String> pResult = [ sub |
+			var FileOutputStream fos = null 
+			try {
+				fos = new FileOutputStream(zipFilePath)
+			} catch(Exception ex) {
+				sub.error(ex)
+				sub.complete
+				return
+			}
+			
+			val zipOut = new ZipOutputStream(new FileOutputStream(zipFilePath))
+			zipOut.level = Deflater.DEFAULT_COMPRESSION
+			
+			val ready = new AtomicBoolean(true)
+			val processed = new AtomicInteger(0)
+			images.forEach[ image |
+				AsyncUtils.waitUntil([ready.get],[
+					ready.set = false
+					httpClient.getNow('/legacy/file?uid=' + image.sopInstanceUID)[ resp |
+						if (resp.statusCode != 200) {
+							sub.error(new TransferException(image.sopInstanceUID, resp.statusMessage))
+							return
+						}
+						
+						println('Ready: ' + image.sopInstanceUID)
+						resp.bodyHandler[
+							zipOut.putNextEntry(new ZipEntry(image.sopInstanceUID + '.dcm'))
+								zipOut.write(byteBuf.array)
+							zipOut.closeEntry
+							
+							println('Zipped: ' + image.sopInstanceUID)
+							sub.next(image.sopInstanceUID)
+							if (processed.incrementAndGet == images.size) {
+								zipOut => [ flush close ]
+								sub.complete
+							}
+							
+							ready.set = true
+						]
+					]
+				])
+			]
+		]
+		
+		return pResult.observe
+	}
+	
 	def Observable<String> transferTo(List<Image> images, IPipeChannel writePipe) {
 		return transferTo(images, writePipe, null)
 	}
@@ -107,7 +159,7 @@ class DicoogleClient {
 			val transferred = new AtomicInteger(0)
 			images.forEach[ image |
 				AsyncUtils.waitUntil([ready.get],[
-					ready.set(false)
+					ready.set = false
 					httpClient.getNow('/legacy/file?uid=' + image.sopInstanceUID)[ resp |
 						if (resp.statusCode != 200) {
 							sub.error(new TransferException(image.sopInstanceUID, resp.statusMessage))
@@ -127,13 +179,13 @@ class DicoogleClient {
 								if (transferred.incrementAndGet == images.size)
 									sub.complete
 								
-								ready.set(true)
+								ready.set = true
 							]
 							
 							onError[
 								println('Error transfer: ' + image.sopInstanceUID)
 								sub.error(new TransferException(image.sopInstanceUID,it))
-								ready.set(true)
+								ready.set = true
 							]
 							
 							println('Begin transfer: ' + image.sopInstanceUID)

@@ -91,7 +91,7 @@ class DpfServerStarter extends AbstractVerticle {
 			addService('subscriber', subsSrv)
 			addService('repository', reposSrv)
 			
-			addService('folder-manager', folderManagerSrv, #{ 'list' -> 'all', 'download' -> 'admin', 'upload' -> 'admin' })
+			addService('folder-manager', folderManagerSrv, #{ 'list' -> 'all', 'download' -> 'all', 'upload' -> 'admin' })
 			addService('service-point', servicePointSrv)
 			addService('transfers', transfersSrv, #{ 'all' -> '/srv-transfer' })
 			

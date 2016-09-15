@@ -128,23 +128,32 @@ export class SearchView implements OnInit {
   }
 
   transfer() {
-    if (this.srvPointsRepo.selected.id !== '0') {
-      //let modal: any = $('.ui.modal')
-      //modal.modal('setting', 'onApprove', _ => {
-        let selectedPts = this.patients.filter(_ => _.selected == true)
-        selectedPts.forEach(_ => _.nTransferred = 0)
+    let selectedPts = this.patients.filter(_ => _.selected == true)
+    selectedPts.forEach(_ => _.nTransferred = 0)
+    let selectedIds = selectedPts.map(_ => _.id)
+    this.ref.detectChanges()
 
-        let selectedIds = selectedPts.map(_ => _.id)
+    if (this.srvPointsRepo.selected.id === '0') {
+        this.trfSrv.downloadPatients(selectedIds).then(obs => {
+            toastr.success('Building zip file...')
+            obs.subscribe(
+              notif => this.onTransferredNotif(notif),
+              error => toastr.error(error),
+              () => {
+                let uri = '/file-download/d_' + obs.address + '.zip'
+                this.trfSrv.fireDownload(uri)
+                toastr.success('Downloading file...')
+              }
+            )
+        }).catch(error => toastr.error(error.message))
+    } else {
         this.trfSrv.transferPatients(selectedIds, this.srvPointsRepo.selected.id).then(obs => {
-            toastr.success('Transfer request submitted')
+            toastr.success('Transfer request submitted...')
             obs.subscribe(
               notif => this.onTransferredNotif(notif),
               error => toastr.error(error)
             )
         }).catch(error => toastr.error(error.message))
-      //})
-
-      //modal.modal('show')
     }
   }
 
