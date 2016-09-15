@@ -10,6 +10,12 @@ div {
   border-radius: 0px !important;
 }
 
+.dr-logo {
+  width: 8em;
+  height: 3em;
+  margin: 5px 0px 7px 20px
+}
+
 .ui.menu .flex.item {
   flex: auto;
   border: 0;

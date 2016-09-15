@@ -93,7 +93,6 @@ export class SearchView implements OnInit {
   }
 
   openImagePopup(uid: string) {
-    console.log('openImagePopup: ', uid)
     let imagePopup: any = $('i[id="image_link_' + uid + '"]')
     imagePopup.popup({
       position: 'right center',
@@ -105,7 +104,6 @@ export class SearchView implements OnInit {
   }
 
   closeImagePopup(uid: string) {
-    console.log('closeImagePopup: ', uid)
     let imagePopup: any = $('i[id="image_link_' + uid + '"]')
     imagePopup.popup('hide')
   }
