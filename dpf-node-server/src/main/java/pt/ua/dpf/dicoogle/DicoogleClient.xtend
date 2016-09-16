@@ -110,7 +110,7 @@ class DicoogleClient {
 				return
 			}
 			
-			val zipOut = new ZipOutputStream(new FileOutputStream(zipFilePath))
+			val zipOut = new ZipOutputStream(fos)
 			zipOut.level = Deflater.DEFAULT_COMPRESSION
 			
 			val ready = new AtomicBoolean(true)

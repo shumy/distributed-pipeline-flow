@@ -5,10 +5,9 @@ import io.vertx.core.Vertx
 import pt.ua.dpf.dicoogle.DicoogleClient
 import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
-import rt.data.Repository
-import rt.pipeline.UserInfo
 import rt.plugin.service.WebMethod
 import rt.vertx.server.DefaultVertxServer
+import rt.vertx.server.intercept.JwtAuthInterceptor
 import rt.vertx.server.service.DescriptorService
 import rt.vertx.server.service.FolderManagerService
 import rt.vertx.server.service.RepositoryService
@@ -16,7 +15,6 @@ import rt.vertx.server.service.RouterService
 import rt.vertx.server.service.SubscriberService
 import rt.vertx.server.service.UsersService
 import rt.vertx.server.service.WebFileService
-import rt.vertx.server.intercept.JwtAuthInterceptor
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -73,12 +71,6 @@ class DpfServerStarter extends AbstractVerticle {
 		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' ]
 		val servicePointSrv = ServicePointService.B => [ repo = reposSrv.getRepo('srv-points') ]
 		val transfersSrv = TransferService.B => [ dicoogle = dicoogleClient srvPoint = servicePointSrv ]
-		
-		//private repositories (not published) ...
-		val usersRepo = new Repository<UserInfo> => [
-			//TODO: just demo data, replace with K/V DB
-			add('micaelpedrosa@gmail.com', new UserInfo('micaelpedrosa@gmail.com', #['/srv-transfer']))
-		]
 		
 		
 		server.pipeline => [

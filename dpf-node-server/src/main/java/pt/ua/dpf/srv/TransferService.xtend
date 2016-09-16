@@ -5,14 +5,11 @@ import java.util.UUID
 import pt.ua.dpf.dicoogle.DicoogleClient
 import pt.ua.dpf.dicoogle.QueryResult
 import pt.ua.dpf.dicoogle.TransferException
-import rt.async.pubsub.IPublisher
 import rt.async.pubsub.IResource
 import rt.data.Data
 import rt.data.Optional
-import rt.data.Validation
 import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.plugin.service.ServiceException
-import rt.plugin.service.ServiceUtils
 import rt.plugin.service.an.Context
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
@@ -21,15 +18,8 @@ import rt.vertx.server.service.RemoteSubscriber
 @Service
 @Data(metadata = false)
 class TransferService {
-	transient var IPublisher publisher
-	
 	val DicoogleClient dicoogle
 	val ServicePointService srvPoint
-	
-	@Validation
-	def void constructor() {
-		publisher = ServiceUtils.publisher
-	}
 	
 	@Public
 	@Context(name = 'resource', type = IResource)
@@ -39,7 +29,7 @@ class TransferService {
 			throw new ServiceException(500, 'No ServicePoint-ID available: ' + srvPointId)
 		
 		val respAddress = UUID.randomUUID.toString
-		val ro = RemoteSubscriber.B => [ address = respAddress publisher = this.publisher ]
+		val ro = RemoteSubscriber.B => [ address = respAddress ]
 		
 		dicoogle.findPatients(patientIds).thenTry[ qr |
 			println('TRANSFER-PATIENTS: ' + qr.numResults)
@@ -72,7 +62,7 @@ class TransferService {
 	@Context(name = 'resource', type = IResource)
 	def String downloadPatients(List<String> patientIds) {
 		val respAddress = UUID.randomUUID.toString
-		val ro = RemoteSubscriber.B => [ address = respAddress publisher = this.publisher ]
+		val ro = RemoteSubscriber.B => [ address = respAddress ]
 		
 		dicoogle.findPatients(patientIds).then[ qr |
 			println('DOWNLOAD-PATIENTS: ' + qr.numResults)

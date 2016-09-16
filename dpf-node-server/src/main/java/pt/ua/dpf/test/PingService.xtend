@@ -12,7 +12,7 @@ import static extension pt.ua.dpf.test.TestDTO.*
 @Service
 class PingService {
 	
-	@Public(async = true)
+	@Public(worker = true)
 	@Proxy(name = 'channel', type = ChannelProxy)
 	@Context(name = 'headers', type = CtxHeaders)
 	def void ping(String name) {
