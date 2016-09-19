@@ -9,7 +9,7 @@
 	<artifactId>dpf-node-server</artifactId>
 	
 	<properties>
-		<rtsVersion>0.2.0</rtsVersion>
+		<rtsVersion>0.3.0</rtsVersion>
 	</properties>
 	
 	<dependencies>

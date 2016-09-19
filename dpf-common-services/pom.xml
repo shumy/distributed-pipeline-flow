@@ -12,12 +12,12 @@
 		<dependency>
 			<groupId>rts.core</groupId>
 			<artifactId>rts-data</artifactId>
-			<version>0.2.0</version>
+			<version>0.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>rts.core</groupId>
 			<artifactId>rts-entity</artifactId>
-			<version>0.2.0</version>
+			<version>0.3.0</version>
 		</dependency>
 	</dependencies>
 </project>
