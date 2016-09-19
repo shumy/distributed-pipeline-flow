@@ -85,7 +85,7 @@ class DpfServerStarter extends AbstractVerticle {
 			
 			addService('folder-manager', folderManagerSrv, #{ 'list' -> 'all', 'download' -> 'all', 'upload' -> 'admin' })
 			addService('service-point', servicePointSrv)
-			addService('transfers', transfersSrv, #{ 'all' -> '/srv-transfer' })
+			addService('transfers', transfersSrv)//, #{ 'all' -> '/srv-transfer' })
 			
 			failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 		]

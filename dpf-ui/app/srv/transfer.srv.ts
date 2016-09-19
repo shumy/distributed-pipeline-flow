@@ -25,10 +25,6 @@ export class TransferService {
   fireDownload(uri: string) {
     window.location.href = uri
   }
-
-  patientTransfers(srvPointId: string): Promise<IPatientTransfer[]> {
-    return this.proxy.patientTransfers(srvPointId)
-  }
 }
 
 export interface IPatientTransfer {
@@ -39,5 +35,4 @@ export interface IPatientTransfer {
 interface TransferProxy {
   transferPatients(patientIds: any[], srvPointId: string): Promise<string>
   downloadPatients(patientIds: any[]): Promise<string>
-  patientTransfers(srvPointId: string): Promise<IPatientTransfer[]>
 }

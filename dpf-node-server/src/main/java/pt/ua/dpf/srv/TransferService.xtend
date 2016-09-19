@@ -21,6 +21,7 @@ class TransferService {
 	val DicoogleClient dicoogle
 	val ServicePointService srvPoint
 	
+	
 	@Public
 	@Context(name = 'resource', type = IResource)
 	def String transferPatients(List<String> patientIds, String srvPointId) {
@@ -31,28 +32,29 @@ class TransferService {
 		val respAddress = UUID.randomUUID.toString
 		val ro = RemoteSubscriber.B => [ address = respAddress ]
 		
-		dicoogle.findPatients(patientIds).thenTry[ qr |
+		dicoogle.findPatients(patientIds).then([ qr |
 			println('TRANSFER-PATIENTS: ' + qr.numResults)
 			val reqInfo = new PipeChannelInfo(PipeChannelInfo.Type.SENDER)
 			channel.request(reqInfo).then[ pipe |
 				println('CHANNEL-REQ-OK')
-				dicoogle.transferTo(qr.allImages, pipe).next[ sopUID |
+				
+				dicoogle.transferTo(qr.allImages, pipe).subscribe([sopUID |
 					ro.next(PatientTransfer.B => [ id = qr.findSopUID(sopUID).id ])
-				].complete[
+				], [
 					ro.complete
 					resource.unsubscribe(respAddress)
 					pipe.close
-				].error[
+				], [
 					ro.errorNotify(qr, it)
-				]
+				])
 			]
-		].error[ ex |
+		], [ ex |
 			ex.printStackTrace
 			
 			println('CHANNEL-ERROR: ' + ex.message)
 			ro.error(ex.message)
 			resource.unsubscribe(respAddress)
-		]
+		])
 		
 		resource.subscribe(respAddress)
 		return respAddress
@@ -64,31 +66,26 @@ class TransferService {
 		val respAddress = UUID.randomUUID.toString
 		val ro = RemoteSubscriber.B => [ address = respAddress ]
 		
-		dicoogle.findPatients(patientIds).then[ qr |
+		dicoogle.findPatients(patientIds).then([ qr |
 			println('DOWNLOAD-PATIENTS: ' + qr.numResults)
-			dicoogle.download(qr.allImages, './downloads/d_' + respAddress + '.zip').next[ sopUID |
+			dicoogle.download(qr.allImages, './downloads/d_' + respAddress + '.zip').subscribe([ sopUID |
 				ro.next(PatientTransfer.B => [ id = qr.findSopUID(sopUID).id ])
-			].complete[
+			], [
 				ro.complete
 				resource.unsubscribe(respAddress)
-			].error[
+			], [
 				ro.errorNotify(qr, it)
-			]
-		].error[ ex |
+			])
+		], [ ex |
 			ex.printStackTrace
 			
 			println('DOWNLOAD-ERROR: ' + ex.message)
 			ro.error(ex.message)
 			resource.unsubscribe(respAddress)
-		]
+		])
 		
 		resource.subscribe(respAddress)
 		return respAddress
-	}
-	
-	@Public
-	def List<PatientTransfer> patientTransfers(String srvPointId) {
-		return null
 	}
 	
 	private def errorNotify(RemoteSubscriber ro, QueryResult qr, Throwable ex) {

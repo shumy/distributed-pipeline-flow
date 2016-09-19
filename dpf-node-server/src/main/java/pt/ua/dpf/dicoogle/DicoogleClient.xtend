@@ -61,11 +61,13 @@ class DicoogleClient {
 			val qr = new QueryResult
 			val nResults = new AtomicInteger(0)
 			patientIds.forEach[ pID |
-				query('PatientID:' + pID).then[
+				query('PatientID:' + pID).then([
 					qr.merge(it)
 					if (nResults.incrementAndGet == patientIds.size)
 						promise.resolve(qr)
-				].error[ promise.reject(it) ]
+				], [
+					promise.reject(it)
+				])
 			]
 		]
 		
@@ -105,7 +107,7 @@ class DicoogleClient {
 			try {
 				fos = new FileOutputStream(zipFilePath)
 			} catch(Exception ex) {
-				sub.error(ex)
+				sub.reject(ex)
 				sub.complete
 				return
 			}
@@ -120,7 +122,7 @@ class DicoogleClient {
 					ready.set = false
 					httpClient.getNow('/legacy/file?uid=' + image.sopInstanceUID)[ resp |
 						if (resp.statusCode != 200) {
-							sub.error(new TransferException(image.sopInstanceUID, resp.statusMessage))
+							sub.reject(new TransferException(image.sopInstanceUID, resp.statusMessage))
 							return
 						}
 						
@@ -162,7 +164,7 @@ class DicoogleClient {
 					ready.set = false
 					httpClient.getNow('/legacy/file?uid=' + image.sopInstanceUID)[ resp |
 						if (resp.statusCode != 200) {
-							sub.error(new TransferException(image.sopInstanceUID, resp.statusMessage))
+							sub.reject(new TransferException(image.sopInstanceUID, resp.statusMessage))
 							return
 						}
 						
@@ -184,7 +186,7 @@ class DicoogleClient {
 							
 							onError[
 								println('Error transfer: ' + image.sopInstanceUID)
-								sub.error(new TransferException(image.sopInstanceUID,it))
+								sub.reject(new TransferException(image.sopInstanceUID,it))
 								ready.set = true
 							]
 							

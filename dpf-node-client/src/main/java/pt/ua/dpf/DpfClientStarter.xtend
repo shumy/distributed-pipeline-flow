@@ -54,7 +54,9 @@ class DpfClientStarter {
 			val spProxy = createProxy('service-point', ServicePointProxy)
 			onOpen[
 				println('CLIENT-OPEN: ' + client)
-				spProxy.create(SrvPoint.B => [ name = 'SP Test' ])
+				spProxy.create(SrvPoint.B => [ name = 'SP Test' ]).then[
+					println('CLIENT-REGISTERED: ' + client)
+				]
 			]
 		]
 		
