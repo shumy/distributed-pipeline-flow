@@ -5,8 +5,10 @@ import { Observable } from 'rxjs/Observable';
 import { config } from '../app.config';
 
 import {
+  UUID, ClientRouter,
+  TransferProxy,
   RepositoryService, Repository,
-  DicoogleService, TransferService, IPatientTransfer
+  DicoogleService, IPatientTransfer
 } from '../app.imports';
 
 @Component({
@@ -16,6 +18,8 @@ import {
   styles: ['.main.menu { margin: 60px 20px 5px; }']
 })
 export class SearchView implements OnInit {
+  private trfProxy: TransferProxy
+
   srvPointsRepo: Repository
 
   query = new Control()
@@ -25,11 +29,13 @@ export class SearchView implements OnInit {
   tags = {}
 
   constructor(
+    private router: ClientRouter,
     private ref: ChangeDetectorRef,
     private repoSrv: RepositoryService,
-    private dicoogleSrv: DicoogleService,
-    private trfSrv: TransferService
+    private dicoogleSrv: DicoogleService
   ) {
+    this.trfProxy = router.createProxy('transfers')
+
     this.initSearch()
 
     this.srvPointsRepo = repoSrv.get('srv-points')
@@ -134,26 +140,27 @@ export class SearchView implements OnInit {
     this.ref.detectChanges()
 
     if (this.srvPointsRepo.selected.id === '0') {
-        this.trfSrv.downloadPatients(selectedIds).then(obs => {
-            toastr.success('Building zip file...')
-            obs.subscribe(
-              notif => this.onTransferredNotif(notif),
-              error => toastr.error(error),
-              () => {
-                let uri = '/file-download/d_' + obs.address + '.zip'
-                this.trfSrv.fireDownload(uri)
-                toastr.success('Downloading file...')
-              }
-            )
-        }).catch(error => toastr.error(error.message))
+      let fileName = UUID.generate()
+      this.trfProxy.downloadPatients(selectedIds, fileName).then(obs => {
+          toastr.success('Building zip file...')
+          obs.subscribe(
+            notif => this.onTransferredNotif(notif),
+            error => toastr.error(error.message),
+            () => {
+              let uri = '/file-download/' + fileName + '.zip'
+              window.location.href = uri
+              toastr.success('Downloading file...')
+            }
+          )
+      }).catch(error => toastr.error(error.message))
     } else {
-        this.trfSrv.transferPatients(selectedIds, this.srvPointsRepo.selected.id).then(obs => {
-            toastr.success('Transfer request submitted...')
-            obs.subscribe(
-              notif => this.onTransferredNotif(notif),
-              error => toastr.error(error)
-            )
-        }).catch(error => toastr.error(error.message))
+      this.trfProxy.transferPatients(selectedIds, this.srvPointsRepo.selected.id).then(obs => {
+          toastr.success('Transfer request submitted...')
+          obs.subscribe(
+            notif => this.onTransferredNotif(notif),
+            error => toastr.error(error.message)
+          )
+      }).catch(error => toastr.error(error.message))
     }
   }
 
