@@ -15,6 +15,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>rts.core</groupId>
+			<artifactId>rts-service-utils</artifactId>
+			<version>${rtsVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>rts.core</groupId>
 			<artifactId>rts-vertx-server</artifactId>
 			<version>${rtsVersion}</version>
 		</dependency>

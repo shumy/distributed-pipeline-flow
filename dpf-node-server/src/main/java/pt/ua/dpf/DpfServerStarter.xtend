@@ -6,14 +6,14 @@ import pt.ua.dpf.dicoogle.DicoogleClient
 import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
 import rt.plugin.service.WebMethod
+import rt.utils.service.DescriptorService
+import rt.utils.service.RepositoryService
+import rt.utils.service.RouterService
+import rt.utils.service.SubscriberService
+import rt.utils.service.UsersService
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.intercept.JwtAuthInterceptor
-import rt.vertx.server.service.DescriptorService
 import rt.vertx.server.service.FolderManagerService
-import rt.vertx.server.service.RepositoryService
-import rt.vertx.server.service.RouterService
-import rt.vertx.server.service.SubscriberService
-import rt.vertx.server.service.UsersService
 import rt.vertx.server.service.WebFileService
 
 //import static io.vertx.core.Vertx.*
