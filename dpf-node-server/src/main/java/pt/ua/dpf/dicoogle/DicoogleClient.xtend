@@ -186,7 +186,7 @@ class DicoogleClient {
 							
 							onError[
 								println('Error transfer: ' + image.sopInstanceUID)
-								sub.reject(new TransferException(image.sopInstanceUID,it))
+								sub.reject(new TransferException(image.sopInstanceUID, it))
 								ready.set = true
 							]
 							

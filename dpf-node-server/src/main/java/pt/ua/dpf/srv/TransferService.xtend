@@ -2,8 +2,6 @@ package pt.ua.dpf.srv
 
 import java.util.List
 import pt.ua.dpf.dicoogle.DicoogleClient
-import pt.ua.dpf.dicoogle.QueryResult
-import pt.ua.dpf.dicoogle.TransferException
 import rt.async.observable.Observable
 import rt.async.observable.ObservableResult
 import rt.data.Data
@@ -12,6 +10,9 @@ import rt.pipeline.pipe.channel.IPipeChannel.PipeChannelInfo
 import rt.plugin.service.ServiceException
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
+import rt.pipeline.PathValidator
+import java.nio.file.Files
+import java.nio.file.Paths
 
 @Service
 @Data(metadata = false)
@@ -30,14 +31,10 @@ class TransferService {
 				println('TRANSFER-PATIENTS: ' + qr.numResults)
 				val reqInfo = new PipeChannelInfo(PipeChannelInfo.Type.SENDER)
 				channel.request(reqInfo).then[ pipe |
-					dicoogle.transferTo(qr.allImages, pipe).subscribe([sopUID |
-						sub.next(PatientTransfer.B => [ id = qr.findSopUID(sopUID).id ])
-					], [
-						sub.complete
-						pipe.close
-					], [
-						sub.errorNotify(qr, it)
-					])
+					dicoogle.transferTo(qr.allImages, pipe)
+						.map[ sopUID | PatientTransfer.B => [ id = qr.findSopUID(sopUID).id ] ]
+						.onComplete[ pipe.close println('PIPE-CLOSED') ]
+						.delegate(sub)
 				]
 			]
 		]
@@ -47,32 +44,23 @@ class TransferService {
 	
 	@Public
 	def Observable<PatientTransfer> downloadPatients(List<String> patientIds, String fileName) {
-		//TODO: error on file already exists?
+		if (!PathValidator.isValid(fileName))
+			throw new ServiceException(500, 'File name not accepted: ' + fileName)
+			
+		val filePath = './downloads/' + fileName + '.zip'
+		if (Files.exists(Paths.get(filePath)))
+			throw new ServiceException(500, 'File already exists: ' + fileName)
 		
 		val ObservableResult<PatientTransfer> pResult = [ sub |
 			dicoogle.findPatients(patientIds).then[ qr |
 				println('DOWNLOAD-PATIENTS: ' + qr.numResults)
-				dicoogle.download(qr.allImages, './downloads/' + fileName + '.zip').subscribe([ sopUID |
-					sub.next(PatientTransfer.B => [ id = qr.findSopUID(sopUID).id ])
-				], [
-					sub.complete
-				], [
-					sub.errorNotify(qr, it)
-				])
+				dicoogle.download(qr.allImages, filePath)
+					.map[ sopUID | PatientTransfer.B => [ id = qr.findSopUID(sopUID).id ] ]
+					.delegate(sub)
 			]
 		]
 		
 		return pResult.observe
-	}
-	
-	private def errorNotify(ObservableResult<PatientTransfer> sub, QueryResult qr, Throwable ex) {
-		if (ex instanceof TransferException) {
-			val tex = ex as TransferException
-			println('TRANFER-ERROR: ' + tex.message)
-			sub.next(PatientTransfer.B => [ id = qr.findSopUID(tex.sopUID).id error = tex.message ])
-		} else {
-			sub.reject(ex)
-		}
 	}
 }
 
