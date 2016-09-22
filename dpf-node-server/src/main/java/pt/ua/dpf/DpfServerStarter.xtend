@@ -76,8 +76,20 @@ class DpfServerStarter extends AbstractVerticle {
 		server.pipeline => [
 			addInterceptor(jwtAuth)
 			
-			addService('dpf-ui', WebFileService.B => [ folder = '../dpf-ui' ])
-			addService('api-ui', WebFileService.B => [ folder = '/api' root = '/api' resource = true ])
+			addService('dpf-ui', WebFileService.B => [
+				folder = '../dpf-ui'
+				replace = #{
+					'/index.html' 	-> '/dist/index.html',
+					'/search' 		-> '/dist/index.html',
+					'/tmg/dwsp' 	-> '/dist'
+				}
+			])
+			
+			addService('api-ui', WebFileService.B => [
+				resource = true
+				folder = '/api'
+				root = '/api'
+			])
 			
 			addService('users', usersSrv)
 			addService('subscriber', subsSrv)

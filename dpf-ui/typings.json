@@ -1,7 +1,7 @@
 {
   "globalDependencies": {
-    "dropzone": "registry:dt/dropzone#4.3.0+20160412155034",
-    "es6-shim": "registry:dt/es6-shim#0.31.2+20160602141504",
+    "core-js": "registry:dt/core-js#0.0.0+20160725163759",
+    "node": "registry:dt/node#6.0.0+20160909174046",
     "jquery": "registry:dt/jquery#1.10.0+20160417213236",
     "js-cookie": "registry:dt/js-cookie#2.0.0+20160317120654",
     "toastr": "registry:dt/toastr#2.1.1+20160510010435"

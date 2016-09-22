@@ -1,29 +1,14 @@
 {
-	"compileOnSave": true,
-	"compilerOptions": {
-		"target": "es5",
-		"module": "system",
-		"moduleResolution": "node",
-		"removeComments": true,
-		"preserveConstEnums": true,
-		"emitDecoratorMetadata": true,
-		"experimentalDecorators": true,
-		"noImplicitAny": false,
-		"sourceMap": true,
-		"outDir": "dist"
-	},
-	"exclude": [
-		"node_modules"
-	],
-	"files": [
-		"main.ts",
-    "lib/openid-connect.ts",
-		"app/view/search.view.ts",
-		"app/view/results.view.ts",
-    "app/app.ts",
-    "app/app.imports.ts",
-		"app/app.config.ts",
-		"app/app.routes.ts",
-		"typings/index.d.ts"
-	]
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": false,
+    "noImplicitAny": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "outDir": "build"
+  }
 }

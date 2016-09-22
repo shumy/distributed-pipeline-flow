@@ -7,6 +7,7 @@
 .settings/
 target/
 xtend-gen/
+build/
 dist/
 node_modules/
 downloads/

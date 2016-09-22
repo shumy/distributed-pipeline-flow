@@ -33,7 +33,7 @@ class TransferService {
 				channel.request(reqInfo).then[ pipe |
 					dicoogle.transferTo(qr.allImages, pipe)
 						.map[ sopUID | PatientTransfer.B => [ id = qr.findSopUID(sopUID).id ] ]
-						.onComplete[ pipe.close println('PIPE-CLOSED') ]
+						.onComplete[ pipe.close ]
 						.delegate(sub)
 				]
 			]
