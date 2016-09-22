@@ -1,0 +1,143 @@
+<div class="ui main tiny menu">
+  <div class="flex item">
+    <div class="ui icon input">
+      <input type="text" placeholder="Dicoogle Search..." [formControl]="query">
+      <i class="search icon"></i>
+    </div>
+  </div>
+  <div class="right menu">
+    <div class="item">
+      <div class="ui teal buttons">
+        <div class="ui button" (click)="transfer()">
+          <i *ngIf="srvPointsRepo.selected.data.icon" class="cube icon"></i>
+          {{srvPointsRepo.selected.data.name}}
+        </div>
+        <div class="ui dropdown icon button">
+          <i class="dropdown icon"></i>
+          <div class="menu">
+            <div class="ui search icon input">
+              <i class="search icon"></i>
+              <input type="text" name="search" placeholder="Service Point...">
+            </div>
+            <div *ngFor="let entry of srvPointsRepo | async" id="{{entry.id}}" class="item {{ entry.selected ? 'active selected' : '' }}">
+              <i *ngIf="entry.data.icon" class="cube icon"></i> {{entry.data.name}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ui content segment">
+  <table class="ui very basic table">
+    <thead>
+      <tr>
+        <th class="one wide">
+          <div class="ui checkbox">
+            <input type="checkbox" [checked]="allSelected" (click)="selectAll()">
+            <label></label>
+          </div>
+        </th>
+        <th>Patient</th>
+        <th>Studies</th>
+        <th>Modalities</th>
+        <th>Transferred</th>
+      </tr>
+    </thead>
+    <tbody>
+      <template ngFor let-patient [ngForOf]="patients">
+        <tr>
+          <td class="collapsing">
+            <div class="ui checkbox">
+              <input type="checkbox" [checked]="patient.selected" (click)="selectPatient(patient)">
+              <label></label>
+            </div>
+          </td>
+          <td>
+            <h5 class="ui header">
+              <i class="large blue tags link icon"></i>
+              <!--<i class="{{patient.gender == 'M' ? 'male' : 'female'}} icon"></i>-->
+              <i class="{{patient.open ? 'down' : 'right'}} triangle link icon" (click)="patient.open = !patient.open"></i>
+              <div class="content">{{patient.name}}</div>
+            </h5>
+          </td>
+          <td>{{patient.nStudies}}</td>
+          <td>[<span *ngFor="let mod of patient.modalities"> {{mod}}</span> ]</td>
+          <td>
+            <div *ngIf="patient.transfer" class="ui active progress" attr.id="progress_{{patient.id}}">
+              <div class="bar">
+                <div class="progress"></div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="patient.open">
+          <td colspan="5">
+            <!--link incon color #014cde -->
+            <div class="ui relaxed list" style="padding-left: 40px">
+              <div *ngFor="let study of patient.studies" class="item">
+                <i class="large blue tags link icon"></i>
+                <i class="{{study.open ? 'down' : 'right'}} triangle link icon" (click)="study.open = !study.open"></i>
+                <div class="content">
+                  <a class="header">Study: {{study.studyInstanceUID}}</a>
+                  <div class="ui horizontal divided list">
+                    <div class="item">Date: {{study.studyDate}}</div>
+                    <div class="item">Series: {{study.series.length}}</div>
+                    <div class="item">Modality: {{study.modalities}}</div>
+                  </div>
+                  <div *ngIf="study.open" class="ui relaxed list" style="padding-left: 20px">
+                    <div *ngFor="let serie of study.series" class="item">
+                      <i class="large blue tags link icon"></i>
+                      <i class="{{serie.open ? 'down' : 'right'}} triangle link icon" (click)="toggleSerie(serie)"></i>
+                      <div class="content">
+                        <div class="header">Serie: {{serie.serieInstanceUID}}</div>
+                        <div class="ui horizontal divided list">
+                          <div class="item">Number: {{serie.serieNumber}}</div>
+                          <div class="item">Images: {{serie.images.length}}</div>
+                        </div>
+                        <div *ngIf="serie.open" class="ui relaxed list" style="padding-left: 20px">
+                          <div *ngFor="let image of serie.images" class="item">
+                            <i attr.id="tags_link_{{image.sopInstanceUID}}" class="large blue tags link icon" (click)="openTagsModel(image.sopInstanceUID)"></i>
+                            <i attr.id="image_link_{{image.sopInstanceUID}}" class="large blue unhide icon" (mouseenter)="openImagePopup(image.sopInstanceUID)" (mouseleave)="closeImagePopup(image.sopInstanceUID)"></i>
+                            <div class="content">
+                              <div class="header">Image: {{image.sopInstanceUID}}</div>
+                              <div class="ui horizontal divided list">
+                                <div class="item">FileName: {{image.filename}}</div>
+                              </div>
+                              <!--BEGIN: image popups and modals-->
+                              <div attr.id="image_{{image.sopInstanceUID}}" class="ui very wide popup">
+                                <img class="ui fluid image" [src]="image.url">
+                              </div>
+                              <div attr.id="tags_{{image.sopInstanceUID}}" class="ui modal">
+                                <table class="ui celled striped table">
+                                  <thead>
+                                    <tr>
+                                      <th>Key</th>
+                                      <th>Value</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr *ngFor="let tag of tags[image.sopInstanceUID] | async">
+                                      <td>{{tag[0]}}</td>
+                                      <td>{{tag[1]}}</td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                              <!--END: image popups and modals-->
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
+</div>
