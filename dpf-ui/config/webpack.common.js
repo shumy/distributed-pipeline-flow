@@ -3,6 +3,12 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var helpers = require('./helpers');
 
+const compileOptions = {
+   DEBUG: true
+};
+
+const q = require('querystring').encode({json: JSON.stringify(compileOptions)});
+
 module.exports = {
   entry: {
     'polyfills': './src/polyfills.ts',
@@ -18,7 +24,7 @@ module.exports = {
     loaders: [
       {
         test: /\.ts$/,
-        loaders: ['awesome-typescript-loader', 'angular2-template-loader']
+        loaders: [`ifdef-loader?${q}`, 'awesome-typescript-loader', 'angular2-template-loader']
       },
       {
         test: /\.html$/,

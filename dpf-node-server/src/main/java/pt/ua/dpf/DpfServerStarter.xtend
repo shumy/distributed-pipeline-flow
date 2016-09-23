@@ -6,15 +6,15 @@ import pt.ua.dpf.dicoogle.DicoogleClient
 import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
 import rt.plugin.service.WebMethod
+import rt.utils.interceptor.JwtAuthInterceptor
 import rt.utils.service.DescriptorService
 import rt.utils.service.RepositoryService
 import rt.utils.service.RouterService
 import rt.utils.service.SubscriberService
 import rt.utils.service.UsersService
+import rt.utils.service.WebFileService
 import rt.vertx.server.DefaultVertxServer
-import rt.vertx.server.intercept.JwtAuthInterceptor
 import rt.vertx.server.service.FolderManagerService
-import rt.vertx.server.service.WebFileService
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -64,6 +64,24 @@ class DpfServerStarter extends AbstractVerticle {
 		]
 		
 		//services...
+		val dpfUiSrv = WebFileService.B => [
+				folder = '../dpf-ui'
+				index = '/dist/index.html'
+				replace = #{
+					'/search' 		-> '/',
+					'/results' 		-> '/',
+					'/tmg/dwsp' 	-> '/dist'
+				}
+			]
+		
+		val apiUiSrv = WebFileService.B => [
+				resource = true
+				folder = '/api'
+				replace = #{
+					'/api' -> '/'
+				}
+			]
+		
 		val usersSrv = UsersService.create
 		val subsSrv = SubscriberService.create
 		val reposSrv = RepositoryService.B => [ repos = #[ 'srv-points' ] ]
@@ -76,20 +94,8 @@ class DpfServerStarter extends AbstractVerticle {
 		server.pipeline => [
 			addInterceptor(jwtAuth)
 			
-			addService('dpf-ui', WebFileService.B => [
-				folder = '../dpf-ui'
-				replace = #{
-					'/index.html' 	-> '/dist/index.html',
-					'/search' 		-> '/dist/index.html',
-					'/tmg/dwsp' 	-> '/dist'
-				}
-			])
-			
-			addService('api-ui', WebFileService.B => [
-				resource = true
-				folder = '/api'
-				root = '/api'
-			])
+			addService('dpf-ui', dpfUiSrv)
+			addService('api-ui', apiUiSrv)
 			
 			addService('users', usersSrv)
 			addService('subscriber', subsSrv)
