@@ -1,0 +1,40 @@
+{
+  "project": {
+    "version": "1.0.0-beta.15",
+    "name": "dpf-ui"
+  },
+  "apps": [
+    {
+      "root": "src",
+      "outDir": "dist",
+      "assets": "assets",
+      "index": "index.html",
+      "main": "main.ts",
+      "tsconfig": "tsconfig.json",
+      "prefix": "app",
+      "mobile": false,
+      "styles": [
+        "../semantic/dist/semantic.min.css",
+        "../node_modules/toastr/build/toastr.min.css",
+        "styles.css"
+      ],
+      "scripts": [
+        "../node_modules/jquery/dist/jquery.min.js",
+        "../node_modules/js-cookie/src/js.cookie.js",
+        "../node_modules/toastr/build/toastr.min.js",
+        "../semantic/dist/semantic.min.js"
+      ],
+      "environments": {
+        "source": "environments/environment.ts",
+        "dev": "environments/environment.ts",
+        "prod": "environments/environment.prod.ts"
+      }
+    }
+  ],
+  "addons": [],
+  "packages": [],
+  "defaults": {
+    "styleExt": "css",
+    "prefixInterfaces": false
+  }
+}

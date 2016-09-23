@@ -1,15 +1,12 @@
-/// #if DEBUG
-  console.debug('---------------DEBUG MODE ENABLED------------------')
-/// #endif
+import './polyfills.ts';
 
-import { enableProdMode }                   from '@angular/core';
-import { platformBrowserDynamic }           from '@angular/platform-browser-dynamic';
-import { AppModule }                        from './app/app.module';
+import { enableProdMode }         from '@angular/core';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { environment }            from './environments/environment';
+import { AppModule }              from './app/';
 
-if (process.env.ENV === 'production') {
-  enableProdMode()
+if (environment.production) {
+  enableProdMode();
 }
 
-platformBrowserDynamic().bootstrapModule(AppModule)
-.then(_ => { console.log('---APP-READY---') })
-.catch(err => console.log(err))
+platformBrowserDynamic().bootstrapModule(AppModule);

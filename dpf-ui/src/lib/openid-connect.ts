@@ -1,3 +1,5 @@
+declare const Cookies
+
 export class OIDC {
   static discover(url: string): Promise<OIDCIssuer> {
     return get(url + '.well-known/openid-configuration', 3000)

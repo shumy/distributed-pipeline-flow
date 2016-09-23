@@ -1,17 +1,21 @@
-import { UUID, ClientRouter, Pipeline }                                     from 'rts-ts-client';
-import { EventsService, SubscriberService, RepositoryService }              from 'rts-ts-client';
-
-import { AuthService }                                                      from './srv/oidcAuth.srv';
-import { DicoogleService }                                                  from './srv/dicoogle.srv';
+import { UUID } from 'rts-ts-client';
 
 export interface Config {
   host: string
+  server: string
+  client: string
   dicoogleHost: string
+  authProvider: string
+  authClient: string
 }
 
 export let config: Config = {
   host: 'localhost:9090',
-  dicoogleHost: 'localhost:8080'
+  server: 'ws://localhost:9090/clt',
+  client: 'web-' + UUID.generate(),
+  dicoogleHost: 'localhost:8080',
+  authProvider: 'http://localhost:8081/auth/realms/dev/',
+  authClient: 'screen-dr'
 }
 
 //Toastr configs
@@ -19,20 +23,3 @@ toastr.options = {
   positionClass: 'toast-bottom-right',
   timeOut: 5000
 }
-
-const authProvider = 'http://localhost:8081/auth/realms/dev/'
-const authClient = 'screen-dr'
-
-const server = 'ws://localhost:9090/clt'
-const client = 'web-' + UUID.generate()
-
-const pipeline = new Pipeline
-pipeline.failHandler(error => console.log('PIPELINE-FAIL: ' + error))
-
-export const router = new ClientRouter(server, client, pipeline)
-router.authMgr = new AuthService(authProvider, authClient)
-
-const evtSrv = new EventsService(router)
-export const subSrv = new SubscriberService(router, evtSrv)
-export const repoSrv = new RepositoryService(router, evtSrv)
-  repoSrv.create('srv-points').connect()
