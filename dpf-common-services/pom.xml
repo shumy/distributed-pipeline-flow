@@ -10,12 +10,12 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>rts.core</groupId>
+			<groupId>com.github.shumy</groupId>
 			<artifactId>rts-data</artifactId>
 			<version>0.3.0</version>
 		</dependency>
 		<dependency>
-			<groupId>rts.core</groupId>
+			<groupId>com.github.shumy</groupId>
 			<artifactId>rts-entity</artifactId>
 			<version>0.3.0</version>
 		</dependency>

@@ -14,7 +14,7 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>rts.core</groupId>
+			<groupId>com.github.shumy</groupId>
 			<artifactId>rts-ws-client</artifactId>
 			<version>${rtsVersion}</version>
 		</dependency>
