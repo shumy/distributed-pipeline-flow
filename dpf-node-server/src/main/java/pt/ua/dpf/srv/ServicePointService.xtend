@@ -4,14 +4,14 @@ import java.util.HashMap
 import java.util.List
 import pt.ua.dpf.services.ServicePointInterface
 import pt.ua.dpf.services.SrvPoint
-import rt.async.pubsub.IResource
 import rt.data.Data
 import rt.data.Repository
+import rt.pipeline.IResource
+import rt.plugin.service.an.Context
 import rt.plugin.service.an.Proxy
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
 import rt.vertx.server.ChannelProxy
-import rt.plugin.service.an.Context
 
 @Service(ServicePointInterface)
 @Data(metadata = false)

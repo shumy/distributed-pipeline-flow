@@ -1,5 +1,5 @@
 import { IAuthManager, AuthInfo, UserInfo, ChangeEvent } from 'rts-ts-client';
-import { OIDC, OIDCClient } from '../../lib/openid-connect'
+import { OIDC, OIDCClient } from 'rts-ts-client'
 
 export class AuthService implements IAuthManager {
   _client: OIDCClient
