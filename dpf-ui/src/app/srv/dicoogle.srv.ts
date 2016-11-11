@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
+import { Http, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
+
+import { ClientRouter }  from 'rts-ts-client';
 
 import { config } from '../app.config';
 
@@ -10,13 +12,12 @@ export class DicoogleService {
 
   host: string
   
-  constructor (private http: Http) {
+  constructor (private http: Http, private router: ClientRouter) {
     this.host = config.dicoogleHost
   }
 
   tagsFor(uid: string) {
-    return this.http
-      .get('http://' + this.host + '/dump?uid=' + uid)
+    return this.get('http://' + this.host + '/dump?uid=' + uid)
       .map(_ => _.json().results.fields)
       .map(fields => {
         let res = []
@@ -33,8 +34,7 @@ export class DicoogleService {
   }
 
   rawSearch(query: string): Observable<any> {
-    return this.http
-      .get('http://' + this.host + '/searchDIM?query=' + query + '&keyword=true')
+    return this.get('http://' + this.host + '/searchDIM?query=' + query + '&keyword=true')
       .map(_ => _.json().results)
       .filter(_ => _.length != 0)
       .map(results => {
@@ -44,5 +44,15 @@ export class DicoogleService {
         })
         return results
       })
+  }
+
+  private get(url: string) {
+    if (this.router.authMgr.isLogged) {
+      let headers = new Headers({ 'Authorization': `Bearer ${this.router.authMgr.authInfo.token}` })
+      let options = new RequestOptions({ headers: headers })
+      return this.http.get(url, options)
+    }
+    
+    return this.http.get(url)
   }
 }
