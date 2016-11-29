@@ -14,6 +14,7 @@ import { DicoogleService }        from './srv/dicoogle.srv';
 import { Application }            from './app';
 import { SearchView }             from './view/search.view';
 import { ResultsView }            from './view/results.view';
+import { UploadView }            from './view/upload.view';
 
 //rts config
 import { ClientRouter, Pipeline }                               from 'rts-ts-client';
@@ -33,7 +34,7 @@ const repoSrv = new RepositoryService(router, evtSrv)
 
 @NgModule({
   imports: [ BrowserModule, ReactiveFormsModule, HttpModule, routing ],
-  declarations: [ Application, SearchView, ResultsView ],
+  declarations: [ Application, SearchView, ResultsView, UploadView ],
   bootstrap: [ Application ],
   providers: [
     DicoogleService,

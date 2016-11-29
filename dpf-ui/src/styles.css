@@ -49,3 +49,10 @@ div {
 .ui.progress {
   margin-bottom: 0px !important;
 }
+
+.dropzone {
+  flex: auto;
+  border: 2px dashed #0087F7;
+  padding: 30px 30px;
+  margin: 10px;
+}

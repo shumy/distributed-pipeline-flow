@@ -1,4 +1,6 @@
 # distributed-pipeline-flow
 
-### Build app with ng cli
-ng build
+### command hits
+ng build //build app
+
+npm install --save-dev @types/<lib> //npm install lib typings 

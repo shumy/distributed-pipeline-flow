@@ -56,6 +56,10 @@ class DpfServerStarter extends AbstractVerticle {
 		val server = new DefaultVertxServer(vertx, '/clt', '')
 		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
 		
+		dicoogleClient.upload('./downloads/micaelpedrosa@gmail.com/patient#1color_left.dcm').then[
+			println('upload-end')
+		]
+		
 		//interceptors
 		val jwtAuth = JwtAuthInterceptor.B => [
 			jwksUrl = 'http://localhost:8081/auth/realms/dev/protocol/openid-connect/certs'
@@ -84,7 +88,7 @@ class DpfServerStarter extends AbstractVerticle {
 		val subsSrv = SubscriberService.create
 		val reposSrv = RepositoryService.B => [ repos = #[ 'srv-points' ] ]
 		
-		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' ]
+		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' isHomeManager = true ]
 		val servicePointSrv = ServicePointService.B => [ repo = reposSrv.getRepo('srv-points') ]
 		val transfersSrv = TransferService.B => [ dicoogle = dicoogleClient srvPoint = servicePointSrv ]
 		
@@ -99,7 +103,7 @@ class DpfServerStarter extends AbstractVerticle {
 			addService('subscriber', subsSrv)
 			addService('repository', reposSrv)
 			
-			addService('folder-manager', folderManagerSrv, #{ 'list' -> 'all', 'download' -> 'all', 'upload' -> 'admin' })
+			addService('folder-manager', folderManagerSrv, #{ 'all' -> '/srv-home' })
 			addService('service-point', servicePointSrv)
 			addService('transfers', transfersSrv, #{ 'all' -> '/srv-transfer' })
 			
@@ -160,6 +164,16 @@ class DpfServerStarter extends AbstractVerticle {
 		server.pipeline.addService('routes', RouterService.B => [
 			router = server.webRouter
 		])
+		
+		//test sql
+		/*val sql2o = new Sql2o("jdbc:postgresql://localhost/screen-dr", "shumy", "shumy22193")
+		val con = sql2o.open()
+		val result = con.createQuery("select * from foo").executeAndFetch(Foo)
+		result.forEach[
+			print('''id: «id» ''')
+			println('''name: «name»''')
+		]*/
+		
 		
 		server.listen(port)
 		println('''DPF-SERVER available at port: «port»''')

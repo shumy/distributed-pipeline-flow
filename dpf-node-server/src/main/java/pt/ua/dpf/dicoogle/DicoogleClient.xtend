@@ -23,6 +23,11 @@ import rt.async.promise.Promise
 import rt.async.promise.PromiseResult
 import rt.pipeline.pipe.channel.IPipeChannel
 import rt.pipeline.pipe.channel.SendBuffer
+import java.nio.file.Files
+import java.nio.file.Paths
+import io.vertx.core.http.HttpHeaders
+import io.vertx.core.buffer.Buffer
+import java.util.UUID
 
 class DicoogleClient {
 	val Gson gson = new Gson
@@ -77,6 +82,11 @@ class DicoogleClient {
 	def Promise<Void> download(String sopInstanceUID, String filePath) {
 		val PromiseResult<Void> pResult = [ promise |
 			httpClient.getNow('/legacy/file?uid=' + sopInstanceUID)[ resp |
+				if (resp.statusCode != 200) {
+					promise.reject(new RuntimeException('Rejected status: ' + resp.statusCode))
+					return
+				}
+				
 				resp.pause
 				
 				val options = new OpenOptions => [ create = true write = true ]
@@ -96,6 +106,79 @@ class DicoogleClient {
 					}
 				]
 			]	
+		]
+		
+		return pResult.promise
+	}
+	
+	def Promise<Void> upload(String filePath) {
+		val PromiseResult<Void> pResult = [ promise |
+			val req = httpClient.post('/ext/stow')[ resp |
+				println('''upload-response: «resp.statusCode» «resp.statusMessage»''')
+				if (resp.statusCode != 200) {
+					promise.reject(new RuntimeException('''Dicoogle-Upload: «resp.statusCode» «resp.statusMessage»'''))
+					return
+				}
+				
+				promise.resolve(null)
+			]
+			
+			req => [
+				chunked = true
+				timeout = 60000
+				putHeader(HttpHeaders.CONTENT_TYPE, "multipart/form-data; boundary=FileBoundary")
+				putHeader(HttpHeaders.ACCEPT, "application/json")
+			]
+			
+			/*
+			//alternative, use with chunked = false
+			val buffer = Buffer.buffer => [
+				appendString('--FileBoundary\r\n')
+				appendString('Content-Disposition: form-data; name="file"; filename="' + UUID.randomUUID.toString + '.dcm"\r\n')
+				appendString('Content-Type: application/dicom\r\n')
+				appendString('\r\n')
+				
+				try {
+					appendBytes(Files.readAllBytes(Paths.get(filePath)))
+				} catch (Exception e) {
+					promise.reject(e)
+					return
+				}
+				
+				appendString('\r\n')
+				appendString('--FileBoundary--\r\n')
+			]
+			req.end(buffer)
+			*/
+			
+			
+			val options = new OpenOptions => [ read = true]
+			vertx.fileSystem.open(filePath, options)[
+				if (failed) {
+					promise.reject(cause)
+				} else {
+					req.write('--FileBoundary\r\n')
+					req.write('Content-Disposition: form-data; name="file"; filename="' + UUID.randomUUID.toString + '.dcm"\r\n')
+					req.write('Content-Type: application/dicom\r\n')
+					req.write('\r\n')
+					
+					val file = result
+					val pump = Pump.pump(file, req)
+					file.endHandler[
+						file.close[
+							if (succeeded) {
+								req.write('\r\n')
+								req.write('--FileBoundary--\r\n')
+								req.end
+							} else {
+								promise.reject(cause)
+							}
+						]
+					]
+					
+					pump.start
+				}
+			]
 		]
 		
 		return pResult.promise
