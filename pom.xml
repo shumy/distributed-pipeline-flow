@@ -61,6 +61,7 @@
 	</build>
 
 	<modules>
+    <module>dpf-model</module>
 		<module>dpf-common-services</module>
 		<module>dpf-node-client</module>
 		<module>dpf-node-server</module>

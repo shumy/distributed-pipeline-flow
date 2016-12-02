@@ -23,10 +23,7 @@ import rt.async.promise.Promise
 import rt.async.promise.PromiseResult
 import rt.pipeline.pipe.channel.IPipeChannel
 import rt.pipeline.pipe.channel.SendBuffer
-import java.nio.file.Files
-import java.nio.file.Paths
 import io.vertx.core.http.HttpHeaders
-import io.vertx.core.buffer.Buffer
 import java.util.UUID
 
 class DicoogleClient {
@@ -39,8 +36,8 @@ class DicoogleClient {
 		this.vertx = vertx
 		
 		val httpOptions = new HttpClientOptions => [
-			defaultHost = 'localhost'
-			defaultPort = 8080
+			defaultHost = host
+			defaultPort = port
 		]
 		
 		httpClient = vertx.createHttpClient(httpOptions)

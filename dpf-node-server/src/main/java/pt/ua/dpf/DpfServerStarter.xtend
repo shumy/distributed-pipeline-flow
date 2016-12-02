@@ -56,10 +56,6 @@ class DpfServerStarter extends AbstractVerticle {
 		val server = new DefaultVertxServer(vertx, '/clt', '')
 		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
 		
-		dicoogleClient.upload('./downloads/micaelpedrosa@gmail.com/patient#1color_left.dcm').then[
-			println('upload-end')
-		]
-		
 		//interceptors
 		val jwtAuth = JwtAuthInterceptor.B => [
 			jwksUrl = 'http://localhost:8081/auth/realms/dev/protocol/openid-connect/certs'
