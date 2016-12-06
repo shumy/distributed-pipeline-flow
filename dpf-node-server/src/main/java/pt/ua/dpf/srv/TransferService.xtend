@@ -13,12 +13,16 @@ import rt.plugin.service.an.Service
 import rt.pipeline.PathValidator
 import java.nio.file.Files
 import java.nio.file.Paths
+import rt.pipeline.UserInfo
+import rt.plugin.service.an.Context
 
 @Service
 @Data(metadata = false)
 class TransferService {
 	val DicoogleClient dicoogle
 	val ServicePointService srvPoint
+	
+	val String folder
 	
 	@Public
 	def Observable<PatientTransfer> transferPatients(List<String> patientIds, String srvPointId) {
@@ -43,11 +47,13 @@ class TransferService {
 	}
 	
 	@Public
+	@Context(name = 'user', type = UserInfo)
 	def Observable<PatientTransfer> downloadPatients(List<String> patientIds, String fileName) {
 		if (!PathValidator.isValid(fileName))
 			throw new ServiceException(500, 'File name not accepted: ' + fileName)
-			
-		val filePath = './downloads/' + fileName + '.zip'
+		
+		val dirPath = folder + '/' + user.name
+		val filePath = dirPath + '/' + fileName + '.zip'
 		if (Files.exists(Paths.get(filePath)))
 			throw new ServiceException(500, 'File already exists: ' + fileName)
 		

@@ -14,6 +14,7 @@ import org.hibernate.search.annotations.Indexed
 import org.hibernate.search.annotations.IndexedEmbedded
 import rt.data.Data
 import rt.data.Optional
+import org.hibernate.search.annotations.ContainedIn
 
 @Data @Entity @Indexed
 @Analyzer(impl = StandardAnalyzer)
@@ -29,7 +30,13 @@ class Patient {
 	@Field String birthDate
 	//@Field Integer NumberOfPatientRelatedStudies
 	
-	@OneToMany
+	@ContainedIn
 	@IndexedEmbedded
+	@OneToMany(mappedBy = "patient", cascade = ALL)
 	@Optional Set<Study> studies = new HashSet<Study>
+	
+	def addStudy(Study study) {
+		study.patient = this
+		studies.add(study)
+	}
 }

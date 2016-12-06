@@ -28,6 +28,12 @@
 			<artifactId>logback-classic</artifactId>
 			<version>1.1.7</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>pt.ua.dpf</groupId>
+			<artifactId>dpf-model</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>pt.ua.dpf</groupId>
 			<artifactId>dpf-common-services</artifactId>
@@ -35,29 +41,16 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>org.sql2o</groupId>
-			<artifactId>sql2o</artifactId>
-			<version>1.5.4</version>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.193</version>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>9.4.1212</version>
 		</dependency>
-		<dependency>
-			<groupId>dcm4che</groupId>
-			<artifactId>dcm4che-core</artifactId>
-			<version>2.0.28</version>
-		</dependency>
 	</dependencies>
-	
-	<repositories>
-		<repository>
-			<id>dcm4che</id>
-			<name>dcm4che Repository</name>
-			<url>http://www.dcm4che.org/maven2</url>
-		</repository>
-	</repositories>
 	
 	<build>
 		<plugins>

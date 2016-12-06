@@ -15,6 +15,12 @@ import rt.utils.service.UsersService
 import rt.utils.service.WebFileService
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.FolderManagerService
+import pt.ua.Hibernate
+import pt.ua.model.dim.Patient
+import pt.ua.model.dim.Study
+import pt.ua.model.dim.Serie
+import pt.ua.model.dim.Image
+import pt.ua.srv.dim.LoadService
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -56,6 +62,15 @@ class DpfServerStarter extends AbstractVerticle {
 		val server = new DefaultVertxServer(vertx, '/clt', '')
 		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
 		
+		//config storage and index
+		Hibernate.config[
+			configure('hibernate-cfg.xml')
+			addAnnotatedClass(Patient)
+			addAnnotatedClass(Study)
+			addAnnotatedClass(Serie)
+			addAnnotatedClass(Image)
+		]
+		
 		//interceptors
 		val jwtAuth = JwtAuthInterceptor.B => [
 			jwksUrl = 'http://localhost:8081/auth/realms/dev/protocol/openid-connect/certs'
@@ -67,8 +82,8 @@ class DpfServerStarter extends AbstractVerticle {
 		val dpfUiSrv = WebFileService.B => [
 				folder = '../dpf-ui/dist'
 				replace = #{
-					'/search' 		-> '/',
-					'/results' 		-> '/'
+					'/search' 	-> '/',
+					'/results' 	-> '/'
 				}
 			]
 		
@@ -84,9 +99,10 @@ class DpfServerStarter extends AbstractVerticle {
 		val subsSrv = SubscriberService.create
 		val reposSrv = RepositoryService.B => [ repos = #[ 'srv-points' ] ]
 		
+		val loadService = LoadService.B => [ folder = './downloads' ]
 		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' isHomeManager = true ]
 		val servicePointSrv = ServicePointService.B => [ repo = reposSrv.getRepo('srv-points') ]
-		val transfersSrv = TransferService.B => [ dicoogle = dicoogleClient srvPoint = servicePointSrv ]
+		val transfersSrv = TransferService.B => [ folder = './downloads' dicoogle = dicoogleClient srvPoint = servicePointSrv ]
 		
 		
 		server.pipeline => [
@@ -99,6 +115,7 @@ class DpfServerStarter extends AbstractVerticle {
 			addService('subscriber', subsSrv)
 			addService('repository', reposSrv)
 			
+			addService('loader', loadService, #{ 'all' -> '/srv-home' })
 			addService('folder-manager', folderManagerSrv, #{ 'all' -> '/srv-home' })
 			addService('service-point', servicePointSrv)
 			addService('transfers', transfersSrv, #{ 'all' -> '/srv-transfer' })
@@ -160,16 +177,6 @@ class DpfServerStarter extends AbstractVerticle {
 		server.pipeline.addService('routes', RouterService.B => [
 			router = server.webRouter
 		])
-		
-		//test sql
-		/*val sql2o = new Sql2o("jdbc:postgresql://localhost/screen-dr", "shumy", "shumy22193")
-		val con = sql2o.open()
-		val result = con.createQuery("select * from foo").executeAndFetch(Foo)
-		result.forEach[
-			print('''id: «id» ''')
-			println('''name: «name»''')
-		]*/
-		
 		
 		server.listen(port)
 		println('''DPF-SERVER available at port: «port»''')

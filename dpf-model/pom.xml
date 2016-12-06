@@ -18,6 +18,7 @@
 			<artifactId>rts-plugin-service</artifactId>
 			<version>${rtsVersion}</version>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-search-orm</artifactId>

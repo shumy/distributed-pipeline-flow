@@ -24,6 +24,5 @@ export class Application {
 
   ngOnInit() {
     this.jQueryInit()
-    //let drop = new Dropzone('div#dropzone', { url: '/file-upload' })
   }
 }
