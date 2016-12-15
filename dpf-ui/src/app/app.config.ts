@@ -23,3 +23,7 @@ toastr.options = {
   positionClass: 'toast-bottom-right',
   timeOut: 5000
 }
+
+window.onerror = (error) => {
+  toastr.error(error)
+}

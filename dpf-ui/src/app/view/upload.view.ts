@@ -3,7 +3,7 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { ClientRouter }  from 'rts-ts-client';
 
 import { FolderManagerProxy } from '../srv/folder.srv';
-import { LoadProxy, IndexResult } from '../srv/load.srv';
+import { IndexProxy } from '../srv/load.srv';
 
 @Component({
   selector: 'upload-view',
@@ -12,14 +12,14 @@ import { LoadProxy, IndexResult } from '../srv/load.srv';
 })
 export class UploadView {
   private folderProxy: FolderManagerProxy
-  private loadProxy: LoadProxy
+  private indexProxy: IndexProxy
 
   nSelected = 0
   allSelected = true
   sFiles = []
 
   constructor (private router: ClientRouter, private ref: ChangeDetectorRef) {
-    this.loadProxy = router.createProxy('loader')
+    this.indexProxy = router.createProxy('indexer')
 
     this.folderProxy = router.createProxy('folder-manager')
     this.folderProxy.list('*').then((files) => {
@@ -77,7 +77,7 @@ export class UploadView {
   index() {
     let files = this.sFiles.filter(_ => _.selected && !_.indexed).map(_ => _.name)
 
-    this.loadProxy.indexFiles(files).then(obs => {
+    this.indexProxy.indexFiles(files).then(obs => {
       toastr.success('Indexing files...')  
       obs.subscribe(
         notif => this.onIndexedNotif(notif),
@@ -86,11 +86,11 @@ export class UploadView {
     }).catch(error => toastr.error(error.message))
   }
 
-  onIndexedNotif(notif: IndexResult) {
-    console.log('onIndexedNotif: ', notif)
+  onIndexedNotif(file: string) {
+    console.log('onIndexedNotif: ', file)
 
-    let pChanged = this.sFiles.find(_ => _.name === notif.file)
+    let pChanged = this.sFiles.find(_ => _.name === file)
     pChanged.indexed = true
-    this.ref.markForCheck()
+    this.ref.detectChanges()
   }
 }

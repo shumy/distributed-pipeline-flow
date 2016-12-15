@@ -2,9 +2,15 @@ package pt.ua.dpf
 
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx
+import pt.ua.Hibernate
 import pt.ua.dpf.dicoogle.DicoogleClient
+import pt.ua.dpf.srv.IndexService
 import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
+import pt.ua.model.dim.Image
+import pt.ua.model.dim.Patient
+import pt.ua.model.dim.Serie
+import pt.ua.model.dim.Study
 import rt.plugin.service.WebMethod
 import rt.utils.interceptor.JwtAuthInterceptor
 import rt.utils.service.DescriptorService
@@ -15,11 +21,6 @@ import rt.utils.service.UsersService
 import rt.utils.service.WebFileService
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.FolderManagerService
-import pt.ua.Hibernate
-import pt.ua.model.dim.Patient
-import pt.ua.model.dim.Study
-import pt.ua.model.dim.Serie
-import pt.ua.model.dim.Image
 import pt.ua.srv.dim.LoadService
 
 //import static io.vertx.core.Vertx.*
@@ -99,11 +100,16 @@ class DpfServerStarter extends AbstractVerticle {
 		val subsSrv = SubscriberService.create
 		val reposSrv = RepositoryService.B => [ repos = #[ 'srv-points' ] ]
 		
-		val loadService = LoadService.B => [ folder = './downloads' ]
+		val indexService = IndexService.B => [ folder = './downloads' isHomeManager = true ]
+		indexService => [
+			//indexer = LoadService.indexer //delegate to local indexer
+			indexer = dicoogleClient.indexer //delegate to dicoogle indexer
+			onFileIndexed = [ delete ]
+		]
+		
 		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' isHomeManager = true ]
 		val servicePointSrv = ServicePointService.B => [ repo = reposSrv.getRepo('srv-points') ]
 		val transfersSrv = TransferService.B => [ folder = './downloads' dicoogle = dicoogleClient srvPoint = servicePointSrv ]
-		
 		
 		server.pipeline => [
 			addInterceptor(jwtAuth)
@@ -115,7 +121,7 @@ class DpfServerStarter extends AbstractVerticle {
 			addService('subscriber', subsSrv)
 			addService('repository', reposSrv)
 			
-			addService('loader', loadService, #{ 'all' -> '/srv-home' })
+			addService('indexer', indexService, #{ 'all' -> '/srv-home' })
 			addService('folder-manager', folderManagerSrv, #{ 'all' -> '/srv-home' })
 			addService('service-point', servicePointSrv)
 			addService('transfers', transfersSrv, #{ 'all' -> '/srv-transfer' })

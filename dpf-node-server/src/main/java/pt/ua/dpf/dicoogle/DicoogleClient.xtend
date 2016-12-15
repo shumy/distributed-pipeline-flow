@@ -25,12 +25,16 @@ import rt.pipeline.pipe.channel.IPipeChannel
 import rt.pipeline.pipe.channel.SendBuffer
 import io.vertx.core.http.HttpHeaders
 import java.util.UUID
+import java.io.File
+import org.eclipse.xtend.lib.annotations.Accessors
 
 class DicoogleClient {
 	val Gson gson = new Gson
 	
 	val Vertx vertx
 	val HttpClient httpClient
+	
+	@Accessors val (List<File>) => Observable<File> indexer = [ uploadFiles ]
 	
 	new(Vertx vertx, String host, int port) {
 		this.vertx = vertx
@@ -106,6 +110,68 @@ class DicoogleClient {
 		]
 		
 		return pResult.promise
+	}
+	
+	def Observable<File> uploadFiles(List<File> dcmFiles) {
+		val ObservableResult<File> pResult = [ sub |
+			val ready = new AtomicBoolean(true)
+			val processed = new AtomicInteger(0)
+			dcmFiles.forEach[ dcmFile |
+				AsyncUtils.waitUntil([ready.get],[
+					ready.set = false
+					val req = httpClient.post('/ext/stow')[ resp |
+						println('''upload-response: «resp.statusCode» «resp.statusMessage» for «dcmFile.name»''')
+						if (resp.statusCode != 200) {
+							sub.reject(new RuntimeException('''Dicoogle-Upload: «resp.statusCode» «resp.statusMessage»'''))
+							return
+						}
+						
+						sub.next(dcmFile)
+						ready.set = true
+						
+						if (processed.incrementAndGet === dcmFiles.size)
+							sub.complete
+					]
+					
+					req => [
+						chunked = true
+						timeout = 60000
+						putHeader(HttpHeaders.CONTENT_TYPE, "multipart/form-data; boundary=FileBoundary")
+						putHeader(HttpHeaders.ACCEPT, "application/json")
+					]
+					
+					val options = new OpenOptions => [ read = true]
+					vertx.fileSystem.open(dcmFile.absolutePath, options)[
+						if (failed) {
+							sub.reject(cause)
+						} else {
+							req.write('--FileBoundary\r\n')
+							req.write('Content-Disposition: form-data; name="file"; filename="' + UUID.randomUUID.toString + '.dcm"\r\n')
+							req.write('Content-Type: application/dicom\r\n')
+							req.write('\r\n')
+							
+							val file = result
+							val pump = Pump.pump(file, req)
+							file.endHandler[
+								file.close[
+									if (succeeded) {
+										req.write('\r\n')
+										req.write('--FileBoundary--\r\n')
+										req.end
+									} else {
+										sub.reject(cause)
+									}
+								]
+							]
+							
+							pump.start
+						}
+					]
+				])
+			]	
+		]
+		
+		return pResult.observe
 	}
 	
 	def Promise<Void> upload(String filePath) {

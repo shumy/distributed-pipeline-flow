@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <config>
     <entries>
+        <entry type="srv" ref="pt.ua.dpf.srv.IndexService"/>
         <entry type="srv" ref="pt.ua.dpf.test.PingService"/>
-        <entry type="srv" ref="rt.vertx.server.web.service.TransferService"/>
         <entry type="srv" ref="pt.ua.dpf.srv.TransferService"/>
         <entry type="srv" ref="pt.ua.dpf.srv.ServicePointService"/>
-        <entry type="srv" ref="pt.ua.dpf.srv.UploadService"/>
     </entries>
 </config>
