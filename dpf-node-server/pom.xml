@@ -24,6 +24,12 @@
 			<version>${rtsVersion}</version>
 		</dependency>
 		<dependency>
+			<groupId>pt.ua.ieeta</groupId>
+			<artifactId>r-pacs-plugin</artifactId>
+			<version>0.1.0</version>
+		</dependency>
+		
+		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.1.7</version>
@@ -31,20 +37,10 @@
 		
 		<dependency>
 			<groupId>pt.ua.dpf</groupId>
-			<artifactId>dpf-model</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>pt.ua.dpf</groupId>
 			<artifactId>dpf-common-services</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.4.193</version>
-		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>

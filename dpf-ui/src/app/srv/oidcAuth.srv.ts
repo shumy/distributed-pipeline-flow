@@ -47,7 +47,7 @@ export class AuthService implements IAuthManager {
       console.log('UserInfo: ', info)
       this.userInfo = { name: info.name, email: info.email, avatar: info.picture }
       if (!this.userInfo.avatar)
-        this.userInfo.avatar = 'res/img/default_user.png'
+        this.userInfo.avatar = 'assets/img/default_user.png'
       
       this.setLogin()
     }, error => {

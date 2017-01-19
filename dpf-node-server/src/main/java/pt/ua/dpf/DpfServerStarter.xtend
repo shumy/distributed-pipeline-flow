@@ -1,16 +1,21 @@
 package pt.ua.dpf
 
+import com.avaje.ebean.EbeanServerFactory
+import com.avaje.ebean.config.ServerConfig
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx
-import pt.ua.Hibernate
 import pt.ua.dpf.dicoogle.DicoogleClient
+import pt.ua.dpf.srv.AnnotationService
 import pt.ua.dpf.srv.IndexService
 import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
-import pt.ua.model.dim.Image
-import pt.ua.model.dim.Patient
-import pt.ua.model.dim.Serie
-import pt.ua.model.dim.Study
+import pt.ua.ieeta.rpacs.model.Image
+import pt.ua.ieeta.rpacs.model.Patient
+import pt.ua.ieeta.rpacs.model.Serie
+import pt.ua.ieeta.rpacs.model.Study
+import pt.ua.ieeta.rpacs.model.ext.Annotation
+import pt.ua.ieeta.rpacs.model.ext.Annotator
+import pt.ua.ieeta.rpacs.model.ext.Lesion
 import rt.plugin.service.WebMethod
 import rt.utils.interceptor.JwtAuthInterceptor
 import rt.utils.service.DescriptorService
@@ -21,7 +26,6 @@ import rt.utils.service.UsersService
 import rt.utils.service.WebFileService
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.FolderManagerService
-import pt.ua.srv.dim.LoadService
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -64,13 +68,21 @@ class DpfServerStarter extends AbstractVerticle {
 		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
 		
 		//config storage and index
-		Hibernate.config[
-			configure('hibernate-cfg.xml')
-			addAnnotatedClass(Patient)
-			addAnnotatedClass(Study)
-			addAnnotatedClass(Serie)
-			addAnnotatedClass(Image)
-		]
+		EbeanServerFactory.create(new ServerConfig => [
+			name = 'db'
+			defaultServer = true
+			
+			addClass(Patient)
+			addClass(Study)
+			addClass(Serie)
+			addClass(Image)
+			
+			addClass(Annotator)
+			addClass(Annotation)
+			addClass(Lesion)
+			
+			loadFromProperties
+		])
 		
 		//interceptors
 		val jwtAuth = JwtAuthInterceptor.B => [
@@ -102,7 +114,6 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		val indexService = IndexService.B => [ folder = './downloads' isHomeManager = true ]
 		indexService => [
-			//indexer = LoadService.indexer //delegate to local indexer
 			indexer = dicoogleClient.indexer //delegate to dicoogle indexer
 			onFileIndexed = [ delete ]
 		]
@@ -125,6 +136,9 @@ class DpfServerStarter extends AbstractVerticle {
 			addService('folder-manager', folderManagerSrv, #{ 'all' -> '/srv-home' })
 			addService('service-point', servicePointSrv)
 			addService('transfers', transfersSrv, #{ 'all' -> '/srv-transfer' })
+			
+			//model services
+			addService('anno', AnnotationService.create)
 			
 			failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 		]
@@ -151,15 +165,16 @@ class DpfServerStarter extends AbstractVerticle {
 				route(WebMethod.GET, '/api/specs', 'specs' -> 'specs')
 				route(WebMethod.GET, '/api/specs/:name', 'specs' -> 'srvSpec')
 				
+				get('/users/me', 'users' -> 'me')
+				
 				get('/file-list/:path', 'folder-manager' -> 'list')
 				get('/file-download/:filename', 'folder-manager', 'download', #['ctx.request', 'filename'])
 				post('/file-upload', 'folder-manager', 'upload', #['ctx.request'])
 				
-				/*
-				get('/ping/:name', 'ping' -> 'helloPing')
-				get('/ping/:first/name/:second/:age', 'ping' -> 'hello2Ping')
-				post('/ping', 'ping' -> 'hello3Ping')
-				*/
+				get('/non-images', 'anno' -> 'allNonAnnotatedImages')
+				get('/read-anno/:id', 'anno' -> 'readAnnotation')
+				put('/create-anno', 'anno' -> 'createAnnotation')
+				post('/update-anno', 'anno' -> 'updateAnnotation')
 			]
 			
 			wsRouter => [

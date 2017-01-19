@@ -5,5 +5,8 @@
         <entry type="srv" ref="pt.ua.dpf.test.PingService"/>
         <entry type="srv" ref="pt.ua.dpf.srv.TransferService"/>
         <entry type="srv" ref="pt.ua.dpf.srv.ServicePointService"/>
+        <entry type="srv" ref="pt.ua.dpf.srv.ImageServices"/>
+        <entry type="srv" ref="pt.ua.dpf.srv.ImageService"/>
+        <entry type="srv" ref="pt.ua.dpf.srv.AnnotationService"/>
     </entries>
 </config>
