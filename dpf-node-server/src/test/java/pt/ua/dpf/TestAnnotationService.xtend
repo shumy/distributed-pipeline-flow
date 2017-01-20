@@ -13,6 +13,7 @@ import pt.ua.ieeta.rpacs.model.ext.Annotation
 import pt.ua.ieeta.rpacs.model.ext.Annotator
 import pt.ua.ieeta.rpacs.model.ext.Lesion
 import rt.pipeline.UserInfo
+import rt.async.AsyncUtils
 
 class TestAnnotationService {
 	static val user = new UserInfo('micael', #[])
@@ -38,11 +39,10 @@ class TestAnnotationService {
 	
 	@Test
 	def void allNonAnnotatedImages() {
-		setup
-		
+		AsyncUtils.setDefault
 		val imgSrv = AnnotationService.create
-		imgSrv.allNonAnnotatedImages(user).forEach[
-			println(it)
+		imgSrv.allNonAnnotatedImages(user).then[
+			forEach[ println(it) ]	
 		]
 	}
 }

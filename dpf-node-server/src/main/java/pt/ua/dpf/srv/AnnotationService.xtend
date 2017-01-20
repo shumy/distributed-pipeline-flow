@@ -13,6 +13,8 @@ import pt.ua.ieeta.rpacs.model.ext.ImageQuality
 import pt.ua.ieeta.rpacs.model.ext.Maculopathy
 import pt.ua.ieeta.rpacs.model.ext.Photocoagulation
 import pt.ua.ieeta.rpacs.model.ext.Retinopathy
+import rt.async.AsyncUtils
+import rt.async.promise.Promise
 import rt.data.Data
 import rt.pipeline.UserInfo
 import rt.plugin.service.ServiceException
@@ -26,21 +28,23 @@ class AnnotationService {
 	
 	@Public
 	@Context(name = 'user', type = UserInfo)
-	def List<Long> allNonAnnotatedImages() {
-		val thisAnnotator = getOrCreateAnnotator(user)
-		val qAnnotated = Annotation.find.query
-			.select('image')
-			.where
-				.eq('draft', false)
-				.eq('annotator', thisAnnotator)
-			.query
-			
-		Image.find.query
-			.setDisableLazyLoading(true)
-			.where
-				.not.in('id', qAnnotated)
-			.setMaxRows(100)
-		.findIterate.map[ id ].toList
+	def Promise<List<Long>> allNonAnnotatedImages() {
+		AsyncUtils.task[
+			val thisAnnotator = getOrCreateAnnotator(user)
+			val qAnnotated = Annotation.find.query
+				.select('image')
+				.where
+					.eq('draft', false)
+					.eq('annotator', thisAnnotator)
+				.query
+				
+			Image.find.query
+				.setDisableLazyLoading(true)
+				.where
+					.not.in('id', qAnnotated)
+				.setMaxRows(100)
+			.findIterate.map[ id ].toList
+		]
 	}
 	
 	@Public
