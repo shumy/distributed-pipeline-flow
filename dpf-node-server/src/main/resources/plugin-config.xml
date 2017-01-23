@@ -8,5 +8,6 @@
         <entry type="srv" ref="pt.ua.dpf.srv.ImageServices"/>
         <entry type="srv" ref="pt.ua.dpf.srv.ImageService"/>
         <entry type="srv" ref="pt.ua.dpf.srv.AnnotationService"/>
+        <entry type="srv" ref="pt.ua.dpf.srv.DicoogleProxyService"/>
     </entries>
 </config>

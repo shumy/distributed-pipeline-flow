@@ -5,16 +5,21 @@ import io.vertx.core.Vertx
 import io.vertx.core.file.OpenOptions
 import io.vertx.core.http.HttpClient
 import io.vertx.core.http.HttpClientOptions
+import io.vertx.core.http.HttpHeaders
+import io.vertx.core.http.HttpServerResponse
 import io.vertx.core.streams.Pump
+import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.util.LinkedList
 import java.util.List
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.Deflater
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import org.eclipse.xtend.lib.annotations.Accessors
 import pt.ua.dpf.dicoogle.model.Image
 import rt.async.AsyncUtils
 import rt.async.observable.Observable
@@ -23,10 +28,6 @@ import rt.async.promise.Promise
 import rt.async.promise.PromiseResult
 import rt.pipeline.pipe.channel.IPipeChannel
 import rt.pipeline.pipe.channel.SendBuffer
-import io.vertx.core.http.HttpHeaders
-import java.util.UUID
-import java.io.File
-import org.eclipse.xtend.lib.annotations.Accessors
 
 class DicoogleClient {
 	val Gson gson = new Gson
@@ -45,6 +46,17 @@ class DicoogleClient {
 		]
 		
 		httpClient = vertx.createHttpClient(httpOptions)
+	}
+	
+	def void proxyGET(String url, HttpServerResponse pResp) {
+		httpClient.get(url)[ dResp |
+			pResp.chunked = true
+			pResp.statusCode = dResp.statusCode
+			pResp.headers.setAll = dResp.headers
+			
+			dResp.handler[ pResp.write(it) ]
+			dResp.endHandler[ pResp.end ]
+		].end
 	}
 	
 	def Promise<QueryResult> query(String query) {

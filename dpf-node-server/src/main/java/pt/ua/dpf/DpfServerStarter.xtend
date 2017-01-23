@@ -26,6 +26,7 @@ import rt.utils.service.UsersService
 import rt.utils.service.WebFileService
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.FolderManagerService
+import pt.ua.dpf.srv.DicoogleProxyService
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -121,6 +122,7 @@ class DpfServerStarter extends AbstractVerticle {
 		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' isHomeManager = true ]
 		val servicePointSrv = ServicePointService.B => [ repo = reposSrv.getRepo('srv-points') ]
 		val transfersSrv = TransferService.B => [ folder = './downloads' dicoogle = dicoogleClient srvPoint = servicePointSrv ]
+		val dicoogleProxySrv = DicoogleProxyService.B => [ dicoogle = dicoogleClient ]
 		
 		server.pipeline => [
 			addInterceptor(jwtAuth)
@@ -136,9 +138,10 @@ class DpfServerStarter extends AbstractVerticle {
 			addService('folder-manager', folderManagerSrv, #{ 'all' -> '/srv-home' })
 			addService('service-point', servicePointSrv)
 			addService('transfers', transfersSrv, #{ 'all' -> '/srv-transfer' })
+			addService('d-proxy', dicoogleProxySrv, #{ 'all' -> '/srv-dicoogle' })
 			
 			//model services
-			addService('anno', AnnotationService.create)
+			addService('anno', AnnotationService.create, #{ 'all' -> '/srv-annotator' })
 			
 			failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 		]
@@ -170,6 +173,9 @@ class DpfServerStarter extends AbstractVerticle {
 				get('/file-list/:path', 'folder-manager' -> 'list')
 				get('/file-download/:filename', 'folder-manager', 'download', #['ctx.request', 'filename'])
 				post('/file-upload', 'folder-manager', 'upload', #['ctx.request'])
+				
+				get('/proxy/dic2png/:uid', 'd-proxy', 'dic2png', #['ctx.request', 'uid'])
+				get('/proxy/dic2pngThumbnail/:uid', 'd-proxy', 'dic2pngThumbnail', #['ctx.request', 'uid'])
 				
 				get('/non-images', 'anno' -> 'allNonAnnotatedImages')
 				get('/read-anno/:id', 'anno' -> 'readAnnotation')
