@@ -107,11 +107,11 @@ class AnnotationService {
 	
 	def void setAnnotationValues(Annotation anno, Map<String, String> annoInfo) {
 		annoInfo.forEach[ key, value |
-			if (key == 'local')
-				anno.local = ImageLocal.valueOf(value as String)
-			
 			if (key == 'quality')
 				anno.quality = ImageQuality.valueOf(value as String)
+			
+			if (key == 'local')
+				anno.local = ImageLocal.valueOf(value as String)
 			
 			if (key == 'retinopathy')
 				anno.retinopathy = Retinopathy.valueOf(value as String)

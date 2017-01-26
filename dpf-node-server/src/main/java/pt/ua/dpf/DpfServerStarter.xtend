@@ -96,8 +96,9 @@ class DpfServerStarter extends AbstractVerticle {
 		val dpfUiSrv = WebFileService.B => [
 				folder = '../dpf-ui/dist'
 				replace = #{
-					'/search' 	-> '/',
-					'/results' 	-> '/'
+					'/search' 		-> '/',
+					'/upload' 		-> '/',
+					'/annotate' 	-> '/'
 				}
 			]
 		

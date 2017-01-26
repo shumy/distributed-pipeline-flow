@@ -56,3 +56,44 @@ div {
   padding: 30px 30px;
   margin: 10px;
 }
+
+/*annotate view*/
+.item-image {
+  height: 100%;
+}
+.ui.tiny.menu .item-menu {
+  padding: 0;
+}
+
+.ui.menu:not(.vertical) .left.item, .ui.menu:not(.vertical) .left.menu {
+  margin-right:0; 
+}
+
+.h1 {
+  text-align: center;
+  font-weight: bold;
+  font-size: medium;
+}
+
+.h2 {
+  text-align: center;
+  vertical-align:bottom;
+  right: 0;
+  position: absolute
+}
+
+.li {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Other About */
+.about-class {
+  height: 100%;
+  background-color:white;
+  border-right-style:solid;
+  border-left-style:solid;
+  border-right-width: 25%;
+  border-left-width: 25%;
+  border-color:black;
+}
