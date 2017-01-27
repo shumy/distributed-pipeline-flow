@@ -1,35 +1,86 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 
-import { ClientRouter }  from 'rts-ts-client';
-import { AnnotationService }                    from '../srv/annotation.srv';
+import { ClientRouter }                 from 'rts-ts-client';
+import { AnnotationService, ImageRef, Annotation }  from '../srv/annotation.srv';
 
 @Component({
   selector: 'annotate-view',
   templateUrl: 'annotate.view.html'
 })
-export class AnnotateView {
+export class AnnotateView implements OnInit {
   private annoProxy: AnnotationService
 
   tab = 0
-  annotation: any = {}
+
+  index = 0
+  pValue = 0
+  pTotal = 0
+
+  images: ImageRef[]
+  image: ImageRef = { id: 0, url: 'none' }
+
+  annotations: Annotation[]
+  annotation: Annotation = {
+    id: 0,
+    image: 0,
+
+    quality: 'UNDEFINED',
+    local: 'UNDEFINED',
+
+    retinopathy:'UNDEFINED',
+    maculopathy:'UNDEFINED',
+    photocoagulation:'UNDEFINED'
+  }
   
   constructor(private router: ClientRouter) {
     this.annoProxy = router.createProxy('anno')
-    
+  }
+
+  ngOnInit() {
+    this.load()
+  }
+
+  updateProgress() {
+    let pBar: any = $('.ui.progress')
+    pBar.progress({
+      label: 'ratio',
+      text: { ratio: '{value} of {total}' },
+      value: this.pValue,
+      total: this.pTotal
+    })
+  }
+
+  load() {
     this.annoProxy.allNonAnnotatedImages().then(images => {
-      console.log('Non annotated: ', images)
-    }).catch(_ => { console.log(_) })
-    
-    //demo data:
-    this.annotation = {
-      image: 1,
+      this.index  = 0
+      this.pValue = 0
+      this.pTotal = images.length
 
-      quality: 'UNDEFINED',
-      local: 'UNDEFINED',
+      this.images = images
+      this.annotations = images.map(img => {
+        return {
+          id: 0,
+          image: img.id,
 
-      retinopathy:'UNDEFINED',
-      maculopathy:'UNDEFINED',
-      photocoagulation:'UNDEFINED'
+          quality: 'UNDEFINED',
+          local: 'UNDEFINED',
+
+          retinopathy:'UNDEFINED',
+          maculopathy:'UNDEFINED',
+          photocoagulation:'UNDEFINED'
+        } as Annotation
+      })
+
+      this.loadImage()
+      this.updateProgress()
+    })
+  }
+
+  loadImage() {
+    if (this.index < this.images.length) {
+      this.tab = 0
+      this.image = this.images[this.index]
+      this.annotation = this.annotations[this.index]
     }
   }
 
@@ -42,8 +93,35 @@ export class AnnotateView {
   }
 
   done() {
-    console.log(this.annotation)
-    console.log('DONE')
-    //TODO: save or update ?
+    if (this.annotation.id == -1) {
+      toastr.warning('Annotation save in progress, please wait!')
+      return
+    }
+
+    if (this.annotation.id == 0) {
+      this.annotation.id = -1
+      this.annoProxy.createAnnotation(this.annotation)
+        .then(newId => {
+          this.annotation.id = newId
+          this.pValue++
+          this.onDoneOk()
+        })
+        .catch(error => {
+          this.annotation.id = 0
+          toastr.error('Annotation save error:' + error.message)
+        })
+    } else {
+      this.annoProxy.updateAnnotation(this.annotation)
+        .then(_ => this.onDoneOk())
+        .catch(error => toastr.error('Annotation save error:' + error.message))
+    }
+  }
+
+  onDoneOk() {
+    toastr.success('Annotation saved')
+    this.index++
+    
+    this.loadImage()
+    this.updateProgress()
   }
 }

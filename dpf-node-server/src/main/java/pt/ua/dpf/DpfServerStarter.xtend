@@ -27,6 +27,7 @@ import rt.utils.service.WebFileService
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.FolderManagerService
 import pt.ua.dpf.srv.DicoogleProxyService
+import rt.utils.interceptor.AccessControlInterceptor
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -86,6 +87,7 @@ class DpfServerStarter extends AbstractVerticle {
 		])
 		
 		//interceptors
+		val accessControl = AccessControlInterceptor.create
 		val jwtAuth = JwtAuthInterceptor.B => [
 			jwksUrl = 'http://localhost:8081/auth/realms/dev/protocol/openid-connect/certs'
 			issuer = 'http://localhost:8081/auth/realms/dev'
@@ -127,6 +129,7 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		server.pipeline => [
 			addInterceptor(jwtAuth)
+			addInterceptor(accessControl)
 			
 			addService('dpf-ui', dpfUiSrv)
 			addService('api-ui', apiUiSrv)

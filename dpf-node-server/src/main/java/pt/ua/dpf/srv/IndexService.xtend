@@ -7,10 +7,10 @@ import rt.async.observable.Observable
 import rt.data.Data
 import rt.data.Default
 import rt.data.Validation
-import rt.pipeline.UserInfo
 import rt.plugin.service.an.Context
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
+import rt.utils.interceptor.UserInfo
 
 @Data
 @Service

@@ -12,8 +12,8 @@ import pt.ua.ieeta.rpacs.model.Study
 import pt.ua.ieeta.rpacs.model.ext.Annotation
 import pt.ua.ieeta.rpacs.model.ext.Annotator
 import pt.ua.ieeta.rpacs.model.ext.Lesion
-import rt.pipeline.UserInfo
 import rt.async.AsyncUtils
+import rt.utils.interceptor.UserInfo
 
 class TestAnnotationService {
 	static val user = new UserInfo('micael', #[])

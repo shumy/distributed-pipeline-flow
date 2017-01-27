@@ -13,7 +13,6 @@ import { DicoogleService }        from './srv/dicoogle.srv';
 //views
 import { Application }            from './app';
 import { SearchView }             from './view/search.view';
-import { ResultsView }            from './view/results.view';
 import { UploadView }             from './view/upload.view';
 import { AnnotateView }           from './view/annotate.view';
 
@@ -26,6 +25,14 @@ pipeline.failHandler(error => console.log('PIPELINE-FAIL: ' + error))
 
 const router = new ClientRouter(config.server, config.client, pipeline)
 router.authMgr = new AuthService(config.authProvider, config.authClient)
+router.onError = error => {
+  if (error.httpCode == 401) {
+    toastr.error(error.message)
+    return false
+  }
+
+  return true
+}
 
 const evtSrv = new EventsService(router)
 const subSrv = new SubscriberService(router, evtSrv)
@@ -35,7 +42,7 @@ const repoSrv = new RepositoryService(router, evtSrv)
 
 @NgModule({
   imports: [ BrowserModule, ReactiveFormsModule, HttpModule, routing ],
-  declarations: [ Application, SearchView, ResultsView, UploadView, AnnotateView ],
+  declarations: [ Application, SearchView, UploadView, AnnotateView ],
   bootstrap: [ Application ],
   providers: [
     DicoogleService,

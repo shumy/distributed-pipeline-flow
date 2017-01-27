@@ -1,8 +1,25 @@
 
-export interface AnnotationService {
-  allNonAnnotatedImages(): Promise<number[]>
+export interface ImageRef {
+  id: number
+  url: string
+}
+
+export interface Annotation {
+  id: number
+  image: number
   
-  readAnnotation(id: number): Promise<any>
-  createAnnotation(annoInfo: any): Promise<number>
-  updateAnnotation(annoInfo: any): Promise<void>
+  quality: string
+  local: string
+
+  retinopathy: string
+  maculopathy: string
+  photocoagulation: string
+}
+
+export interface AnnotationService {
+  allNonAnnotatedImages(): Promise<ImageRef[]>
+  
+  readAnnotation(id: number): Promise<Annotation>
+  createAnnotation(annoInfo: Annotation): Promise<number>
+  updateAnnotation(annoInfo: Annotation): Promise<void>
 }
