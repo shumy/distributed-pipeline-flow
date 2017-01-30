@@ -1,0 +1,178 @@
+<!--menu-->
+<div class="ui fixed {{ menu == 0 ? 'inverted' : '' }} menu">
+  <div class="right menu">
+    <a class="{{ menu == 0 ? 'active' : '' }} item" (click)="menu=0">HOME</a>
+    <a class="{{ menu == 1 ? 'active' : '' }} item" (click)="menu=1">RESEARCH TEAMS</a>
+    <a class="{{ menu == 2 ? 'active' : '' }} item" (click)="menu=2">ABOUT</a>
+  </div>
+</div>
+
+<!--home-->
+<div *ngIf="menu == 0" style="height: calc(100vh - 40px); padding-top: 40px;">
+  <div style="height: 85%; background-image:url(/assets/launch/fundo.png); background-size: cover;">
+    <div style="height: auto; padding-top: 30%;">
+      <p style="text-align: center; color: white; font-size: 500%; font-weight: bold; margin-bottom: 1%;">SCREEN-DR</p>
+      <p style="text-align: center">
+        <button class="ui inverted big button" (click)="start()">GET STARTED</button>
+      </p>
+    </div>
+  </div>
+  <div style="height: 15%; background: white; display: flex; justify-content: space-around;">
+    <div class="ui ten centered middle aligned column grid">
+      <div class="row">
+        <div class="column">
+          <a href="http://www.upmc.com/Pages/default.aspx">
+            <img class="ui image" src="/assets/launch/UPMC.png">
+          </a>
+        </div>
+        <div class="column">
+          <a href="http://www.cmu.edu/">
+            <img class="ui image" src="/assets/launch/cmu.jpeg">
+          </a>
+        </div>
+        <div class="column">
+          <a href="https://sigarra.up.pt/feup/pt/web_page.inicial">
+            <img class="ui image" src="/assets/launch/feup.jpg">
+          </a>
+        </div>
+        <div class="column">
+          <a href="https://www.inesctec.pt/">
+            <img class="ui image" src="/assets/launch/inesc.png">
+          </a>
+        </div>
+        <div class="column">
+          <a href="http://wiki.ieeta.pt/wiki/index.php/Main_Page">
+            <img class="ui image" src="/assets/launch/IEETA.png">
+          </a>
+        </div>
+        <div class="column">
+          <a href="http://www.ua.pt/">
+            <img class="ui image" src="/assets/launch/UA.jpg">
+          </a>
+        </div>
+        <div class="column">
+          <a href="http://portal-chsj.min-saude.pt/pages/2">
+            <img class="ui image" src="/assets/launch/Saojoao.jpeg">
+          </a>
+        </div>
+        <div class="column">
+          <a href="http://www.arsnorte.min-saude.pt/portal/page/portal/ARSNorte">
+            <img class="ui centered middle aligned image" src="/assets/launch/ARS.jpg">
+          </a>
+        </div>
+        <div class="column">
+          <a href="https://www.bmd-software.com/contacts/">
+            <img class="ui centered middle aligned image" src="/assets/launch/bmdlogo.png">
+          </a>
+        </div>
+        <div class="column">
+          <a href="http://www.firstmedicalsolutions.com/fms/index.php">
+            <img class="ui centered middle aligned image" src="/assets/launch/firstMedicalsolutions.png">
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--partners-->
+<div *ngIf="menu == 1" class="ui tree column grid" style="height: 100%; padding-top: 65px; display: flex; flex-direction: column;">
+    <div style="flex: 1;"></div>
+    <div style="flex: 2;">
+      <div class="ui raised very padded justified text container segment">
+        <h2 class="ui centered header">Universidade de Aveiro</h2>
+        <a href="http://www.ua.pt/">
+          <img class="ui tiny small floated image" src="/assets/launch/UA.jpg">
+        </a>
+        <p> IEETA is a Computer Science and Engineering / Electronics and Electrical Engineering research unit with 50 PhD integrated
+          members. It is organized in three groups, two of them more application oriented (Biomedical Informatics and Technologies,
+          and Intelligent Robotics and Systems), the other one of a more fundamental nature (Information Systems and Processing),
+          mapping the major scientific areas of activity of its researchers. Empowered by its internal diversity and strong
+          collaborative environment, IEETA has been able to provide important contributions in problems that require a high
+          level of multidisciplinarity.</p>
+        <p> IEETA has a vast experience in joint projects with the industry, some of them resulting in the creation of spin-offs
+          and start-ups, patents and trademarks, both national and international, and a number of products that have been
+          licensed and are in use by the industry.
+        </p>
+        <a href="http://wiki.ieeta.pt/wiki/index.php/Main_Page">
+          <img class="ui small right floated image" src="/assets/launch/IEETA.png" style="margin-left: 0px;">
+        </a>
+        <p> IEETA/ UA SCREEN-DR team is integrated on the <a href="http://bioinformatics.ua.pt/">bioinformatics</a> group which
+          has a large experience in the field of the project. They have developed
+          <a href="https://www.dicoogle.com">Dicoogle</a> , a new PACS archive concept that replaces the traditional centralized
+          database with a more agile indexing and retrieval mechanism. It can automatically extract, index and store all
+          metadata detected. They have experience in web-based technologies for PACS, in services related to storage, distribution
+          and visualization of medical images.
+        </p>
+      </div>
+
+      <div class="ui raised very padded justified text container segment">
+        <h2 class="ui centered header"> INESC TEC</h2>
+        <p>
+          <a href="https://www.inesctec.pt/"> <img class="ui small left floated image" src="/assets/launch/inesc.png"> </a>
+          INESC TEC - Institute of Systems and Technology Engineering Technology and Science aims to foster the intervention of its
+          associated institutions in the development of the economic and social fabric, contributing to improve performance,
+          increase competitiveness
+          <a href="https://sigarra.up.pt/feup/pt/web_page.inicial"> <img class="ui small right floated image" src="/assets/launch/feup.jpg"> </a>
+          and broaden the level of internationalization of companies and Scientific research, technological development, transfer and
+          valorization of knowledge, human resources qualification and specialized consulting, based on the nuclear fields
+          of electrotechnical engineering and computer science and other related areas such as physics, bioengineering, environment,
+          management and innovation.
+        </p>
+        <p> The FEUP/INESC TEC SCREEN-DR team has a long track in the analysis of retinal images, namely for the segmentation/location/classification
+          of retinal structures such as the vasculature tree or the location of the optic disk. Recent advances are included
+          in
+          <a href="https://sites.google.com/site/retinacad/">https://sites.google.com/site/retinacad/</a>.
+        </p>
+      </div>
+      
+      <div class="ui raised very padded justified text container segment">
+        <h2 class="ui centered header"> Carnegie Mellon University (CMU) </h2>
+        <p>
+          <a href="http://www.cmu.edu/"><img class="ui small left floated image" src="/assets/launch/cmu.jpeg"></a>
+          The CMU team has extensive experience designing registration methods for quantitative imaging. More recently his group has
+          contributed with a new transport-based framework that is well suited for computing efficiently distances for large
+          image datasets, making it very useful in pattern recognition problems, and particularly for analysing biomedical
+          images. The approach has been shown to be highly accurate in detecting cancer from histopathology, cytology, and
+          detecting autism from brain MR images. It is expected that the same techniques could play a role in increasing
+          the reliability of fundus image analysis systems.
+        </p>
+      </div>
+    </div>
+    <div style="flex: 1;"></div>
+</div>
+
+<!--about-->
+<div *ngIf="menu == 2" class="ui tree column grid" style="height: 100%; padding-top: 65px; display: flex; flex-direction: column;">
+  <div class="row" style="height: 100%; padding: 0;">
+    <div style="flex: 1;"></div>
+    <div style="flex: 2;">
+      <div class="ui raised very padded justified text container segment">
+        <h2 class="ui centered header">ABOUT SCREEN-DR</h2>
+        <p style="font-weight: bold;">SCREEN-DR: Image Analysis and Machine Learning Platform for Innovation in Diabetic Retinopathy Screening </p>
+        <p> Diabetic Retinopathy (DR) is a leading cause of blindness in the industrialized world that can be avoided with early
+          treatment, demanding an earlier diagnosis in a stage where the treatment is still possible and effective. DR evolves
+          silently without any visual symptoms, during the early stages of the disease.
+        </p>
+        <p>The Portuguese North Health Administration (ARSN) is implementing a mass screening for DR, with the goal of making
+          eye exam of about 75% of identified diabetics, from an estimated diabetic population of 250.000, in the North of
+          Portugal.
+        </p>
+        <p>SCREEN-DR is the platform to be developed in this project to face three main challenges. The first challenge is to
+          automatically evaluate image quality, and consequent removal the low quality images from the workflow. The second
+          is to automatically detect the non-pathological cases. If these two challenges are overcome, the ophthalmologists
+          need to analyze only about 25% of the cases, which will be an important gain in terms of time-to-decision and efficacy.
+          Additionally, the third challenge is to automatically grade DR in several scales of the disease severity. Each
+          one of these challenges corresponds to an image module that will be remotely accessible by an image web service.
+        </p>
+        <p> Under this context, the vision of the consortium SCREEN-DR is to create a distributed and automatic screening platform
+          for DR, based on the state-of-the-art Information and Communication Technologies (ICT), including advanced Picture
+          Archiving and Communication Systems (PACS) management, Machine Learning and Image Analysis, enabling immediate
+          response from health carers, allowing accurate follow-up strategies, and fostering technological innovation.
+        </p>
+        <p style=" font-weight: bold;"> Funding Reference: CMUP-ERI/TIC/0028/2014 </p>
+      </div>
+    </div>
+    <div style="flex: 1;"></div>
+  </div>
+</div>

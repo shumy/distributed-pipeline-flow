@@ -25,6 +25,7 @@ import rt.utils.interceptor.UserInfo
 @Data
 @Service
 class AnnotationService {
+	val String prefixURI
 	
 	@Public
 	@Context(name = 'user', type = UserInfo)
@@ -44,7 +45,7 @@ class AnnotationService {
 					.not.in('id', qAnnotated)
 				.setMaxRows(100)
 			.findIterate.map[ img |
-				ImageRef.B => [ id = img.id url = 'http://localhost:9090/proxy/dic2png/' + img.uid ]
+				ImageRef.B => [ id = img.id url = prefixURI + img.uid ]
 			].toList
 		]
 	}

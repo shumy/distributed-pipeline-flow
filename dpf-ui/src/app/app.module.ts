@@ -8,10 +8,13 @@ import { config }                 from './app.config';
 
 //services
 import { AuthService }            from './srv/oidcAuth.srv';
+import { RouteGuard }             from './srv/route-guard.srv';
 import { DicoogleService }        from './srv/dicoogle.srv';
 
 //views
 import { Application }            from './app';
+
+import { HomeView }               from './view/home.view';
 import { SearchView }             from './view/search.view';
 import { UploadView }             from './view/upload.view';
 import { AnnotateView }           from './view/annotate.view';
@@ -42,10 +45,13 @@ const repoSrv = new RepositoryService(router, evtSrv)
 
 @NgModule({
   imports: [ BrowserModule, ReactiveFormsModule, HttpModule, routing ],
-  declarations: [ Application, SearchView, UploadView, AnnotateView ],
+  declarations: [
+    Application,
+    HomeView, SearchView, UploadView, AnnotateView
+  ],
   bootstrap: [ Application ],
   providers: [
-    DicoogleService,
+    RouteGuard, DicoogleService,
     { provide: ClientRouter, useValue: router },
     { provide: SubscriberService, useValue: subSrv },
     { provide: RepositoryService, useValue: repoSrv }

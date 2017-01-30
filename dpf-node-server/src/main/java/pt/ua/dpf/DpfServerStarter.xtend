@@ -127,6 +127,8 @@ class DpfServerStarter extends AbstractVerticle {
 		val transfersSrv = TransferService.B => [ folder = './downloads' dicoogle = dicoogleClient srvPoint = servicePointSrv ]
 		val dicoogleProxySrv = DicoogleProxyService.B => [ dicoogle = dicoogleClient ]
 		
+		val annoSrv = AnnotationService.B => [ prefixURI = 'http://localhost:9090/proxy/dic2png/' ]
+		
 		server.pipeline => [
 			addInterceptor(jwtAuth)
 			addInterceptor(accessControl)
@@ -145,7 +147,7 @@ class DpfServerStarter extends AbstractVerticle {
 			addService('d-proxy', dicoogleProxySrv, #{ 'all' -> '/srv-dicoogle' })
 			
 			//model services
-			addService('anno', AnnotationService.create, #{ 'all' -> '/srv-annotator' })
+			addService('anno', annoSrv, #{ 'all' -> '/srv-annotator' })
 			
 			failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 		]
