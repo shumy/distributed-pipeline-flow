@@ -1,6 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef }     from '@angular/core';
 
-import { ClientRouter }                 from 'rts-ts-client';
+import { ClientRouter }                             from 'rts-ts-client';
 import { AnnotationService, ImageRef, Annotation }  from '../srv/annotation.srv';
 
 @Component({
@@ -17,7 +17,7 @@ export class AnnotateView implements OnInit {
   pTotal = 0
 
   images: ImageRef[]
-  image: ImageRef = { id: 0, url: 'none' }
+  image: ImageRef = { id: 0, url: '//:0' }
 
   annotations: Annotation[]
   annotation: Annotation = {

@@ -28,6 +28,8 @@ import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.FolderManagerService
 import pt.ua.dpf.srv.DicoogleProxyService
 import rt.utils.interceptor.AccessControlInterceptor
+import java.util.Properties
+import java.io.FileInputStream
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -35,13 +37,7 @@ import rt.utils.interceptor.AccessControlInterceptor
 
 class DpfServerStarter extends AbstractVerticle {
 	def static void main(String[] args) {
-		var port = 9090
-		
-		if(args.length > 0) {
-			port = Integer.parseInt(args.get(0))
-		}
-		
-		val node = new DpfServerStarter(port)
+		val node = new DpfServerStarter
 		Vertx.vertx.deployVerticle(node)
 		
 		/*
@@ -59,15 +55,25 @@ class DpfServerStarter extends AbstractVerticle {
 		*/
 	}
 	
-	val int port
-	
-	new(int port) {
-		this.port = port
-	}
-	
 	override def start() {
+		//CONFIGS BEGIN------------------------------------------------------------------------------------
+		val props = new Properties => [
+			load(new FileInputStream('config.properties'))
+		]
+		
+		val propDicoogleHost = props.getProperty('dicoogle.host')
+		val propDicooglePort = Integer.parseInt(props.getProperty('dicoogle.port'))
+		
+		val propOicJwksUrl = props.getProperty('oic.jwksUrl')
+		val propOicIssuer = props.getProperty('oic.issuer')
+		val propOicAudience = props.getProperty('oic.audience')
+		
+		val propPort = Integer.parseInt(props.getProperty('server.port'))
+		val propPrefixURI = props.getProperty('server.prefixURI')
+		//CONFIGS END------------------------------------------------------------------------------------
+		
 		val server = new DefaultVertxServer(vertx, '/clt', '')
-		val dicoogleClient = new DicoogleClient(vertx, 'localhost', 8080)
+		val dicoogleClient = new DicoogleClient(vertx, propDicoogleHost, propDicooglePort)
 		
 		//config storage and index
 		EbeanServerFactory.create(new ServerConfig => [
@@ -89,9 +95,9 @@ class DpfServerStarter extends AbstractVerticle {
 		//interceptors
 		val accessControl = AccessControlInterceptor.create
 		val jwtAuth = JwtAuthInterceptor.B => [
-			jwksUrl = 'http://localhost:8081/auth/realms/dev/protocol/openid-connect/certs'
-			issuer = 'http://localhost:8081/auth/realms/dev'
-			audience = 'screen-dr'
+			jwksUrl = propOicJwksUrl
+			issuer = propOicIssuer
+			audience = propOicAudience
 		]
 		
 		//services...
@@ -127,7 +133,7 @@ class DpfServerStarter extends AbstractVerticle {
 		val transfersSrv = TransferService.B => [ folder = './downloads' dicoogle = dicoogleClient srvPoint = servicePointSrv ]
 		val dicoogleProxySrv = DicoogleProxyService.B => [ dicoogle = dicoogleClient ]
 		
-		val annoSrv = AnnotationService.B => [ prefixURI = 'http://localhost:9090/proxy/dic2png/' ]
+		val annoSrv = AnnotationService.B => [ prefixURI = propPrefixURI ]
 		
 		server.pipeline => [
 			addInterceptor(jwtAuth)
@@ -211,7 +217,7 @@ class DpfServerStarter extends AbstractVerticle {
 			router = server.webRouter
 		])
 		
-		server.listen(port)
-		println('''DPF-SERVER available at port: «port»''')
+		server.listen(propPort)
+		println('''SCREEN-DR server available at port: «propPort»''')
 	}
 }

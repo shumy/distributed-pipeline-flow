@@ -40,9 +40,9 @@ class TestAnnotationService {
 	@Test
 	def void allNonAnnotatedImages() {
 		AsyncUtils.setDefault
-		val imgSrv = AnnotationService.create
+		val imgSrv = AnnotationService.B => [ prefixURI = 'no-prefix']
 		imgSrv.allNonAnnotatedImages(user).then[
-			forEach[ println(it) ]	
+			forEach[ println(it) ]
 		]
 	}
 }
