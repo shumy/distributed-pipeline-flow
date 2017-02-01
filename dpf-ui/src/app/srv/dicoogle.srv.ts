@@ -4,20 +4,14 @@ import { Observable } from 'rxjs/Rx';
 
 import { ClientRouter }  from 'rts-ts-client';
 
-import { config } from '../app.config';
-
 @Injectable()
 export class DicoogleService {
   public debounceDuration = 400
 
-  host: string
-  
-  constructor (private http: Http, private router: ClientRouter) {
-    this.host = config.dicoogleHost
-  }
+  constructor (private http: Http, private router: ClientRouter) {}
 
   tagsFor(uid: string) {
-    return this.get('http://' + this.host + '/dump?uid=' + uid)
+    return this.get('/proxy/dumpDIM/' + uid)
       .map(_ => _.json().results.fields)
       .map(fields => {
         let res = []
@@ -34,7 +28,7 @@ export class DicoogleService {
   }
 
   rawSearch(query: string): Observable<any> {
-    return this.get('http://' + this.host + '/searchDIM?query=' + query + '&keyword=true')
+    return this.get('/proxy/searchDIM/' + query)
       .map(_ => _.json().results)
       .filter(_ => _.length != 0)
       .map(results => {

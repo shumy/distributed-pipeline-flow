@@ -24,4 +24,18 @@ class DicoogleProxyService {
 			dicoogle.proxyGET('/dic2png?thumbnail=true&SOPInstanceUID=' + sopInstanceUID, req.response)
 		]
 	}
+	
+	@Public(notif = true)
+	def void searchDIM(HttpServerRequest req, String query) {
+		req.endHandler[
+			dicoogle.proxyGET('/searchDIM?query=' + query + '&keyword=true', req.response)
+		]
+	}
+	
+	@Public(notif = true)
+	def void dumpDIM(HttpServerRequest req, String uid) {
+		req.endHandler[
+			dicoogle.proxyGET('/dump?uid=' + uid, req.response)
+		]
+	}
 }
