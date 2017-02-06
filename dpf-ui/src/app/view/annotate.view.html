@@ -19,15 +19,12 @@
     <div class="ui primary button" style="margin-left:5px;" (click)="load()">Load</div>
   </div>
 
-  <div class="ui two column grid" style="height: 85%;">
-    <div class="column" style="margin: auto; padding-bottom: 0px; height: 100%; width: 70%; padding-right: 0px;">
-      <div class="ui embed" style="margin: auto; padding-bottom: 0px; height: 100%">
-        <!--<img class="item-image" src="/assets/img/PACScenter.png" style="width: 100%">-->
-        <img class="ui image" [src]="image.url">
-      </div>
+  <div style="display: flex;">
+    <div style="padding: 0 0 0 0; flex: 2;">
+      <img class="ui image" [src]="image.url" style="max-height: 100%;">
     </div>
 
-    <div class="column" style="width: 30%; padding-left: 0px; padding-bottom:0px;">
+    <div style="padding: 0 0 0 0; flex: 1;">
       <div style="height: 100%; overflow: hidden">
         <div class="ui menu top" style="height:40px; min-height: 30px;margin-bottom: 0px;margin-top: 0px; ">
           <a class="{{ tab == 0 ? 'active' : '' }} item teal" style="width: 50%; padding-left: 15% ;font-size: medium;" (click)="tab = 0">Image Quality</a>
@@ -124,7 +121,5 @@
       </div>
       
     </div>
-  </div>
-  <div style="height: 1%;margin-top: 14px; border-top-style:solid;border-width:1px;border-top-color:rgba(34,36,38,.1);">
   </div>
 </div>

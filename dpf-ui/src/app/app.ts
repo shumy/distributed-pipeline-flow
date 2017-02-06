@@ -13,6 +13,18 @@ export class Application {
     this.auth = router.authMgr
   }
 
+  ngOnInit() {
+    if (this.auth.userInfo)
+      console.log(this.auth.userInfo.groups)
+  }
+
+  contains(group: string): boolean {
+    if (!this.auth.userInfo)
+      return false
+
+    return this.auth.userInfo.groups.indexOf(group) > 0
+  }
+
   logout() {
     this.auth.logout()
     this.wRouter.navigate(['home'])

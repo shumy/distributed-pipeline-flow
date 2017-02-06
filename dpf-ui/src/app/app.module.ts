@@ -30,7 +30,8 @@ const router = new ClientRouter(config.server, config.client, pipeline)
 router.authMgr = new AuthService(config.authProvider, config.authClient)
 router.onError = error => {
   if (error.httpCode == 401) {
-    toastr.error(error.message)
+    toastr.error('Session timeout or not properly authenticated. Please login again!')
+    setTimeout(_ => window.location.href='/', 3000)
     return false
   }
 

@@ -45,7 +45,7 @@ export class AuthService implements IAuthManager {
   private setUserInfo() {
     this._client.userInfo().then(info => {
       console.log('UserInfo: ', info)
-      this.userInfo = { name: info.name, email: info.email, avatar: info.picture }
+      this.userInfo = { name: info.name, email: info.email, avatar: info.picture, groups: info.groups }
       if (!this.userInfo.avatar)
         this.userInfo.avatar = 'assets/img/default_user.png'
       
