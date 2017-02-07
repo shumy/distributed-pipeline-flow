@@ -72,6 +72,12 @@ export class SearchView implements OnInit {
 
       this.checkIfAllSelected()
     }, error => {
+      if (error.status == 401) {
+        toastr.error('Session timeout or not properly authenticated. Please login again!')
+        setTimeout(_ => window.location.href='/', 3000)
+        return
+      }
+
       toastr.error('Dicoogle query error: ' + error)
       this.initSearch()
     })

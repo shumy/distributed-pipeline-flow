@@ -4,8 +4,11 @@ import com.avaje.ebean.EbeanServerFactory
 import com.avaje.ebean.config.ServerConfig
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx
+import java.io.FileInputStream
+import java.util.Properties
 import pt.ua.dpf.dicoogle.DicoogleClient
 import pt.ua.dpf.srv.AnnotationService
+import pt.ua.dpf.srv.DicoogleProxyService
 import pt.ua.dpf.srv.IndexService
 import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
@@ -17,19 +20,15 @@ import pt.ua.ieeta.rpacs.model.ext.Annotation
 import pt.ua.ieeta.rpacs.model.ext.Annotator
 import pt.ua.ieeta.rpacs.model.ext.Lesion
 import rt.plugin.service.WebMethod
+import rt.utils.interceptor.AccessControlInterceptor
 import rt.utils.interceptor.JwtAuthInterceptor
 import rt.utils.service.DescriptorService
 import rt.utils.service.RepositoryService
 import rt.utils.service.RouterService
 import rt.utils.service.SubscriberService
-import rt.utils.service.UsersService
 import rt.utils.service.WebFileService
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.FolderManagerService
-import pt.ua.dpf.srv.DicoogleProxyService
-import rt.utils.interceptor.AccessControlInterceptor
-import java.util.Properties
-import java.io.FileInputStream
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -119,7 +118,6 @@ class DpfServerStarter extends AbstractVerticle {
 				}
 			]
 		
-		val usersSrv = UsersService.create
 		val subsSrv = SubscriberService.create
 		val reposSrv = RepositoryService.B => [ repos = #[ 'srv-points' ] ]
 		
@@ -143,7 +141,6 @@ class DpfServerStarter extends AbstractVerticle {
 			addService('dpf-ui', dpfUiSrv)
 			addService('api-ui', apiUiSrv)
 			
-			addService('users', usersSrv)
 			addService('subscriber', subsSrv)
 			addService('repository', reposSrv)
 			

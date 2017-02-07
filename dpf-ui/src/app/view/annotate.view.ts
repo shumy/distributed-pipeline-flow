@@ -50,6 +50,14 @@ export class AnnotateView implements OnInit {
     })
   }
 
+  select(img: ImageRef) {
+    let idx = this.images.indexOf(img)
+
+    this.tab = 0
+    this.image = this.images[idx]
+    this.annotation = this.annotations[idx]
+  }
+
   load() {
     this.annoProxy.allNonAnnotatedImages().then(images => {
       this.index  = 0

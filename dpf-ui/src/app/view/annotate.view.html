@@ -1,19 +1,18 @@
 <div style="padding-top: 54px;height: 100%">
   <div class="ui eye-stream main tiny menu" style="background-color:black; height:10%; max-height:60px; margin:0px;">
     <div class="menu menu-eye" style="margin-right:0!important;overflow: hidden; width:100%">
-      <div class=" item item-menu" style="padding: 0; width: 100%;">
-        <div class="ui images" style=" height: 100%;">
-          <img class="ui image item-image" src="/assets/img/RD.jpg">
-          <img class="ui image item-image" src="/assets/img/RD.jpg">
-          <img class="ui image item-image" src="/assets/img/RD.jpg">
+      <div class="item item-menu" style="padding: 0; width: 100%;">
+        <div class="ui images" style="height: 100%;">
+          <img *ngFor="let img of (images ? images.slice(0,pValue): [])" class="ui image item-image" [src]="img.url" (click)="select(img)"
+            style="cursor: pointer; border: 0px dotted #2185d0;" [style.border-width]="img == image ? '1px' : '0px'">
         </div>
       </div>
     </div>
   </div>
   
   <!--Progress and Load-->
-  <div class="column" style="margin:auto; padding: 5px 5% 5px 5%; display:flex;">
-    <div class="ui active progress" style="flex:auto;">
+  <div class="column" style="margin: auto; padding: 5px 5% 5px 5%; display:flex;">
+    <div class="ui progress" style="flex: auto;">
       <div class="bar" style="height:100%; min-width:50px;"><div class="progress"></div></div>
     </div>
     <div class="ui primary button" style="margin-left:5px;" (click)="load()">Load</div>
