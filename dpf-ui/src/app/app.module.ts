@@ -1,10 +1,12 @@
+import { UUID }                   from 'rts-ts-client';
+
 import { NgModule }               from '@angular/core';
 import { BrowserModule }          from '@angular/platform-browser';
 import { ReactiveFormsModule }    from '@angular/forms';
 import { HttpModule }             from '@angular/http';
 
 import { routing }                from './app.routing';
-import { config }                 from './app.config';
+import { environment as config }  from '../environments/environment';
 
 //services
 import { AuthService }            from './srv/oidcAuth.srv';
@@ -23,10 +25,17 @@ import { AnnotateView }           from './view/annotate.view';
 import { ClientRouter, Pipeline }                               from 'rts-ts-client';
 import { EventsService, SubscriberService, RepositoryService }  from 'rts-ts-client';
 
+let client = 'web-' + UUID.generate()
+
+toastr.options = {
+  positionClass: 'toast-bottom-right',
+  timeOut: 5000
+}
+
 const pipeline = new Pipeline
 pipeline.failHandler(error => console.log('PIPELINE-FAIL: ' + error))
 
-const router = new ClientRouter(config.server, config.client, pipeline)
+const router = new ClientRouter(config.server, client, pipeline)
 router.authMgr = new AuthService(config.authProvider, config.authClient)
 router.onError = error => {
   if (error.httpCode == 401) {

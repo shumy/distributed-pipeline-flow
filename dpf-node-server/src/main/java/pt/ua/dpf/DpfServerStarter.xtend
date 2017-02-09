@@ -29,6 +29,7 @@ import rt.utils.service.SubscriberService
 import rt.utils.service.WebFileService
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.FolderManagerService
+import pt.ua.dpf.srv.ConfigService
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -69,9 +70,11 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		val propPort = Integer.parseInt(props.getProperty('server.port'))
 		val propPrefixURI = props.getProperty('server.prefixURI')
+		val wsBaseRoute = props.getProperty('server.wsBaseRoute')
+		val webBaseRoute = props.getProperty('server.webBaseRoute')
 		//CONFIGS END------------------------------------------------------------------------------------
 		
-		val server = new DefaultVertxServer(vertx, '/clt', '')
+		val server = new DefaultVertxServer(vertx, wsBaseRoute, webBaseRoute)
 		val dicoogleClient = new DicoogleClient(vertx, propDicoogleHost, propDicooglePort)
 		
 		//config storage and index
@@ -120,6 +123,8 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		val subsSrv = SubscriberService.create
 		val reposSrv = RepositoryService.B => [ repos = #[ 'srv-points' ] ]
+		val servicePointSrv = ServicePointService.B => [ repo = reposSrv.getRepo('srv-points') ]
+		val confSrv = ConfigService.B => [ configs = #{ 'issuer' -> propOicIssuer, 'audience' -> propOicAudience } ]
 		
 		val indexService = IndexService.B => [ folder = './downloads' isHomeManager = true ]
 		indexService => [
@@ -128,7 +133,6 @@ class DpfServerStarter extends AbstractVerticle {
 		]
 		
 		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' isHomeManager = true ]
-		val servicePointSrv = ServicePointService.B => [ repo = reposSrv.getRepo('srv-points') ]
 		val transfersSrv = TransferService.B => [ folder = './downloads' dicoogle = dicoogleClient srvPoint = servicePointSrv ]
 		val dicoogleProxySrv = DicoogleProxyService.B => [ dicoogle = dicoogleClient ]
 		
@@ -143,10 +147,11 @@ class DpfServerStarter extends AbstractVerticle {
 			
 			addService('subscriber', subsSrv)
 			addService('repository', reposSrv)
+			addService('service-point', servicePointSrv)
+			addService('configs', confSrv)
 			
 			addService('indexer', indexService, #{ 'all' -> '/srv-home' })
 			addService('folder-manager', folderManagerSrv, #{ 'all' -> '/srv-home' })
-			addService('service-point', servicePointSrv)
 			addService('transfers', transfersSrv, #{ 'all' -> '/srv-transfer' })
 			addService('d-proxy', dicoogleProxySrv, #{ 'all' -> '/srv-dicoogle' })
 			
@@ -179,6 +184,7 @@ class DpfServerStarter extends AbstractVerticle {
 				route(WebMethod.GET, '/api/specs/:name', 'specs' -> 'srvSpec')
 				
 				get('/users/me', 'users' -> 'me')
+				get('/configs', 'configs', 'configs')
 				
 				get('/file-list/:path', 'folder-manager' -> 'list')
 				get('/file-download/:filename', 'folder-manager', 'download', #['ctx.request', 'filename'])

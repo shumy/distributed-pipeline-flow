@@ -4,5 +4,8 @@
 // The list of which env maps to which file can be found in `angular-cli.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  server: 'ws://localhost:9090/clt',
+  authProvider: 'http://localhost:8081/auth/realms/dev/',
+  authClient: 'screen-dr'
 };

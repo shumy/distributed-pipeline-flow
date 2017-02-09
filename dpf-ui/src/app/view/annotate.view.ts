@@ -54,6 +54,7 @@ export class AnnotateView implements OnInit {
     let idx = this.images.indexOf(img)
 
     this.tab = 0
+    this.index--
     this.image = this.images[idx]
     this.annotation = this.annotations[idx]
   }
