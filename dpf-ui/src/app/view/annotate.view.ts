@@ -10,17 +10,7 @@ import { AnnotationService, ImageRef, Annotation }  from '../srv/annotation.srv'
 export class AnnotateView implements OnInit {
   private annoProxy: AnnotationService
 
-  tab = 0
-
-  index = 0
-  pValue = 0
-  pTotal = 0
-
-  images: ImageRef[]
-  image: ImageRef = { id: 0, url: '//:0' }
-
-  annotations: Annotation[]
-  annotation: Annotation = {
+  readonly annDefault: Annotation = {
     id: 0,
     image: 0,
 
@@ -31,6 +21,18 @@ export class AnnotateView implements OnInit {
     maculopathy:'UNDEFINED',
     photocoagulation:'UNDEFINED'
   }
+
+  tab = 0
+
+  index = 0
+  pValue = 0
+  pTotal = 0
+
+  images: ImageRef[]
+  image: ImageRef = { id: 0, url: '//:0' }
+
+  annotations: Annotation[]
+  annotation: Annotation = this.annDefault
   
   constructor(private router: ClientRouter) {
     this.annoProxy = router.createProxy('anno')
@@ -52,9 +54,11 @@ export class AnnotateView implements OnInit {
 
   select(img: ImageRef) {
     let idx = this.images.indexOf(img)
+    this.selectIndex(idx)
+  }
 
+  selectIndex(idx: number) {
     this.tab = 0
-    this.index--
     this.image = this.images[idx]
     this.annotation = this.annotations[idx]
   }
@@ -67,17 +71,9 @@ export class AnnotateView implements OnInit {
 
       this.images = images
       this.annotations = images.map(img => {
-        return {
-          id: 0,
-          image: img.id,
-
-          quality: 'UNDEFINED',
-          local: 'UNDEFINED',
-
-          retinopathy:'UNDEFINED',
-          maculopathy:'UNDEFINED',
-          photocoagulation:'UNDEFINED'
-        } as Annotation
+        let ann = this.annDefault
+        ann.image = img.id
+        return ann
       })
 
       this.loadImage()
@@ -86,11 +82,8 @@ export class AnnotateView implements OnInit {
   }
 
   loadImage() {
-    if (this.index < this.images.length) {
-      this.tab = 0
-      this.image = this.images[this.index]
-      this.annotation = this.annotations[this.index]
-    }
+    if (this.index < this.images.length)
+      this.selectIndex(this.index)
   }
 
   onQualityNext() {
@@ -113,6 +106,7 @@ export class AnnotateView implements OnInit {
         .then(newId => {
           this.annotation.id = newId
           this.pValue++
+          this.index++
           this.onDoneOk()
         })
         .catch(error => {
@@ -128,8 +122,6 @@ export class AnnotateView implements OnInit {
 
   onDoneOk() {
     toastr.success('Annotation saved')
-    this.index++
-    
     this.loadImage()
     this.updateProgress()
   }

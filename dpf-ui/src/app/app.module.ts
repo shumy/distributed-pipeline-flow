@@ -28,7 +28,9 @@ import { EventsService, SubscriberService, RepositoryService }  from 'rts-ts-cli
 let client = 'web-' + UUID.generate()
 
 toastr.options = {
-  positionClass: 'toast-bottom-right',
+  //positionClass: 'toast-bottom-right',
+  //positionClass: 'toast-top-full-width',
+  positionClass: 'toast-top-center',
   timeOut: 5000
 }
 

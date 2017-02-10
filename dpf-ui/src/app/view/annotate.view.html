@@ -1,54 +1,36 @@
 <div style="padding-top: 54px;height: 100%">
-  <div class="ui eye-stream main tiny menu" style="background-color:black; height:10%; max-height:60px; margin:0px;">
-    <div class="menu menu-eye" style="margin-right:0!important;overflow: hidden; width:100%">
-      <div class="item item-menu" style="padding: 0; width: 100%;">
-        <div class="ui images" style="height: 100%;">
-          <img *ngFor="let img of (images ? images.slice(0,pValue): [])" class="ui image item-image" [src]="img.url" (click)="select(img)"
-            style="cursor: pointer; border: 0px dotted #2185d0;" [style.border-width]="img == image ? '1px' : '0px'">
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!--Progress and Load-->
-  <div class="column" style="margin: auto; padding: 5px 5% 5px 5%; display:flex;">
-    <div class="ui progress" style="flex: auto;">
-      <div class="bar" style="height:100%; min-width:50px;"><div class="progress"></div></div>
-    </div>
-    <div class="ui primary button" style="margin-left:5px;" (click)="load()">Load</div>
-  </div>
 
-  <div style="display: flex;">
-    <div style="padding: 0 0 0 0; flex: 2;">
+  <div style="display: flex; height: calc(100vh - 165px);">
+    <div style="padding: 0 0 0 0; flex: 3; background-color: black;">
       <img class="ui image" [src]="image.url" style="max-height: 100%;">
     </div>
 
     <div style="padding: 0 0 0 0; flex: 1;">
       <div style="height: 100%; overflow: hidden">
-        <div class="ui menu top" style="height:40px; min-height: 30px;margin-bottom: 0px;margin-top: 0px; ">
-          <a class="{{ tab == 0 ? 'active' : '' }} item teal" style="width: 50%; padding-left: 15% ;font-size: medium;" (click)="tab = 0">Image Quality</a>
+        <div class="ui menu top" style="height:40px; min-height: 30px; margin-bottom: 0px; margin-top: 0px; background-color: #1B1C1D;">
+          <a class="item" (click)="tab = 0" [style.border-bottom-color]="tab == 0 ? '#d4d4d5' : '#1B1C1D'"
+            style="width: 50%; padding-left: 15%; font-size: medium; color: #d4d4d5; border-bottom: 2px solid;">Image Quality</a>
           <a *ngIf="(annotation.quality == 'GOOD' || annotation.quality == 'PARTIAL') && annotation.local != 'UNDEFINED'"
-            class="{{ tab == 1 ? 'active' : '' }} item teal" style=" width: 50%; padding-left: 20%; font-size: medium;" (click)="tab = 1">Diagnosis</a>
+            class="item" (click)="tab = 1" [style.border-bottom-color]="tab == 1 ? '#d4d4d5' : '#1B1C1D'"
+            style="width: 50%; padding-left: 20%; font-size: medium; color: #d4d4d5; border-bottom: 2px solid;">Diagnosis</a>
         </div>
 
-        <div class="ui bottom attached segment" [style.display]="tab == 0 ? 'block' : 'none'"
-          style="padding-top: 5%;height:100%; overflow: hidden;border-bottom-width: -14;padding-bottom: 40px;padding-top: 14px;border-bottom-width: -14;border-bottom-width: 0px;margin-top: 0px;">
-          
-          <div class="ui column grid" style="height:100%; overflow: overlay">
+        <div [style.display]="tab == 0 ? 'block' : 'none'" style="height:100%; padding: 1em; background-color: black;">
+          <div class="ui column grid" style="height:100%;">
             <div class="row" style="padding-bottom: 0px;">
               <div class="column li" style="margin: auto">
-                <p class="h1">How do you classify this image's readability?</p>
+                <p class="h1" style="color: #d4d4d5;">How do you classify this image's readability?</p>
                 <div class="ui medium buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
-                  <button class="ui positive button {{ annotation.quality == 'GOOD' ? 'active' : '' }}" (click)="annotation.quality = 'GOOD'">Readable</button>
-                  <button class="ui button {{ annotation.quality == 'PARTIAL' ? 'active' : '' }}" (click)="annotation.quality = 'PARTIAL'">Low Confidence</button>
-                  <button class="ui negative button {{ annotation.quality == 'BAD' ? 'active' : '' }}" (click)="annotation.quality = 'BAD'">Unreadable</button>
+                  <button class="ui green {{ annotation.quality == 'GOOD' ? '' : 'basic' }} button" (click)="annotation.quality = 'GOOD'">Readable</button>
+                  <button class="ui grey {{ annotation.quality == 'PARTIAL' ? '' : 'basic' }} button" (click)="annotation.quality = 'PARTIAL'">Low Confidence</button>
+                  <button class="ui red {{ annotation.quality == 'BAD' ? '' : 'basic' }} button" (click)="annotation.quality = 'BAD'">Unreadable</button>
                 </div>
               </div>
             </div>
             <div *ngIf="annotation.quality == 'GOOD' || annotation.quality == 'PARTIAL'" class="row" style="padding-bottom: 0px;">
               <div class="column li" style="margin: auto">
-                <p class="h1">Identify the relevant anatomic structure on the image:</p>
-                <div class="ui teal buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
+                <p class="h1" style="color: #d4d4d5;">Identify the relevant anatomic structure on the image:</p>
+                <div class="ui medium buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
                   <button class="ui button {{ annotation.local == 'MACULA' ? 'active' : '' }}" (click)="annotation.local = 'MACULA'">Macula</button>
                   <button class="ui button {{ annotation.local == 'OPTIC_DICS' ? 'active' : '' }}" (click)="annotation.local = 'OPTIC_DICS'">Optic Disc</button>
                 </div>
@@ -69,14 +51,12 @@
           </div>
         </div>
 
-        <div class="ui bottom attached segment" [style.display]="tab == 1 ? 'block' : 'none'"
-          style="height:100%; overflow: hidden;border-bottom-width: -14;padding-bottom: 30px;padding-top: 14px;border-bottom-width: -14;border-bottom-width: 0px;margin-top: 0px;">
-          
-          <div class="ui column grid" style="height:100%; overflow: overlay">
+        <div [style.display]="tab == 1 ? 'block' : 'none'" style="height:100%; padding: 1em; background-color: black;">
+          <div class="ui column grid" style="height:100%;">
             <div class="row" style="padding-bottom: 0px;">
               <div class="column li" style="margin: auto">
-                <p class="h1">Rate the image in terms of Diabetic Retinopathy:</p>
-                <div class="ui medium teal buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
+                <p class="h1" style="color: #d4d4d5;">Rate the image in terms of Diabetic Retinopathy:</p>
+                <div class="ui medium buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
                   <button class="ui left attached button {{ annotation.retinopathy == 'R0' ? 'active' : '' }}" (click)="annotation.retinopathy = 'R0'">R0</button>
                   <button class="ui attached button {{ annotation.retinopathy == 'R1' ? 'active' : '' }}" (click)="annotation.retinopathy = 'R1'">R1</button>
                   <button class="ui attached button {{ annotation.retinopathy == 'R2_M' ? 'active' : '' }}" (click)="annotation.retinopathy = 'R2_M'">R2-M</button>
@@ -87,8 +67,8 @@
             </div>
             <div *ngIf="annotation.retinopathy != 'UNDEFINED' && annotation.retinopathy != 'R0'" class="row" style="padding-bottom: 0px;">
               <div class="column li" style="margin: auto">
-                <p class="h1">Rate the image in terms of Maculopathy:</p>
-                <div class="ui medium teal buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
+                <p class="h1" style="color: rgba(255,255,255,.9);">Rate the image in terms of Maculopathy:</p>
+                <div class="ui medium buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
                   <button class="ui left attached button {{ annotation.maculopathy == 'M0' ? 'active' : '' }}" (click)="annotation.maculopathy = 'M0'">M0</button>
                   <button class="ui right attached button {{ annotation.maculopathy == 'M1' ? 'active' : '' }}" (click)="annotation.maculopathy = 'M1'">M1</button>
                 </div>
@@ -96,8 +76,8 @@
             </div>
             <div *ngIf="annotation.retinopathy != 'UNDEFINED' && annotation.retinopathy != 'R0'" class="row" style="padding-bottom: 0px;">
               <div class="column li" style="margin: auto">
-                <p class="h1">Rate the image in terms of Photocoagulation:</p>
-                <div class="ui medium teal buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
+                <p class="h1" style="color: #d4d4d5;">Rate the image in terms of Photocoagulation:</p>
+                <div class="ui medium buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
                   <button class="ui left attached button {{ annotation.photocoagulation == 'P0' ? 'active' : '' }}" (click)="annotation.photocoagulation = 'P0'">P0</button>
                   <button class="ui attached button {{ annotation.photocoagulation == 'P1' ? 'active' : '' }}" (click)="annotation.photocoagulation = 'P1'">P1</button>
                   <button class="ui right attached button {{ annotation.photocoagulation == 'P2' ? 'active' : '' }}" (click)="annotation.photocoagulation = 'P2'">P2</button>
@@ -120,5 +100,25 @@
       </div>
       
     </div>
+  </div>
+
+  <!--Recently Annotated-->
+  <div class="ui eye-stream main tiny menu" style="background-color:black; height:10%; max-height:60px; margin:0px;">
+    <div class="menu menu-eye" style="margin-right:0!important;overflow: hidden; width:100%">
+      <div class="item item-menu" style="padding: 0; width: 100%;">
+        <div class="ui images" style="height: 100%;">
+          <img *ngFor="let img of (images ? images.slice(0,pValue): [])" class="ui image item-image" [src]="img.url" (click)="select(img)"
+            style="cursor: pointer; border: 0px dotted #d4d4d5;" [style.border-width]="img == image ? '1px' : '0px'">
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!--Progress and Load-->
+  <div class="column" style="margin: auto; padding: 5px 5% 5px 5%; display:flex;">
+    <div class="ui progress" style="flex: auto;">
+      <div class="bar" style="height:100%; min-width:50px;"><div class="progress"></div></div>
+    </div>
+    <div class="ui primary button" style="margin-left:5px;" (click)="load()">Load</div>
   </div>
 </div>

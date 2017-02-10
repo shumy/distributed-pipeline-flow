@@ -50,6 +50,11 @@ div {
   margin-bottom: 0px !important;
 }
 
+.ui.active.button {
+  background-color: #8a8a8a; 
+}
+
+
 .dropzone {
   flex: auto;
   border: 2px dashed #0087F7;
