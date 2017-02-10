@@ -13,9 +13,8 @@ export class Application {
     this.auth = router.authMgr
   }
 
-  ngOnInit() {
-    if (this.auth.userInfo)
-      console.log(this.auth.userInfo.groups)
+  showMenu() {
+    return this.wRouter.url !== '/home'// && this.auth.isLogged
   }
 
   contains(group: string): boolean {

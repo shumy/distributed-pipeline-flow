@@ -1,18 +1,20 @@
-<div *ngIf="auth.isLogged" class="ui fixed inverted menu">
+<div *ngIf="showMenu()" class="ui fixed inverted menu">
   <img class="dr-logo" src="assets/img/logo2.png">
   <a *ngIf="contains('/ui-search')" [routerLink]="['search']" class="header item" style="padding-left: 20px;">Search</a>
   <a *ngIf="contains('/ui-upload')" [routerLink]="['upload']" class="header item">Upload</a>
   <a *ngIf="contains('/ui-annotate')" [routerLink]="['annotate']" class="header item">Annotate</a>
-  
+
   <div class="right menu" style="padding-right: 5px;">
-    <a class="item">
+    <a *ngIf="auth.isLogged" class="item">
       <img class="ui avatar image" [src]="auth.userInfo.avatar">
-      <span>{{auth.userInfo.name}}</span>
+      <span>{{auth.userInfo.name}}</span>  
     </a>
     <div class="item">
-      <div class="ui primary button" (click)="logout()">Log Out</div>
+      <div *ngIf="!auth.isLogged" class="ui primary button" (click)="auth.login()">Log In</div>
+      <div *ngIf="auth.isLogged" class="ui primary button" (click)="logout()">Log Out</div>
     </div>
   </div>
+
 </div>
 
 <router-outlet></router-outlet>

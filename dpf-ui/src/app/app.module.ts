@@ -10,7 +10,6 @@ import { environment as config }  from '../environments/environment';
 
 //services
 import { AuthService }            from './srv/oidcAuth.srv';
-import { RouteGuard }             from './srv/route-guard.srv';
 import { DicoogleService }        from './srv/dicoogle.srv';
 
 //views
@@ -28,8 +27,6 @@ import { EventsService, SubscriberService, RepositoryService }  from 'rts-ts-cli
 let client = 'web-' + UUID.generate()
 
 toastr.options = {
-  //positionClass: 'toast-bottom-right',
-  //positionClass: 'toast-top-full-width',
   positionClass: 'toast-top-center',
   timeOut: 5000
 }
@@ -63,7 +60,7 @@ const repoSrv = new RepositoryService(router, evtSrv)
   ],
   bootstrap: [ Application ],
   providers: [
-    RouteGuard, DicoogleService,
+    DicoogleService,
     { provide: ClientRouter, useValue: router },
     { provide: SubscriberService, useValue: subSrv },
     { provide: RepositoryService, useValue: repoSrv }
