@@ -18,7 +18,7 @@ import rt.utils.interceptor.UserInfo
 class TestAnnotationService {
 	static val user = new UserInfo('micael', #[])
 	
-	@BeforeClass
+	//@BeforeClass
 	static def void setup() {
 		EbeanServerFactory.create(new ServerConfig => [
 			name = 'db'
@@ -37,7 +37,7 @@ class TestAnnotationService {
 		])
 	}
 	
-	@Test
+	//@Test
 	def void allNonAnnotatedImages() {
 		AsyncUtils.setDefault
 		val imgSrv = AnnotationService.B => [ prefixURI = 'no-prefix']
