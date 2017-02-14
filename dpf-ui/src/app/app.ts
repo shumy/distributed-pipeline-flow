@@ -21,7 +21,7 @@ export class Application {
     if (!this.auth.userInfo)
       return false
 
-    return this.auth.userInfo.groups.indexOf(group) > 0
+    return this.auth.userInfo.groups.indexOf(group) > -1
   }
 
   logout() {
