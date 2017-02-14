@@ -10,7 +10,7 @@ import { AnnotationService, ImageRef, Annotation }  from '../srv/annotation.srv'
 export class AnnotateView implements OnInit {
   private annoProxy: AnnotationService
 
-  readonly annDefault: Annotation = {
+  readonly annDefault: string = JSON.stringify({
     id: 0,
     image: 0,
 
@@ -20,7 +20,7 @@ export class AnnotateView implements OnInit {
     retinopathy:'UNDEFINED',
     maculopathy:'UNDEFINED',
     photocoagulation:'UNDEFINED'
-  }
+  })
 
   tab = 0
 
@@ -32,7 +32,7 @@ export class AnnotateView implements OnInit {
   image: ImageRef = { id: 0, url: '//:0' }
 
   annotations: Annotation[]
-  annotation: Annotation = this.annDefault
+  annotation: Annotation = JSON.parse(this.annDefault)
   
   constructor(private router: ClientRouter) {
     this.annoProxy = router.createProxy('anno')
@@ -71,7 +71,7 @@ export class AnnotateView implements OnInit {
 
       this.images = images
       this.annotations = images.map(img => {
-        let ann = this.annDefault
+        let ann = JSON.parse(this.annDefault)
         ann.image = img.id
         return ann
       })
