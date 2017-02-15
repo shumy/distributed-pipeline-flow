@@ -1,8 +1,13 @@
 <div style="padding-top: 54px;height: 100%">
+  <div>
+    <div class="ui {{ loading ? 'active' : '' }} dimmer">
+      <div class="ui text loader">Loading Next Image</div>
+    </div>
+  </div>
 
   <div style="display: flex; height: calc(100vh - 165px);">
     <div style="padding: 0 0 0 0; flex: 3; background-color: black;">
-      <img class="ui image" [src]="image.url" style="max-height: 100%;">
+      <img class="ui image" [src]="image.url" style="max-height: 100%;" (load)="loading = false">
     </div>
 
     <div style="padding: 0 0 0 0; flex: 1;">

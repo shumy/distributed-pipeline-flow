@@ -23,6 +23,7 @@ export class AnnotateView implements OnInit {
   })
 
   tab = 0
+  loading = false
 
   index = 0
   pValue = 0
@@ -82,8 +83,10 @@ export class AnnotateView implements OnInit {
   }
 
   loadImage() {
-    if (this.index < this.images.length)
+    if (this.index < this.images.length) {
       this.selectIndex(this.index)
+      this.loading = true
+    }
   }
 
   onQualityNext() {
