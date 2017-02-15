@@ -21,15 +21,18 @@ export class HomeView {
 
   navigateToDefaultUI() {
     // default order (search, annotate, upload)
-    let uiGroups = this.auth.userInfo.groups.filter(_ => _.startsWith('/ui-'))
-    if (uiGroups.indexOf('/ui-search') !== -1)
-      this.wRouter.navigate(['search'])
-    else if (uiGroups.indexOf('/ui-annotate') !== -1)
-      this.wRouter.navigate(['annotate'])
-    else if (uiGroups.indexOf('/ui-upload') !== -1)
-      this.wRouter.navigate(['upload'])
-    else {
-      toastr.error('No UI groups in your account!')
+    if (this.auth.isLogged) {
+      let groups = this.auth.userInfo.groups || []
+      let uiGroups = groups.filter(_ => _.startsWith('/ui-'))
+      if (uiGroups.indexOf('/ui-search') !== -1)
+        this.wRouter.navigate(['search'])
+      else if (uiGroups.indexOf('/ui-annotate') !== -1)
+        this.wRouter.navigate(['annotate'])
+      else if (uiGroups.indexOf('/ui-upload') !== -1)
+        this.wRouter.navigate(['upload'])
+      else {
+        toastr.error('No UI groups in your account!')
+      }
     }
   }
 }

@@ -25,6 +25,7 @@ export class Application {
   }
 
   logout() {
+    console.log('Logging out...')
     this.auth.logout()
     this.wRouter.navigate(['home'])
   }
