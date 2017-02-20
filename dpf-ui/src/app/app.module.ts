@@ -39,7 +39,7 @@ router.authMgr = new AuthService(config.authProvider, config.authClient)
 router.onError = error => {
   if (error.httpCode == 401) {
     toastr.error('Session timeout or not properly authenticated. Please login again!')
-    setTimeout(_ => window.location.href='/', 3000)
+    setTimeout(_ => window.location.href=config.base, 3000)
     return false
   }
 

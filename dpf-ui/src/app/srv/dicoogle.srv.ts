@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Http, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
 
+import { environment as config }  from '../../environments/environment';
 import { ClientRouter }  from 'rts-ts-client';
 
 @Injectable()
@@ -41,12 +42,14 @@ export class DicoogleService {
   }
 
   private get(url: string) {
+    let completeUrl = config.base + url
+    
     if (this.router.authMgr.isLogged) {
       let headers = new Headers({ 'Authorization': `Bearer ${this.router.authMgr.authInfo.token}` })
       let options = new RequestOptions({ headers: headers })
-      return this.http.get(url, options)
+      return this.http.get(completeUrl, options)
     }
     
-    return this.http.get(url)
+    return this.http.get(completeUrl)
   }
 }

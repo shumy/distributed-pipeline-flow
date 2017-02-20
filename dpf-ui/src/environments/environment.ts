@@ -5,7 +5,8 @@
 
 export const environment = {
   production: false,
-  server: 'ws://localhost:9090/clt',
-  authProvider: 'http://localhost:8081/auth/realms/dev/',
+  base: '/screen-dr',
+  server: 'ws://localhost/screen-dr/clt',
+  authProvider: 'http://localhost/keycloak/auth/realms/dev/',
   authClient: 'screen-dr'
 };

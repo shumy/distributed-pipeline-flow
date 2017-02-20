@@ -2,6 +2,7 @@ import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Observable } from 'rxjs/Observable';
 
+import { environment as config }  from '../../environments/environment';
 import { UUID, ClientRouter, RepositoryService, Repository }  from 'rts-ts-client';
 import { TransferProxy, IPatientTransfer }                    from '../srv/transfer.srv';
 import { DicoogleService }                                    from '../srv/dicoogle.srv';
@@ -54,7 +55,7 @@ export class SearchView implements OnInit {
             serie.open = false
             serie.images.forEach(image => {
               patient.nTotal += 1
-              image.url = '/proxy/dic2png/' + image.sopInstanceUID
+              image.url = config.base + '/proxy/dic2png/' + image.sopInstanceUID
             })
           })
         })

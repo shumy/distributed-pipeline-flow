@@ -30,14 +30,19 @@ import rt.utils.service.WebFileService
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.FolderManagerService
 import pt.ua.dpf.srv.ConfigService
+import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
 //import io.vertx.core.VertxOptions
 
+@FinalFieldsConstructor
 class DpfServerStarter extends AbstractVerticle {
 	def static void main(String[] args) {
-		val node = new DpfServerStarter
+		println(args.length)
+		val isProd = if (args.length > 0 && args.get(0) == 'prod') true else false
+		
+		val node = new DpfServerStarter(isProd)
 		Vertx.vertx.deployVerticle(node)
 		
 		/*
@@ -55,10 +60,18 @@ class DpfServerStarter extends AbstractVerticle {
 		*/
 	}
 	
+	val boolean isProd
+	
 	override def start() {
 		//CONFIGS BEGIN------------------------------------------------------------------------------------
 		val props = new Properties => [
-			load(new FileInputStream('config.properties'))
+			if (isProd) {
+				println('''Loading config: config.prod.properties''')
+				load(new FileInputStream('config.prod.properties'))
+			} else {
+				println('''Loading config: config.properties''')
+				load(new FileInputStream('config.properties'))
+			}
 		]
 		
 		val propDicoogleHost = props.getProperty('dicoogle.host')
