@@ -1,24 +1,24 @@
-import { UUID }                   from 'rts-ts-client';
+import { UUID }                       from 'rts-ts-client';
 
-import { NgModule }               from '@angular/core';
-import { BrowserModule }          from '@angular/platform-browser';
-import { ReactiveFormsModule }    from '@angular/forms';
-import { HttpModule }             from '@angular/http';
+import { NgModule, APP_INITIALIZER }  from '@angular/core';
+import { BrowserModule }              from '@angular/platform-browser';
+import { ReactiveFormsModule }        from '@angular/forms';
+import { HttpModule }                 from '@angular/http';
 
-import { routing }                from './app.routing';
-import { environment as config }  from '../environments/environment';
+import { routing }                    from './app.routing';
+import { environment as config }      from '../environments/environment';
 
 //services
-import { AuthService }            from './srv/oidcAuth.srv';
-import { DicoogleService }        from './srv/dicoogle.srv';
+import { AuthService }                from './srv/oidcAuth.srv';
+import { DicoogleService }            from './srv/dicoogle.srv';
 
 //views
-import { Application }            from './app';
+import { Application }                from './app';
 
-import { HomeView }               from './view/home.view';
-import { SearchView }             from './view/search.view';
-import { UploadView }             from './view/upload.view';
-import { AnnotateView }           from './view/annotate.view';
+import { HomeView }                   from './view/home.view';
+import { SearchView }                 from './view/search.view';
+import { UploadView }                 from './view/upload.view';
+import { AnnotateView }               from './view/annotate.view';
 
 //rts config
 import { ClientRouter, Pipeline }                               from 'rts-ts-client';
@@ -34,8 +34,9 @@ toastr.options = {
 const pipeline = new Pipeline
 pipeline.failHandler(error => console.log('PIPELINE-FAIL: ' + error))
 
+const authMgr = new AuthService(config.authProvider, config.authClient)
 const router = new ClientRouter(config.server, client, pipeline)
-router.authMgr = new AuthService(config.authProvider, config.authClient)
+router.authMgr = authMgr
 router.onError = error => {
   if (error.httpCode == 401) {
     toastr.error('Session timeout or not properly authenticated. Please login again!')
@@ -51,6 +52,14 @@ const subSrv = new SubscriberService(router, evtSrv)
 const repoSrv = new RepositoryService(router, evtSrv)
   repoSrv.create('srv-points').connect()
 
+function init() {
+  return new Promise<void>((resolve) => {
+    authMgr.load().then(_ => {
+      console.log('Auth-Manager ready...')
+      resolve()
+    })
+  })
+}
 
 @NgModule({
   imports: [ BrowserModule, ReactiveFormsModule, HttpModule, routing ],
@@ -60,6 +69,7 @@ const repoSrv = new RepositoryService(router, evtSrv)
   ],
   bootstrap: [ Application ],
   providers: [
+    { provide: APP_INITIALIZER, useValue: init, multi: true },
     DicoogleService,
     { provide: ClientRouter, useValue: router },
     { provide: SubscriberService, useValue: subSrv },

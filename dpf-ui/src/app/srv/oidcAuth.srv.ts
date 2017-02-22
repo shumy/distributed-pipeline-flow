@@ -9,17 +9,23 @@ export class AuthService implements IAuthManager {
   public authInfo: AuthInfo
   public userInfo: UserInfo
 
-  constructor(private idp: string, private clientId: string) {
-    OIDC.discover(idp)
-      .then(issuer => {
-        this._client = issuer.createClient(clientId)
+  constructor(private idp: string, private clientId: string) {}
+
+  load() {
+    return new Promise<void>((resolve) => {
+      OIDC.discover(this.idp).then(issuer => {
+        this._client = issuer.createClient(this.clientId)
         if (this._client.authInfo) {
           this.setAuthInfo()
-          this.setUserInfo()
+          this.setUserInfo().then(_ => resolve())
+        } else {
+          resolve()
         }
       }, error => {
         console.error('IDP discover: ', error)
+        resolve()
       })
+    })
   }
 
   login() {
@@ -43,16 +49,20 @@ export class AuthService implements IAuthManager {
   }
 
   private setUserInfo() {
-    this._client.userInfo().then(info => {
-      console.log('UserInfo: ', info)
-      this.userInfo = { name: info.name, email: info.email, avatar: info.picture, groups: info.groups }
-      if (!this.userInfo.avatar)
-        this.userInfo.avatar = 'assets/img/default_user.png'
-      
-      this.setLogin()
-    }, error => {
-      console.log('UserInfo: ', error)
-      this.setLogout()
+    return new Promise<void>((resolve) => {
+      this._client.userInfo().then(info => {
+        console.log('UserInfo: ', info)
+        this.userInfo = { name: info.name, email: info.email, avatar: info.picture, groups: info.groups }
+        if (!this.userInfo.avatar)
+          this.userInfo.avatar = 'assets/img/default_user.png'
+        
+        this.setLogin()
+        resolve()
+      }, error => {
+        console.log('UserInfo: ', error)
+        this.setLogout()
+        resolve()
+      })
     })
   }
 

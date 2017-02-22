@@ -53,6 +53,7 @@ class DicoogleClient {
 			pResp.chunked = true
 			pResp.statusCode = dResp.statusCode
 			pResp.headers.setAll = dResp.headers
+			pResp.headers.add('Cache-Control', 'public, max-age=86400')
 			
 			dResp.handler[ pResp.write(it) ]
 			dResp.endHandler[ pResp.end ]

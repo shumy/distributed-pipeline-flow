@@ -82,10 +82,24 @@ export class AnnotateView implements OnInit {
     })
   }
 
+  preloadImages(fromIdx: number, toIdx: number) {
+    if (fromIdx < this.images.length && fromIdx < toIdx) {
+      if (!this.images[fromIdx].preloaded) {
+        this.images[fromIdx].preloaded =  true
+
+        let img = new Image()
+        img.onload = _ => this.preloadImages(fromIdx + 1, toIdx)
+        img.src = this.images[fromIdx].url
+      }
+    }
+  }
+
   loadImage() {
     if (this.index < this.images.length) {
       this.selectIndex(this.index)
       this.loading = true
+
+      this.preloadImages(this.index + 1, this.index + 3)
     }
   }
 

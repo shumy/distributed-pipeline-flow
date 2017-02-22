@@ -2,6 +2,7 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 
 import { ClientRouter }  from 'rts-ts-client';
 
+import { environment as config }  from '../../environments/environment';
 import { FolderManagerProxy } from '../srv/folder.srv';
 import { IndexProxy } from '../srv/load.srv';
 
@@ -30,8 +31,7 @@ export class UploadView {
 
   ngOnInit() {
     let token = 'Bearer ' + this.router.authMgr.authInfo.token
-    let drop = new Dropzone('div#dropzone', { url: '/file-upload', headers: { "Authorization": token } })
-    //let drop = new Dropzone('div#dropzone', { url: 'http://localhost:8080/stow' })
+    let drop = new Dropzone('div#dropzone', { url: config.base + '/file-upload', headers: { "Authorization": token } })
 
     drop.on("success", (resp) => {
       this.nSelected++

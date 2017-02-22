@@ -2,6 +2,7 @@
 export interface ImageRef {
   id: number
   url: string
+  preloaded?: boolean
 }
 
 export interface Annotation {
