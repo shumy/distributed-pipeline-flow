@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
-  base: '/',
-  server: 'ws://mednat.ieeta.pt:8023/clt',
-  authProvider: 'http://mednat.ieeta.pt:8022/auth/realms/screen/',
+  base: '/screen-dr',
+  server: 'ws://demo.dicoogle.com/screen-dr/clt',
+  authProvider: 'http://demo.dicoogle.com/keycloak/auth/realms/screen/',
   authClient: 'screen-dr'
 };
