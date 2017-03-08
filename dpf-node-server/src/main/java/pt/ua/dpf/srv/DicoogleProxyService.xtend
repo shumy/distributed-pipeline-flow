@@ -28,7 +28,7 @@ class DicoogleProxyService {
 	@Public(notif = true)
 	def void searchDIM(HttpServerRequest req, String query) {
 		req.endHandler[
-			dicoogle.proxyGET('/searchDIM?query=' + query + '&keyword=true', req.response)
+			dicoogle.proxyGET('/searchDIM?query=' + query + '&keyword=true&provider=r-pacs-query', req.response)
 		]
 	}
 	
