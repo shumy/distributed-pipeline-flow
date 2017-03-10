@@ -1,16 +1,19 @@
 import { Component }                    from '@angular/core';
 import { Router }                       from '@angular/router';
 import { ClientRouter, IAuthManager }   from 'rts-ts-client';
+import { environment as config }        from '../environments/environment';
 
 @Component({
   selector: 'body[app]',
   templateUrl: 'app.html'
 })
 export class Application {
+  profile: string
   auth: IAuthManager
   
   constructor(private wRouter: Router, router: ClientRouter) {
     this.auth = router.authMgr
+    this.profile = config.authProfile
   }
 
   showMenu() {

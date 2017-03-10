@@ -103,6 +103,29 @@ export class AnnotateView implements OnInit {
     }
   }
 
+  setLocal(local: string) {
+    this.annotation.local = local
+  }
+
+  setQuality(quality: string) {
+    this.annotation.quality = quality
+  }
+
+  setRetinopathy(retinopathy: string) {
+    this.annotation.retinopathy = retinopathy
+    if (this.annotation.retinopathy === 'R0')
+      this.annotation.maculopathy = 'M0'
+  }
+
+  setMaculopathy(maculopathy: string) {
+    if (this.annotation.retinopathy !== 'R0')
+      this.annotation.maculopathy = maculopathy
+  }
+
+  setPhotocoagulation(photocoagulation: string) {
+    this.annotation.photocoagulation = photocoagulation
+  }
+
   onQualityNext() {
     if (this.annotation.quality == 'BAD') {
       this.done()

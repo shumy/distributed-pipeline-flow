@@ -24,20 +24,20 @@
           <div class="ui column grid" style="height:100%;">
             <div class="row" style="padding-bottom: 0px;">
               <div class="column li" style="margin: auto">
-                <p class="h1" style="color: #d4d4d5;">How do you classify this image's readability?</p>
-                <div class="ui medium buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
-                  <button class="ui green {{ annotation.quality == 'GOOD' ? '' : 'basic' }} button" (click)="annotation.quality = 'GOOD'">Readable</button>
-                  <button class="ui grey {{ annotation.quality == 'PARTIAL' ? '' : 'basic' }} button" (click)="annotation.quality = 'PARTIAL'">Low Confidence</button>
-                  <button class="ui red {{ annotation.quality == 'BAD' ? '' : 'basic' }} button" (click)="annotation.quality = 'BAD'">Unreadable</button>
+                <p class="h1" style="color: #d4d4d5;">Image Readability</p>
+                <div class="ui medium buttons" style="margin:0 auto; width:auto; height:auto;">
+                  <button class="ui green {{ annotation.quality == 'GOOD' ? '' : 'basic' }} button" (click)="setQuality('GOOD')">Readable</button>
+                  <button class="ui grey {{ annotation.quality == 'PARTIAL' ? '' : 'basic' }} button" (click)="setQuality('PARTIAL')">Low Confidence</button>
+                  <button class="ui red {{ annotation.quality == 'BAD' ? '' : 'basic' }} button" (click)="setQuality('BAD')">Unreadable</button>
                 </div>
               </div>
             </div>
-            <div *ngIf="annotation.quality == 'GOOD' || annotation.quality == 'PARTIAL'" class="row" style="padding-bottom: 0px;">
+            <div class="row" style="padding-bottom: 0px;">
               <div class="column li" style="margin: auto">
-                <p class="h1" style="color: #d4d4d5;">Identify the relevant anatomic structure on the image:</p>
-                <div class="ui medium buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
-                  <button class="ui button {{ annotation.local == 'MACULA' ? 'active' : '' }}" (click)="annotation.local = 'MACULA'">Macula</button>
-                  <button class="ui button {{ annotation.local == 'OPTIC_DICS' ? 'active' : '' }}" (click)="annotation.local = 'OPTIC_DICS'">Optic Disc</button>
+                <p class="h1" style="color: #d4d4d5;">Anatomic Structure</p>
+                <div class="ui medium buttons" style="margin:0 auto; width:auto; height:auto;">
+                  <button class="ui button {{ annotation.local == 'MACULA' ? 'active' : '' }}" (click)="setLocal('MACULA')">Macula</button>
+                  <button class="ui button {{ annotation.local == 'OPTIC_DICS' ? 'active' : '' }}" (click)="setLocal('OPTIC_DICS')">Optic Disc</button>
                 </div>
               </div>
             </div>
@@ -60,36 +60,36 @@
           <div class="ui column grid" style="height:100%;">
             <div class="row" style="padding-bottom: 0px;">
               <div class="column li" style="margin: auto">
-                <p class="h1" style="color: #d4d4d5;">Rate the image in terms of Diabetic Retinopathy:</p>
-                <div class="ui medium buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
-                  <button class="ui left attached button {{ annotation.retinopathy == 'R0' ? 'active' : '' }}" (click)="annotation.retinopathy = 'R0'">R0</button>
-                  <button class="ui attached button {{ annotation.retinopathy == 'R1' ? 'active' : '' }}" (click)="annotation.retinopathy = 'R1'">R1</button>
-                  <button class="ui attached button {{ annotation.retinopathy == 'R2_M' ? 'active' : '' }}" (click)="annotation.retinopathy = 'R2_M'">R2-M</button>
-                  <button class="ui attached button {{ annotation.retinopathy == 'R2_S' ? 'active' : '' }}" (click)="annotation.retinopathy = 'R2_S'">R2-S</button>
-                  <button class="ui right attached button {{ annotation.retinopathy == 'R3' ? 'active' : '' }}" (click)="annotation.retinopathy = 'R3'">R3</button>
+                <p class="h1" style="color: #d4d4d5;">Retinopathy</p>
+                <div class="ui medium buttons" style="margin:0 auto; width:auto; height:auto;">
+                  <button class="ui left attached button {{ annotation.retinopathy == 'R0' ? 'active' : '' }}" (click)="setRetinopathy('R0')">R0</button>
+                  <button class="ui attached button {{ annotation.retinopathy == 'R1' ? 'active' : '' }}" (click)="setRetinopathy('R1')">R1</button>
+                  <button class="ui attached button {{ annotation.retinopathy == 'R2_M' ? 'active' : '' }}" (click)="setRetinopathy('R2_M')">R2-M</button>
+                  <button class="ui attached button {{ annotation.retinopathy == 'R2_S' ? 'active' : '' }}" (click)="setRetinopathy('R2_S')">R2-S</button>
+                  <button class="ui right attached button {{ annotation.retinopathy == 'R3' ? 'active' : '' }}" (click)="setRetinopathy('R3')">R3</button>
                 </div>
               </div>
             </div>
-            <div *ngIf="annotation.retinopathy != 'UNDEFINED' && annotation.retinopathy != 'R0'" class="row" style="padding-bottom: 0px;">
+            <div class="row" style="padding-bottom: 0px;">
               <div class="column li" style="margin: auto">
-                <p class="h1" style="color: rgba(255,255,255,.9);">Rate the image in terms of Maculopathy:</p>
-                <div class="ui medium buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
-                  <button class="ui left attached button {{ annotation.maculopathy == 'M0' ? 'active' : '' }}" (click)="annotation.maculopathy = 'M0'">M0</button>
-                  <button class="ui right attached button {{ annotation.maculopathy == 'M1' ? 'active' : '' }}" (click)="annotation.maculopathy = 'M1'">M1</button>
+                <p class="h1" style="color: rgba(255,255,255,.9);">Maculopathy</p>
+                <div class="ui medium buttons" style="margin:0 auto; width:auto; height:auto;">
+                  <button class="ui left attached button {{ annotation.maculopathy == 'M0' ? 'active' : '' }}" (click)="setMaculopathy('M0')">M0</button>
+                  <button class="ui right attached button {{ annotation.maculopathy == 'M1' ? 'active' : '' }}" (click)="setMaculopathy('M1')">M1</button>
                 </div>
               </div>
             </div>
-            <div *ngIf="annotation.retinopathy != 'UNDEFINED' && annotation.retinopathy != 'R0'" class="row" style="padding-bottom: 0px;">
+            <div class="row" style="padding-bottom: 0px;">
               <div class="column li" style="margin: auto">
-                <p class="h1" style="color: #d4d4d5;">Rate the image in terms of Photocoagulation:</p>
-                <div class="ui medium buttons" style="margin: 0 auto; width:auto; height:auto;padding-top: 24px">
-                  <button class="ui left attached button {{ annotation.photocoagulation == 'P0' ? 'active' : '' }}" (click)="annotation.photocoagulation = 'P0'">P0</button>
-                  <button class="ui attached button {{ annotation.photocoagulation == 'P1' ? 'active' : '' }}" (click)="annotation.photocoagulation = 'P1'">P1</button>
-                  <button class="ui right attached button {{ annotation.photocoagulation == 'P2' ? 'active' : '' }}" (click)="annotation.photocoagulation = 'P2'">P2</button>
+                <p class="h1" style="color: #d4d4d5;">Photocoagulation</p>
+                <div class="ui medium buttons" style="margin: 0 auto; width:auto; height:auto;">
+                  <button class="ui left attached button {{ annotation.photocoagulation == 'P0' ? 'active' : '' }}" (click)="setPhotocoagulation('P0')">P0</button>
+                  <button class="ui attached button {{ annotation.photocoagulation == 'P1' ? 'active' : '' }}" (click)="setPhotocoagulation('P1')">P1</button>
+                  <button class="ui right attached button {{ annotation.photocoagulation == 'P2' ? 'active' : '' }}" (click)="setPhotocoagulation('P2')">P2</button>
                 </div>
               </div>
             </div>
-            <div *ngIf="annotation.retinopathy == 'R0' || annotation.retinopathy != 'UNDEFINED' && annotation.maculopathy != 'UNDEFINED' && annotation.photocoagulation != 'UNDEFINED'"
+            <div *ngIf="annotation.retinopathy != 'UNDEFINED' && annotation.maculopathy != 'UNDEFINED' && annotation.photocoagulation != 'UNDEFINED'"
               class="row" style="padding-bottom: 0px;">
               <div class="column" style="margin: auto;text-align: right; padding-top: 5%; padding-right: 5%">
                 <div class="ui positive medium animated button" tabindex="0" (click)="done()">
