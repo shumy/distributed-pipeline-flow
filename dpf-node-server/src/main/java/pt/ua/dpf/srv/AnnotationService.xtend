@@ -8,6 +8,7 @@ import java.util.UUID
 import pt.ua.ieeta.rpacs.model.Image
 import pt.ua.ieeta.rpacs.model.ext.Annotation
 import pt.ua.ieeta.rpacs.model.ext.Annotator
+import pt.ua.ieeta.rpacs.model.ext.Dataset
 import pt.ua.ieeta.rpacs.model.ext.ImageLocal
 import pt.ua.ieeta.rpacs.model.ext.ImageQuality
 import pt.ua.ieeta.rpacs.model.ext.Maculopathy
@@ -29,24 +30,20 @@ class AnnotationService {
 	
 	@Public
 	@Context(name = 'user', type = UserInfo)
-	def Promise<List<ImageRef>> allNonAnnotatedImages() {
+	def Promise<ImageDataset> currentDatasetNonAnnotatedImages() {
 		AsyncUtils.task[
 			val thisAnnotator = getOrCreateAnnotator(user)
-			val qAnnotated = Annotation.find.query
-				.select('image')
-				.where
-					.eq('draft', false)
-					.eq('annotator', thisAnnotator)
-				.query
-				
-			Image.find.query
-				.setDisableLazyLoading(true)
-				.where
-					.not.in('id', qAnnotated)
-				.setMaxRows(100)
-			.findIterate.map[ img |
-				ImageRef.B => [ id = img.id url = prefixURI + img.uid ]
-			].toList
+			ImageDataset.B => [
+				total = thisAnnotator.currentDataset.images.size
+				images = thisAnnotator.currentDataset.images
+					.filter[ annotations.filter[ annotator == thisAnnotator ].empty ]
+					.map[ img |
+						ImageRef.B => [
+							id = img.id
+							url = prefixURI + img.uid
+						]
+					].toList 
+			]
 		]
 	}
 	
@@ -138,6 +135,8 @@ class AnnotationService {
 				annotator = new Annotator() => [
 					name = user.name
 					alias = UUID.randomUUID.toString
+					currentDataset = Dataset.findDefault
+					dataset.add(currentDataset)
 				]
 				
 				annotator.save
@@ -156,4 +155,10 @@ class AnnotationService {
 class ImageRef {
 	Long id
 	String url
+}
+
+@Data
+class ImageDataset {
+	Integer total
+	List<ImageRef> images
 }

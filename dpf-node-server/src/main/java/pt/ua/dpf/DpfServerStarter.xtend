@@ -31,6 +31,7 @@ import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.FolderManagerService
 import pt.ua.dpf.srv.ConfigService
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
+import pt.ua.ieeta.rpacs.model.ext.Dataset
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -76,6 +77,7 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		val propDicoogleHost = props.getProperty('dicoogle.host')
 		val propDicooglePort = Integer.parseInt(props.getProperty('dicoogle.port'))
+		val propDicoogleQueryProvider = props.getProperty('dicoogle.queryProvider')
 		
 		val propOicJwksUrl = props.getProperty('oic.jwksUrl')
 		val propOicIssuer = props.getProperty('oic.issuer')
@@ -103,6 +105,7 @@ class DpfServerStarter extends AbstractVerticle {
 			addClass(Annotator)
 			addClass(Annotation)
 			addClass(Lesion)
+			addClass(Dataset)
 			
 			loadFromProperties
 		])
@@ -147,7 +150,7 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' isHomeManager = true ]
 		val transfersSrv = TransferService.B => [ folder = './downloads' dicoogle = dicoogleClient srvPoint = servicePointSrv ]
-		val dicoogleProxySrv = DicoogleProxyService.B => [ dicoogle = dicoogleClient ]
+		val dicoogleProxySrv = DicoogleProxyService.B => [ dicoogle = dicoogleClient queryProvider = propDicoogleQueryProvider ]
 		
 		val annoSrv = AnnotationService.B => [ prefixURI = propPrefixURI ]
 		

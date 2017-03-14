@@ -10,6 +10,7 @@ import rt.plugin.service.an.Service
 @Service
 class DicoogleProxyService {
 	val DicoogleClient dicoogle
+	val String queryProvider
 	
 	@Public(notif = true)
 	def void dic2png(HttpServerRequest req, String sopInstanceUID) {
@@ -28,7 +29,7 @@ class DicoogleProxyService {
 	@Public(notif = true)
 	def void searchDIM(HttpServerRequest req, String query) {
 		req.endHandler[
-			dicoogle.proxyGET('/searchDIM?query=' + query + '&keyword=true&provider=r-pacs-query', req.response)
+			dicoogle.proxyGET('/searchDIM?query=' + query + '&keyword=true&provider='+ queryProvider, req.response)
 		]
 	}
 	

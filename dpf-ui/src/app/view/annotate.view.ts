@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef }     from '@angular/core';
 
 import { ClientRouter }                             from 'rts-ts-client';
-import { AnnotationService, ImageRef, Annotation }  from '../srv/annotation.srv';
+import { AnnotationService, ImageDataset, ImageRef, Annotation }  from '../srv/annotation.srv';
 
 @Component({
   selector: 'annotate-view',
@@ -9,6 +9,9 @@ import { AnnotationService, ImageRef, Annotation }  from '../srv/annotation.srv'
 })
 export class AnnotateView implements OnInit {
   private annoProxy: AnnotationService
+
+  //limit the number of "Recently Annotated" image list
+  readonly limit = 3
 
   readonly annDefault: string = JSON.stringify({
     id: 0,
@@ -25,12 +28,14 @@ export class AnnotateView implements OnInit {
   tab = 0
   loading = false
 
+  start = 0
   index = 0
+  
   pValue = 0
   pTotal = 0
-
+  
   images: ImageRef[]
-  image: ImageRef = { id: 0, url: '//:0' }
+  image: ImageRef = { id: 0, url: '//:0'}
 
   annotations: Annotation[]
   annotation: Annotation = JSON.parse(this.annDefault)
@@ -65,13 +70,15 @@ export class AnnotateView implements OnInit {
   }
 
   load() {
-    this.annoProxy.allNonAnnotatedImages().then(images => {
-      this.index  = 0
-      this.pValue = 0
-      this.pTotal = images.length
+    this.annoProxy.currentDatasetNonAnnotatedImages().then(dataset => {
+      this.images = dataset.images
+      this.start = 0
+      this.index = 0
 
-      this.images = images
-      this.annotations = images.map(img => {
+      this.pTotal = dataset.total
+      this.pValue = this.pTotal - dataset.images.length
+
+      this.annotations = dataset.images.map(img => {
         let ann = JSON.parse(this.annDefault)
         ann.image = img.id
         return ann
@@ -82,13 +89,13 @@ export class AnnotateView implements OnInit {
     })
   }
 
-  preloadImages(fromIdx: number, toIdx: number) {
+  preload(fromIdx: number, toIdx: number) {
     if (fromIdx < this.images.length && fromIdx < toIdx) {
       if (!this.images[fromIdx].preloaded) {
         this.images[fromIdx].preloaded =  true
 
         let img = new Image()
-        img.onload = _ => this.preloadImages(fromIdx + 1, toIdx)
+        img.onload = _ => this.preload(fromIdx + 1, toIdx)
         img.src = this.images[fromIdx].url
       }
     }
@@ -99,16 +106,19 @@ export class AnnotateView implements OnInit {
       this.selectIndex(this.index)
       this.loading = true
 
-      this.preloadImages(this.index + 1, this.index + 3)
+      this.preload(this.index + 1, this.index + 3)
     }
-  }
-
-  setLocal(local: string) {
-    this.annotation.local = local
   }
 
   setQuality(quality: string) {
     this.annotation.quality = quality
+    if (this.annotation.quality === 'BAD')
+       this.annotation.local = 'UNDEFINED'
+  }
+
+  setLocal(local: string) {
+    if (this.annotation.quality !== 'BAD')
+      this.annotation.local = local
   }
 
   setRetinopathy(retinopathy: string) {
@@ -145,8 +155,12 @@ export class AnnotateView implements OnInit {
       this.annoProxy.createAnnotation(this.annotation)
         .then(newId => {
           this.annotation.id = newId
-          this.pValue++
           this.index++
+          this.pValue++
+          
+          if (this.index > this.limit)
+            this.start = this.index - this.limit
+          
           this.onDoneOk()
         })
         .catch(error => {

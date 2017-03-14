@@ -5,6 +5,11 @@ export interface ImageRef {
   preloaded?: boolean
 }
 
+export interface ImageDataset {
+	total: number
+	images: ImageRef[]
+}
+
 export interface Annotation {
   id: number
   image: number
@@ -18,7 +23,7 @@ export interface Annotation {
 }
 
 export interface AnnotationService {
-  allNonAnnotatedImages(): Promise<ImageRef[]>
+  currentDatasetNonAnnotatedImages(): Promise<ImageDataset>
   
   readAnnotation(id: number): Promise<Annotation>
   createAnnotation(annoInfo: Annotation): Promise<number>

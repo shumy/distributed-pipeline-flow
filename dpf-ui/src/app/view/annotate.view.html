@@ -112,7 +112,7 @@
     <div class="menu menu-eye" style="margin-right:0!important;overflow: hidden; width:100%">
       <div class="item item-menu" style="padding: 0; width: 100%;">
         <div class="ui images" style="height: 100%;">
-          <img *ngFor="let img of (images ? images.slice(0,pValue): [])" class="ui image item-image" [src]="img.url" (click)="select(img)"
+          <img *ngFor="let img of (images ? images.slice(start, index): [])" class="ui image item-image" [src]="img.url" (click)="select(img)"
             style="cursor: pointer; border: 0px dotted #d4d4d5;" [style.border-width]="img == image ? '1px' : '0px'">
         </div>
       </div>
@@ -120,10 +120,9 @@
   </div>
   
   <!--Progress and Load-->
-  <div class="column" style="margin: auto; padding: 5px 5% 5px 5%; display:flex;">
-    <div class="ui progress" style="flex: auto;">
+  <div class="column" style="margin: auto; padding: 10px 5px 0px 10px; display:flex;">
+    <div class="ui progress" style="flex:auto; height:30px;">
       <div class="bar" style="height:100%; min-width:50px;"><div class="progress"></div></div>
     </div>
-    <div class="ui primary button" style="margin-left:5px;" (click)="load()">Load</div>
   </div>
 </div>
