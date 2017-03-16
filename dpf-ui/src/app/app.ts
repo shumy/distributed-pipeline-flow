@@ -9,11 +9,13 @@ import { environment as config }        from '../environments/environment';
 })
 export class Application {
   profile: string
+  viewer: string
   auth: IAuthManager
   
   constructor(private wRouter: Router, router: ClientRouter) {
     this.auth = router.authMgr
     this.profile = config.authProfile
+    this.viewer = config.viewer
   }
 
   showMenu() {

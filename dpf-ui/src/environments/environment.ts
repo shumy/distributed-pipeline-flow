@@ -9,5 +9,6 @@ export const environment = {
   server: 'ws://localhost/screen-dr/clt',
   authProfile: 'http://localhost/keycloak/auth/realms/dev/account',
   authProvider: 'http://localhost/keycloak/auth/realms/dev/',
-  authClient: 'screen-dr'
+  authClient: 'screen-dr',
+  viewer: 'http://demo.dicoogle.com/viewer'
 };
