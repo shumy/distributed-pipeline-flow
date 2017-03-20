@@ -43,7 +43,7 @@
             </div>
             <div class="row" style="padding-bottom: 0px;">
               <div class="column" style="margin: auto;text-align: right; padding-top: 5%; padding-right: 5%">
-                <div class="ui {{ isReadyForNext() ? 'positive' : '' }} medium button" tabindex="0" (click)="onQualityNext()">
+                <div class="ui {{ isReadyForNext() ? 'positive' : 'disabled' }} medium button" tabindex="0" (click)="onQualityNext()">
                   <div class="visible content">
                     {{ annotation.quality == 'BAD' ? 'Done' : 'Next' }}
                   </div>
@@ -88,7 +88,7 @@
             </div>
             <div class="row" style="padding-bottom: 0px;">
               <div class="column" style="margin:auto; text-align:right; padding-top:5%; padding-right:5%">
-                <div class="ui {{ isReadyToDone() ? 'positive' : '' }} medium button" tabindex="0" (click)="done()">
+                <div class="ui {{ isReadyToDone() ? 'positive' : 'disabled' }} medium button" tabindex="0" (click)="done()">
                   <div class="visible content">Done</div>
                 </div>
               </div>
