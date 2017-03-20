@@ -136,41 +136,53 @@ export class AnnotateView implements OnInit {
     this.annotation.photocoagulation = photocoagulation
   }
 
+  isReadyForNext() {
+    return this.annotation.quality == 'BAD' || this.annotation.quality != 'UNDEFINED' && this.annotation.local != 'UNDEFINED'
+  }
+
+  isReadyToDone() {
+    return this.annotation.quality == 'BAD' || this.annotation.retinopathy != 'UNDEFINED' && this.annotation.maculopathy != 'UNDEFINED' && this.annotation.photocoagulation != 'UNDEFINED'
+  }
+
   onQualityNext() {
-    if (this.annotation.quality == 'BAD') {
-      this.done()
-    } else {
-      this.tab = 1
+    if (this.isReadyForNext()) {
+      if (this.annotation.quality == 'BAD') {
+        this.done()
+      } else {
+        this.tab = 1
+      }
     }
   }
 
   done() {
-    if (this.annotation.id == -1) {
-      toastr.warning('Annotation save in progress, please wait!')
-      return
-    }
+    if (this.isReadyToDone()) {
+      if (this.annotation.id == -1) {
+        toastr.warning('Annotation save in progress, please wait!')
+        return
+      }
 
-    if (this.annotation.id == 0) {
-      this.annotation.id = -1
-      this.annoProxy.createAnnotation(this.annotation)
-        .then(newId => {
-          this.annotation.id = newId
-          this.index++
-          this.pValue++
-          
-          if (this.index > this.limit)
-            this.start = this.index - this.limit
-          
-          this.onDoneOk()
-        })
-        .catch(error => {
-          this.annotation.id = 0
-          toastr.error('Annotation save error:' + error.message)
-        })
-    } else {
-      this.annoProxy.updateAnnotation(this.annotation)
-        .then(_ => this.onDoneOk())
-        .catch(error => toastr.error('Annotation save error:' + error.message))
+      if (this.annotation.id == 0) {
+        this.annotation.id = -1
+        this.annoProxy.createAnnotation(this.annotation)
+          .then(newId => {
+            this.annotation.id = newId
+            this.index++
+            this.pValue++
+            
+            if (this.index > this.limit)
+              this.start = this.index - this.limit
+            
+            this.onDoneOk()
+          })
+          .catch(error => {
+            this.annotation.id = 0
+            toastr.error('Annotation save error:' + error.message)
+          })
+      } else {
+        this.annoProxy.updateAnnotation(this.annotation)
+          .then(_ => this.onDoneOk())
+          .catch(error => toastr.error('Annotation save error:' + error.message))
+      }
     }
   }
 
