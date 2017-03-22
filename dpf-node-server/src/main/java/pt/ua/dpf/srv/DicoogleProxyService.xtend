@@ -15,28 +15,33 @@ class DicoogleProxyService {
 	@Public(notif = true)
 	def void dic2png(HttpServerRequest req, String sopInstanceUID) {
 		req.endHandler[
-			dicoogle.proxyGET('/dic2png?SOPInstanceUID=' + sopInstanceUID, req.response)
+			dicoogle.proxyGET('/dic2png?SOPInstanceUID=' + sopInstanceUID, req.response, true)
 		]
 	}
 	
 	@Public(notif = true)
 	def void dic2pngThumbnail(HttpServerRequest req, String sopInstanceUID) {
 		req.endHandler[
-			dicoogle.proxyGET('/dic2png?thumbnail=true&SOPInstanceUID=' + sopInstanceUID, req.response)
+			dicoogle.proxyGET('/dic2png?thumbnail=true&SOPInstanceUID=' + sopInstanceUID, req.response, true)
 		]
 	}
 	
 	@Public(notif = true)
-	def void searchDIM(HttpServerRequest req, String query) {
+	def void searchDIM(HttpServerRequest req) {
+		val query = req.getParam('query')
+		println('QUERY-DIM -> ' + query)
+		
+		val keyword = if (query.contains(":")) "true" else "false"
 		req.endHandler[
-			dicoogle.proxyGET('/searchDIM?query=' + query + '&keyword=true&provider='+ queryProvider, req.response)
+			val uri = '''/searchDIM?query=«query»&keyword=«keyword»&provider=«queryProvider»'''.toString.replaceAll(" ", "%20")
+			dicoogle.proxyGET(uri, req.response, false)
 		]
 	}
 	
 	@Public(notif = true)
 	def void dumpDIM(HttpServerRequest req, String uid) {
 		req.endHandler[
-			dicoogle.proxyGET('/dump?uid=' + uid, req.response)
+			dicoogle.proxyGET('/dump?uid=' + uid, req.response, false)
 		]
 	}
 }

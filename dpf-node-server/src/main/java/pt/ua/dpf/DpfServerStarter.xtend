@@ -208,7 +208,7 @@ class DpfServerStarter extends AbstractVerticle {
 				
 				get('/proxy/dic2png/:uid', 'd-proxy', 'dic2png', #['ctx.request', 'uid'])
 				get('/proxy/dic2pngThumbnail/:uid', 'd-proxy', 'dic2pngThumbnail', #['ctx.request', 'uid'])
-				get('/proxy/searchDIM/:query', 'd-proxy', 'searchDIM', #['ctx.request', 'query'])
+				get('/proxy/searchDIM', 'd-proxy', 'searchDIM', #['ctx.request'])
 				get('/proxy/dumpDIM/:uid', 'd-proxy', 'dumpDIM', #['ctx.request', 'uid'])
 				
 				get('/non-images', 'anno' -> 'allNonAnnotatedImages')

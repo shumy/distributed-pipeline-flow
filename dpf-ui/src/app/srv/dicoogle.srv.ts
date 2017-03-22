@@ -29,7 +29,7 @@ export class DicoogleService {
   }
 
   rawSearch(query: string): Observable<any> {
-    return this.get('/proxy/searchDIM/' + query)
+    return this.get('/proxy/searchDIM?query=' + query)
       .map(_ => _.json().results)
       .filter(_ => _.length != 0)
       .map(results => {
