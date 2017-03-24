@@ -20,6 +20,7 @@ import { SearchView }                 from './view/search.view';
 import { UploadView }                 from './view/upload.view';
 import { AnnotateView }               from './view/annotate.view';
 import { PacsCenterView }             from './view/pacscenter.view';
+import { DatasetView }                from './view/dataset.view';
 
 //rts config
 import { ClientRouter, Pipeline }                               from 'rts-ts-client';
@@ -66,7 +67,7 @@ function init() {
   imports: [ BrowserModule, ReactiveFormsModule, HttpModule, routing ],
   declarations: [
     Application,
-    HomeView, SearchView, UploadView, AnnotateView, PacsCenterView
+    HomeView, SearchView, UploadView, AnnotateView, PacsCenterView, DatasetView
   ],
   bootstrap: [ Application ],
   providers: [

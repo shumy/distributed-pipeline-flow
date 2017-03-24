@@ -1,0 +1,68 @@
+<div class="ui main pointing menu">
+  <a class="item" [class.active]="tab == 0" (click)="selectTab(0)">My Datasets</a>
+  <a class="item" [class.active]="tab == 1" (click)="selectTab(1)">Other Datasets</a>
+</div>
+<div class="ui content segment">
+  <!-- BEGIN My Datasets -->
+  <table *ngIf="tab == 0" class="ui very basic table">
+    <thead>
+      <tr>
+        <th class="one wide">Default</th>
+        <th class="three wide">Name</th>
+        <th>Progress</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let ds of myDataSets">
+        <td>
+          <div class="ui radio checkbox" [class.disabled]="ds.default">
+            <input type="checkbox" [checked]="ds.default" [disabled]="ds.default" (click)="selectDefault(ds)">
+            <label></label>
+          </div>
+        </td>
+        <td>
+          <h5 class="ui header"><div class="content">{{ds.name}}</div></h5>
+        </td>
+        <td>
+          <div class="ui progress" [attr.data-value]="ds.progress" [attr.data-total]="ds.size">
+            <div class="bar"><div class="progress"></div></div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <!-- END My Datasets -->
+
+  <!-- BEGIN Other Datasets -->
+  <table *ngIf="tab == 1" class="ui very basic table">
+    <thead>
+      <tr>
+        <th class="one wide">
+          <div class="ui checkbox">
+            <input type="checkbox" [checked]="allSelected" (click)="selectAll()">
+            <label></label>
+          </div>
+        </th>
+        <th>Name</th>
+        <th>Size</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let ds of otherDataSets">
+        <td>
+          <div class="ui checkbox">
+            <input type="checkbox" [checked]="ds.selected" (click)="selectDataset(ds)">
+            <label></label>
+          </div>
+        </td>
+        <td>
+          <h5 class="ui header"><div class="content">{{ds.name}}</div></h5>
+        </td>
+        <td>
+          <h5 class="ui header"><div class="content">{{ds.size}}</div></h5>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <!-- BEGIN Other Datasets -->
+</div>

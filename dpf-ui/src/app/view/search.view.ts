@@ -20,7 +20,8 @@ export class SearchView implements OnInit {
 
   query = new FormControl()
   allSelected = false
-  
+  selectedNumber = 0
+
   patients = []
   tags = {}
 
@@ -127,11 +128,13 @@ export class SearchView implements OnInit {
 
   selectAll() {
     this.allSelected = !this.allSelected
+    this.selectedNumber = this.allSelected ? this.patients.length : 0
     this.patients.forEach(_ => _.selected = this.allSelected)
   }
 
   selectPatient(patient: any) {
     patient.selected = !patient.selected
+    patient.selected ? this.selectedNumber++ : this.selectedNumber--
     this.checkIfAllSelected()
   }
 

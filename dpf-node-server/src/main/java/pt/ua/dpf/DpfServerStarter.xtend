@@ -125,7 +125,9 @@ class DpfServerStarter extends AbstractVerticle {
 					'/home' 		-> '/',
 					'/search' 		-> '/',
 					'/upload' 		-> '/',
-					'/annotate' 	-> '/'
+					'/annotate' 	-> '/',
+					'/viewer' 		-> '/',
+					'/dataset' 		-> '/'
 				}
 			]
 		

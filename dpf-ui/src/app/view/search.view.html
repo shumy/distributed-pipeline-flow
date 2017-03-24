@@ -15,7 +15,7 @@
     </div>-->
     <div class="item">
       <div class="ui teal buttons">
-        <div class="ui button" (click)="transfer()">
+        <div class="ui {{ selectedNumber === 0 ? 'disabled' : '' }} button" (click)="transfer()">
           <i *ngIf="srvPointsRepo.selected.data.icon" class="cube icon"></i>
           {{srvPointsRepo.selected.data.name}}
         </div>
