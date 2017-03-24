@@ -10,27 +10,28 @@ export class DatasetView {
   
   //my datasets
   defaultDataset
-  myDataSets = [
+  myDataSets: any = [
     { id: 1, name: 'my-demo', size: 10, progress: 7 },
     { id: 2, name: 'my-xpto', size: 15, progress: 8, default: true }
   ]
 
   //all datasets
   allSelected = false
-  selectedNumber = 0
-  otherDataSets = [
+  selectedNumber = 1
+  otherDataSets: any = [
     { id: 1, name: 'all-demo', size: 10, selected: false },
     { id: 2, name: 'all-xpto', size: 15, selected: true }
   ]
 
   ngOnInit() {
-    //TODO: (service) -> load my-dataset list
     this.defaultDataset = this.myDataSets[1]
 
     this.selectTab(0)
   }
 
   selectTab(selected: number) {
+    //TODO: (service) -> load my-dataset list
+
     this.tab = selected
     if (selected == 0)
       setTimeout(_ => {
@@ -38,20 +39,6 @@ export class DatasetView {
         pBars.progress()
         pBars.removeClass('active')
       }, 1)
-  }
-
-  selectDefault(ds: any) {
-    //do nothing, can't disable default!
-    if (ds == this.defaultDataset) {
-      console.log('Ignore...')
-      return
-    }
-
-    this.defaultDataset.default = false
-    this.defaultDataset = ds
-    this.defaultDataset.default = true
-    
-    //TODO: (service) -> set my-default dataset
   }
 
   selectAll() {
@@ -68,5 +55,27 @@ export class DatasetView {
 
   checkIfAllSelected() {
     this.allSelected = this.otherDataSets.filter(_ => _.selected).length == this.otherDataSets.length
+  }
+
+  selectDefault(ds: any) {
+    this.defaultDataset.default = false
+    this.defaultDataset = ds
+    this.defaultDataset.default = true
+    
+    //TODO: (service) -> set my-default dataset
+    toastr.success('Selected')
+  }
+
+  subscribe() {
+    let subsDatasets = this.otherDataSets.filter(_ => _.selected)
+
+    //TODO: (service) -> subscribe to datasets
+
+    //On service OK
+    this.allSelected = false
+    this.selectedNumber = 0
+    this.otherDataSets = this.otherDataSets.filter(_ => !_.selected)
+    subsDatasets.forEach(ds => this.myDataSets.push(ds))
+    toastr.success('Subscribed')
   }
 }

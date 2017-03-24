@@ -30,8 +30,8 @@ div {
   margin-right: 1.5em;
 }
 
-.ui.tiny.menu .item {
-  padding: 14px 11px 14px;
+.right.menu .item {
+  padding: 0.3em 0.4em;
 }
 
 .main.content.segment {

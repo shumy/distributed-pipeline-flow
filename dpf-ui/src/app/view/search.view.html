@@ -1,4 +1,4 @@
-<div class="ui main tiny menu">
+<div class="ui main menu">
   <div class="flex item">
     <div class="ui icon input">
       <input type="text" placeholder="Dicoogle Search..." [formControl]="query">
@@ -6,16 +6,9 @@
     </div>
   </div>
   <div class="right menu">
-    <!--<div class="item">
-      <div class="ui teal buttons">
-        <div [routerLink]="['/annotate']" class="ui button">
-          Annotate
-        </div>
-      </div>
-    </div>-->
     <div class="item">
-      <div class="ui teal buttons">
-        <div class="ui {{ selectedNumber === 0 ? 'disabled' : '' }} button" (click)="transfer()">
+      <div class="ui tiny teal buttons">
+        <div class="ui button" [class.disabled]="selectedNumber == 0" (click)="transfer()">
           <i *ngIf="srvPointsRepo.selected.data.icon" class="cube icon"></i>
           {{srvPointsRepo.selected.data.name}}
         </div>

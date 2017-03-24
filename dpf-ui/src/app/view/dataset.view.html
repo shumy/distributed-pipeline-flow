@@ -1,6 +1,13 @@
 <div class="ui main pointing menu">
   <a class="item" [class.active]="tab == 0" (click)="selectTab(0)">My Datasets</a>
   <a class="item" [class.active]="tab == 1" (click)="selectTab(1)">Other Datasets</a>
+  <div class="right menu">
+    <div *ngIf="tab == 1" class="item">
+      <div class="ui tiny teal buttons">
+        <div class="ui button" [class.disabled]="selectedNumber == 0" (click)="subscribe()">Subscribe</div>
+      </div>
+    </div>
+  </div>
 </div>
 <div class="ui content segment">
   <!-- BEGIN My Datasets -->
