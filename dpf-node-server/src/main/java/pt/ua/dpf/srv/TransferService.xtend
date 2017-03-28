@@ -15,6 +15,7 @@ import rt.plugin.service.an.Context
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
 import rt.utils.interceptor.UserInfo
+import java.io.File
 
 @Service
 @Data(metadata = false)
@@ -53,6 +54,9 @@ class TransferService {
 			throw new ServiceException(500, 'File name not accepted: ' + fileName)
 		
 		val dirPath = folder + '/' + user.name
+		val fFolder = new File(dirPath)
+		if (!fFolder.exists) fFolder.mkdirs
+		
 		val filePath = dirPath + '/' + fileName + '.zip'
 		if (Files.exists(Paths.get(filePath)))
 			throw new ServiceException(500, 'File already exists: ' + fileName)

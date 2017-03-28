@@ -152,7 +152,7 @@ export class SearchView implements OnInit {
             notif => this.onTransferredNotif(notif),
             error => toastr.error(error.message),
             () => {
-              let uri = '/file-download/' + fileName + '.zip'
+              let uri = config.base + '/file-download/' + fileName + '.zip'
               window.location.href = uri
               toastr.success('Downloading file...')
             }
