@@ -21,7 +21,7 @@ class DatasetService {
 	@Context(name = 'user', type = UserInfo)
 	def Promise<List<DatasetInfo>> myDatasets() {
 		AsyncUtils.task[
-			val thisAnnotator = Annotator.findByName(user.name)
+			val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
 			if (thisAnnotator === null)
 				return Collections.EMPTY_LIST
 			
@@ -42,7 +42,7 @@ class DatasetService {
 	def Promise<Void> setMyDefault(Long defaultId) {
 		AsyncUtils.task[
 			Ebean.execute[
-				val thisAnnotator = Annotator.findByName(user.name)
+				val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
 				val defDs = thisAnnotator.dataset.findFirst[ id === defaultId ]
 				if (defDs !== null) {
 					thisAnnotator.currentDataset = defDs
@@ -58,7 +58,7 @@ class DatasetService {
 	def Promise<Void> subscribe(List<Long> ids) {
 		AsyncUtils.task[
 			Ebean.execute[
-				val thisAnnotator = Annotator.findByName(user.name)
+				val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
 				val subscriptions = Dataset.find.query.where.idIn(ids).findList
 				thisAnnotator.dataset.addAll(subscriptions)
 				
@@ -72,7 +72,7 @@ class DatasetService {
 	@Context(name = 'user', type = UserInfo)
 	def Promise<List<DatasetInfo>> otherDatasets() {
 		AsyncUtils.task[
-			val thisAnnotator = Annotator.findByName(user.name)
+			val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
 			val allDatasets = Dataset.find.all
 			
 			val Iterable<Dataset> filteredDs = if (thisAnnotator === null) allDatasets else {

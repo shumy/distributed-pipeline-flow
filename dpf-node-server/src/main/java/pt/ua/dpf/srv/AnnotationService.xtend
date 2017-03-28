@@ -4,11 +4,9 @@ import com.avaje.ebean.Ebean
 import java.util.HashMap
 import java.util.List
 import java.util.Map
-import java.util.UUID
 import pt.ua.ieeta.rpacs.model.Image
 import pt.ua.ieeta.rpacs.model.ext.Annotation
 import pt.ua.ieeta.rpacs.model.ext.Annotator
-import pt.ua.ieeta.rpacs.model.ext.Dataset
 import pt.ua.ieeta.rpacs.model.ext.ImageLocal
 import pt.ua.ieeta.rpacs.model.ext.ImageQuality
 import pt.ua.ieeta.rpacs.model.ext.Maculopathy
@@ -32,7 +30,7 @@ class AnnotationService {
 	@Context(name = 'user', type = UserInfo)
 	def Promise<ImageDataset> currentDatasetNonAnnotatedImages() {
 		AsyncUtils.task[
-			val thisAnnotator = getOrCreateAnnotator(user)
+			val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
 			ImageDataset.B => [
 				total = thisAnnotator.currentDataset.images.size
 				images = thisAnnotator.currentDataset.images
@@ -51,7 +49,7 @@ class AnnotationService {
 	@Context(name = 'user', type = UserInfo)
 	def Promise<Map<String, Object>> readAnnotation(Long id) {
 		AsyncUtils.task[
-			val annotator = getOrCreateAnnotator(user)
+			val annotator = Annotator.getOrCreateAnnotator(user.name)
 			
 			val anno = Annotation.find.byId(id)
 			if (anno === null || anno.annotator !== annotator)
@@ -84,7 +82,7 @@ class AnnotationService {
 			Ebean.execute[
 				val anno = new Annotation => [
 					image = Image.find.byId(refImage.longValue)
-					annotator = getOrCreateAnnotator(user)
+					annotator = Annotator.getOrCreateAnnotator(user.name)
 					
 					setDefaults
 					setAnnotationValues(annoInfo)
@@ -131,32 +129,6 @@ class AnnotationService {
 			if (key == 'photocoagulation')
 				anno.photocoagulation = Photocoagulation.valueOf(value as String)
 		]
-	}
-	
-	def Annotator getOrCreateAnnotator(UserInfo user) {
-		if (user === null)
-			throw new ServiceException(500, 'User for annotator not available!')
-		
-		var annotator = Annotator.findByName(user.name)
-		if (annotator === null) {
-			val tx = Ebean.beginTransaction
-			try {
-				annotator = new Annotator() => [
-					name = user.name
-					alias = UUID.randomUUID.toString
-					currentDataset = Dataset.findDefault
-					dataset.add(currentDataset)
-				]
-				
-				annotator.save
-				tx.commit
-			} catch(Throwable ex) {
-				ex.printStackTrace
-				tx.rollback
-			}
-		}
-		
-		return annotator
 	}
 }
 
