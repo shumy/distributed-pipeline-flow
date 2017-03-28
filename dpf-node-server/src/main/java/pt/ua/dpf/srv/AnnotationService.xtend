@@ -49,58 +49,67 @@ class AnnotationService {
 	
 	@Public
 	@Context(name = 'user', type = UserInfo)
-	def Map<String, Object> readAnnotation(Long id) {
-		val annotator = getOrCreateAnnotator(user)
-		
-		val anno = Annotation.find.byId(id)
-		if (anno === null || anno.annotator !== annotator)
-			throw new ServiceException(404, 'Not found or not available for the annotator!')
-		
-		new HashMap<String, Object> => [
-			put('id', anno.id)
-			put('image', anno.image.id)
+	def Promise<Map<String, Object>> readAnnotation(Long id) {
+		AsyncUtils.task[
+			val annotator = getOrCreateAnnotator(user)
 			
-			put('quality', anno.quality)
-			put('local', anno.local)
+			val anno = Annotation.find.byId(id)
+			if (anno === null || anno.annotator !== annotator)
+				throw new ServiceException(404, 'Not found or not available for the annotator!')
 			
-			put('retinopathy', anno.retinopathy)
-			put('maculopathy', anno.maculopathy)
-			put('photocoagulation', anno.photocoagulation)
-		]
-	}
-	
-	@Public
-	@Context(name = 'user', type = UserInfo)
-	def Long createAnnotation(Map<String, Object> annoInfo) {
-		if (annoInfo.get('image') === null)
-			throw new ServiceException(500, 'Provide (image:id) for create!')
-		
-		val refImage = annoInfo.get('image') as Double
-		Ebean.execute[
-			val anno = new Annotation => [
-				image = Image.find.byId(refImage.longValue)
-				annotator = getOrCreateAnnotator(user)
+			val Map<String, Object> res = new HashMap<String, Object> => [
+				put('id', anno.id)
+				put('image', anno.image.id)
 				
-				setDefaults
-				setAnnotationValues(annoInfo)
-				save
+				put('quality', anno.quality)
+				put('local', anno.local)
+				
+				put('retinopathy', anno.retinopathy)
+				put('maculopathy', anno.maculopathy)
+				put('photocoagulation', anno.photocoagulation)
 			]
 			
-			anno.id
+			return res
 		]
 	}
 	
 	@Public
 	@Context(name = 'user', type = UserInfo)
-	def void updateAnnotation(Map<String, Object> annoInfo) {
-		if (annoInfo.get('id') === null)
-			throw new ServiceException(500, 'Provide (id) for update!')
-		
-		val id = annoInfo.get('id') as Double
-		Ebean.execute[
-			Annotation.find.byId(id.longValue) => [
-				setAnnotationValues(annoInfo)
-				save
+	def Promise<Long> createAnnotation(Map<String, Object> annoInfo) {
+		AsyncUtils.task[
+			if (annoInfo.get('image') === null)
+				throw new ServiceException(500, 'Provide (image:id) for create!')
+			
+			val refImage = annoInfo.get('image') as Double
+			Ebean.execute[
+				val anno = new Annotation => [
+					image = Image.find.byId(refImage.longValue)
+					annotator = getOrCreateAnnotator(user)
+					
+					setDefaults
+					setAnnotationValues(annoInfo)
+					save
+				]
+				
+				anno.id
+			]
+		]
+	}
+	
+	@Public
+	@Context(name = 'user', type = UserInfo)
+	def Promise<Void> updateAnnotation(Map<String, Object> annoInfo) {
+		AsyncUtils.task[
+			if (annoInfo.get('id') === null)
+				throw new ServiceException(500, 'Provide (id) for update!')
+			
+			val id = annoInfo.get('id') as Double
+			Ebean.execute[
+				Annotation.find.byId(id.longValue) => [
+					setAnnotationValues(annoInfo)
+					save
+				]
+				return null
 			]
 		]
 	}

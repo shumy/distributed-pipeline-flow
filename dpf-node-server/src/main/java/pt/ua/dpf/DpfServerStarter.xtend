@@ -32,6 +32,7 @@ import rt.vertx.server.service.FolderManagerService
 import pt.ua.dpf.srv.ConfigService
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import pt.ua.ieeta.rpacs.model.ext.Dataset
+import pt.ua.dpf.srv.DatasetService
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -155,6 +156,7 @@ class DpfServerStarter extends AbstractVerticle {
 		val dicoogleProxySrv = DicoogleProxyService.B => [ dicoogle = dicoogleClient queryProvider = propDicoogleQueryProvider ]
 		
 		val annoSrv = AnnotationService.B => [ prefixURI = propPrefixURI ]
+		val dsSrv = DatasetService.create
 		
 		server.pipeline => [
 			addInterceptor(jwtAuth)
@@ -175,6 +177,7 @@ class DpfServerStarter extends AbstractVerticle {
 			
 			//model services
 			addService('anno', annoSrv, #{ 'all' -> '/srv-annotator' })
+			addService('ds', dsSrv, #{ 'all' -> 'all' })
 			
 			failHandler = [ println('PIPELINE-FAIL: ' + message) ]
 		]

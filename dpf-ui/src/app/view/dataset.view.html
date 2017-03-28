@@ -22,8 +22,8 @@
     <tbody>
       <tr *ngFor="let ds of myDataSets">
         <td>
-          <div class="ui radio checkbox" [class.disabled]="ds.default">
-            <input type="checkbox" [checked]="ds.default" [disabled]="ds.default" (click)="selectDefault(ds)">
+          <div class="ui radio checkbox" [class.disabled]="ds.isDefault">
+            <input type="checkbox" [checked]="ds.isDefault" [disabled]="ds.isDefault" (click)="selectDefault(ds)">
             <label></label>
           </div>
         </td>

@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import { ClientRouter }  from 'rts-ts-client';
+
+import { DatasetProxy, DatasetInfo } from '../srv/dataset.srv';
 
 @Component({
   selector: 'dataset',
@@ -6,39 +9,48 @@ import { Component } from '@angular/core';
   styles: ['.main.menu { margin: 60px 20px 5px; }']
 })
 export class DatasetView {
+  private dsProxy: DatasetProxy
+
   tab = 0
   
   //my datasets
   defaultDataset
-  myDataSets: any = [
-    { id: 1, name: 'my-demo', size: 10, progress: 7 },
-    { id: 2, name: 'my-xpto', size: 15, progress: 8, default: true }
-  ]
+  myDataSets: DatasetInfo[]
 
   //all datasets
   allSelected = false
-  selectedNumber = 1
-  otherDataSets: any = [
-    { id: 1, name: 'all-demo', size: 10, selected: false },
-    { id: 2, name: 'all-xpto', size: 15, selected: true }
-  ]
+  selectedNumber = 0
+  otherDataSets: DatasetInfo[]
+
+  constructor (private router: ClientRouter) {
+    this.dsProxy = router.createProxy('ds')
+  }
 
   ngOnInit() {
-    this.defaultDataset = this.myDataSets[1]
-
     this.selectTab(0)
   }
 
   selectTab(selected: number) {
-    //TODO: (service) -> load my-dataset list
-
     this.tab = selected
-    if (selected == 0)
-      setTimeout(_ => {
-        let pBars: any = $('.ui.progress')
-        pBars.progress()
-        pBars.removeClass('active')
-      }, 1)
+
+    //(service) -> load my-dataset list
+    if (selected === 0)
+      this.dsProxy.myDatasets().then(dsList => {
+        this.myDataSets = dsList
+        dsList.forEach(_ => { if (_.isDefault) this.defaultDataset = _ })
+        
+        setTimeout(_ => {
+          let pBars: any = $('.ui.progress')
+          pBars.progress()
+          pBars.removeClass('active')
+        }, 1)
+      }).catch(error => error => toastr.error(error.message))
+
+    //(service) -> load all-dataset list
+    if (selected === 1)
+        this.dsProxy.otherDatasets().then(dsList => {
+          this.otherDataSets = dsList
+        }).catch(error => toastr.error(error.message))
   }
 
   selectAll() {
@@ -58,24 +70,27 @@ export class DatasetView {
   }
 
   selectDefault(ds: any) {
-    this.defaultDataset.default = false
+    this.defaultDataset.isDefault = false
     this.defaultDataset = ds
-    this.defaultDataset.default = true
+    this.defaultDataset.isDefault = true
     
-    //TODO: (service) -> set my-default dataset
-    toastr.success('Selected')
+    //(service) -> set my-default dataset
+    this.dsProxy.setMyDefault(this.defaultDataset.id)
+      .then(_ => toastr.success('Selected'))
+      .catch(error => toastr.error(error.message))
   }
 
   subscribe() {
     let subsDatasets = this.otherDataSets.filter(_ => _.selected)
 
-    //TODO: (service) -> subscribe to datasets
-
-    //On service OK
-    this.allSelected = false
-    this.selectedNumber = 0
-    this.otherDataSets = this.otherDataSets.filter(_ => !_.selected)
-    subsDatasets.forEach(ds => this.myDataSets.push(ds))
-    toastr.success('Subscribed')
+    //(service) -> subscribe to datasets
+    this.dsProxy.subscribe(subsDatasets.map(_ => _.id))
+      .then(_ => {
+        this.allSelected = false
+        this.selectedNumber = 0
+        this.otherDataSets = this.otherDataSets.filter(_ => !_.selected)
+        toastr.success('Subscribed')
+      })
+      .catch(error => toastr.error(error.message))
   }
 }

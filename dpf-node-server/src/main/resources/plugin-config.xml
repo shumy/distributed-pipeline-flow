@@ -10,5 +10,6 @@
         <entry type="srv" ref="pt.ua.dpf.srv.AnnotationService"/>
         <entry type="srv" ref="pt.ua.dpf.srv.DicoogleProxyService"/>
         <entry type="srv" ref="pt.ua.dpf.srv.ConfigService"/>
+        <entry type="srv" ref="pt.ua.dpf.srv.DatasetService"/>
     </entries>
 </config>
