@@ -32,6 +32,12 @@ export class AnnotateView implements OnInit {
 
   tab = 0
 
+  get start() {
+    let _start = this.last - this.BACK_LIMIT
+    if (_start < 0) _start = 0
+    return _start
+  }
+
   constructor(private router: ClientRouter) {
     this.dsProxy = router.createProxy('ds')
     this.annoProxy = router.createProxy('anno')

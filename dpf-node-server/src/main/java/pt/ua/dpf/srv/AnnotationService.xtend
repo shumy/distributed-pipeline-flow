@@ -106,7 +106,7 @@ class AnnotationService {
 					//update pointer if necessary
 					thisAnnotator.getOrPreCreatePointer(node.type) => [
 						if (imageSeq >= next)
-							next = next + 1L
+							next = imageSeq + 1L
 						
 						if (next > last)
 							last = next - 1L

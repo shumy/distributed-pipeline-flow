@@ -105,7 +105,7 @@
     <div class="menu menu-eye" style="margin-right:0!important;overflow: hidden; width:100%">
       <div class="item item-menu" style="padding: 0; width: 100%;">
         <div class="ui images" style="height: 100%;">
-          <img *ngFor="let img of images.slice(0, last)" class="ui image item-image" [src]="img.url" (click)="select(img)"
+          <img *ngFor="let img of images.slice(start, last)" class="ui image item-image" [src]="img.url" (click)="select(img)"
             style="cursor: pointer; border: 0px dotted #d4d4d5;" [style.border-width]="img == image ? '1px' : '0px'">
         </div>
       </div>
