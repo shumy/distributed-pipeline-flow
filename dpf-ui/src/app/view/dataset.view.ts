@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ClientRouter }  from 'rts-ts-client';
 
-import { DatasetProxy, DatasetInfo } from '../srv/dataset.srv';
+import { DatasetService, DatasetInfo } from '../srv/dataset.srv';
 
 @Component({
   selector: 'dataset',
@@ -9,7 +9,7 @@ import { DatasetProxy, DatasetInfo } from '../srv/dataset.srv';
   styles: ['.main.menu { margin: 60px 20px 5px; }']
 })
 export class DatasetView {
-  private dsProxy: DatasetProxy
+  private dsProxy: DatasetService
 
   tab = 0
   
@@ -44,7 +44,7 @@ export class DatasetView {
           pBars.progress()
           pBars.removeClass('active')
         }, 1)
-      }).catch(error => error => toastr.error(error.message))
+      }).catch(error => toastr.error(error.message))
 
     //(service) -> load all-dataset list
     if (selected === 1)

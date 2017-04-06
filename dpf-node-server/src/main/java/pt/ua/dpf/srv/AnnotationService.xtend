@@ -1,20 +1,16 @@
 package pt.ua.dpf.srv
 
 import com.avaje.ebean.Ebean
-import java.util.HashMap
-import java.util.List
+import java.util.Collections
 import java.util.Map
 import pt.ua.ieeta.rpacs.model.Image
 import pt.ua.ieeta.rpacs.model.ext.Annotation
+import pt.ua.ieeta.rpacs.model.ext.AnnotationStatus
 import pt.ua.ieeta.rpacs.model.ext.Annotator
-import pt.ua.ieeta.rpacs.model.ext.ImageLocal
-import pt.ua.ieeta.rpacs.model.ext.ImageQuality
-import pt.ua.ieeta.rpacs.model.ext.Maculopathy
-import pt.ua.ieeta.rpacs.model.ext.Photocoagulation
-import pt.ua.ieeta.rpacs.model.ext.Retinopathy
-import rt.async.AsyncUtils
-import rt.async.promise.Promise
+import pt.ua.ieeta.rpacs.model.ext.Node
+import pt.ua.ieeta.rpacs.model.ext.NodeType
 import rt.data.Data
+import rt.data.Optional
 import rt.plugin.service.ServiceException
 import rt.plugin.service.an.Context
 import rt.plugin.service.an.Public
@@ -24,122 +20,115 @@ import rt.utils.interceptor.UserInfo
 @Data
 @Service
 class AnnotationService {
-	val String prefixURI
 	
-	@Public
+	@Public(worker = true)
 	@Context(name = 'user', type = UserInfo)
-	def Promise<ImageDataset> currentDatasetNonAnnotatedImages() {
-		AsyncUtils.task[
-			val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
-			ImageDataset.B => [
-				total = thisAnnotator.currentDataset.images.size
-				images = thisAnnotator.currentDataset.images
-					.filter[ annotations.filter[ annotator == thisAnnotator ].empty ]
-					.map[ img |
-						ImageRef.B => [
-							id = img.id
-							url = prefixURI + img.uid
-						]
-					].toList 
+	def AnnotationInfo readAnnotation(Long inImageId) {
+		val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
+		
+		val annotation = Annotation.find.query
+			.setDisableLazyLoading(true)
+			.fetch('nodes')
+			.fetch('nodes.type', 'name')
+			.where
+				.eq('image.id', inImageId)
+				.eq('annotator', thisAnnotator)
+			.findUnique
+			
+		if (annotation === null)
+			return AnnotationInfo.B => [
+				imageId = inImageId
+				nodes = Collections.EMPTY_MAP
 			]
+		
+		return AnnotationInfo.B => [
+			imageId = inImageId
+			nodes = annotation.nodes.map[ node |
+				NodeInfo.B => [
+					id = node.id
+					type = node.type.name
+					fields = node.fields
+				]
+			].toMap[ type ]
 		]
 	}
-	
-	@Public
+
+	@Public(worker = true)
 	@Context(name = 'user', type = UserInfo)
-	def Promise<Map<String, Object>> readAnnotation(Long id) {
-		AsyncUtils.task[
-			val annotator = Annotator.getOrCreateAnnotator(user.name)
+	def void saveAnnotation(AnnotationInfo annoInfo) {
+		val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
+		
+		//find image...
+		val thisImage = Image.find.query
+			.fetch('annotations.annotator')
+			.where
+				.idEq(annoInfo.imageId)
+			.findUnique
+		
+		if (thisImage === null)
+			throw new ServiceException(404, 'Image not found! With id = ' + annoInfo.imageId)
+		
+		//calculate image-sequence
+		val imageSeq = thisImage.getSequence(thisAnnotator.currentDataset)
+		
+		//find node types...
+		val distinctTypeNames = annoInfo.nodes.keySet
+		val thisNodeTypes = NodeType.find.query
+			.where
+				.in('name', annoInfo.nodes.keySet)
+			.findList
+			.toMap[ name ]
+		
+		if (thisNodeTypes.size !== distinctTypeNames.size)
+			throw new ServiceException(404, 'Some node types not found!')
+		
+		//update or create annotation...
+		Ebean.execute[
+			val thisAnnotation = thisImage.annotations.findFirst[ annotator == thisAnnotator ] ?: (new Annotation => [
+				status = AnnotationStatus.PARTIAL
+				image = thisImage
+				annotator = thisAnnotator
+				save
+			])
 			
-			val anno = Annotation.find.byId(id)
-			if (anno === null || anno.annotator !== annotator)
-				throw new ServiceException(404, 'Not found or not available for the annotator!')
-			
-			val Map<String, Object> res = new HashMap<String, Object> => [
-				put('id', anno.id)
-				put('image', anno.image.id)
-				
-				put('quality', anno.quality)
-				put('local', anno.local)
-				
-				put('retinopathy', anno.retinopathy)
-				put('maculopathy', anno.maculopathy)
-				put('photocoagulation', anno.photocoagulation)
-			]
-			
-			return res
-		]
-	}
-	
-	@Public
-	@Context(name = 'user', type = UserInfo)
-	def Promise<Long> createAnnotation(Map<String, Object> annoInfo) {
-		AsyncUtils.task[
-			if (annoInfo.get('image') === null)
-				throw new ServiceException(500, 'Provide (image:id) for create!')
-			
-			val refImage = annoInfo.get('image') as Double
-			Ebean.execute[
-				val anno = new Annotation => [
-					image = Image.find.byId(refImage.longValue)
-					annotator = Annotator.getOrCreateAnnotator(user.name)
+			//save all nodes if not empty
+			annoInfo.nodes.forEach[ nType, nodeInfo |
+				if (!nodeInfo.fields.empty) {
+					val node = if (nodeInfo.id !== null) Node.find.byId(nodeInfo.id) else new Node => [
+						type = thisNodeTypes.get(nType)
+						annotation = thisAnnotation
+					]
 					
-					setDefaults
-					setAnnotationValues(annoInfo)
-					save
-				]
-				
-				anno.id
+					//new data...
+					node.fields = nodeInfo.fields
+					node.save
+					
+					//update pointer if necessary
+					thisAnnotator.getOrPreCreatePointer(node.type) => [
+						if (imageSeq >= next)
+							next = next + 1L
+						
+						if (next > last)
+							last = next - 1L
+						save
+					]
+				}
 			]
-		]
-	}
-	
-	@Public
-	@Context(name = 'user', type = UserInfo)
-	def Promise<Void> updateAnnotation(Map<String, Object> annoInfo) {
-		AsyncUtils.task[
-			if (annoInfo.get('id') === null)
-				throw new ServiceException(500, 'Provide (id) for update!')
-			
-			val id = annoInfo.get('id') as Double
-			Ebean.execute[
-				Annotation.find.byId(id.longValue) => [
-					setAnnotationValues(annoInfo)
-					save
-				]
-				return null
-			]
-		]
-	}
-	
-	def void setAnnotationValues(Annotation anno, Map<String, Object> annoInfo) {
-		annoInfo.forEach[ key, value |
-			if (key == 'quality')
-				anno.quality = ImageQuality.valueOf(value as String)
-			
-			if (key == 'local')
-				anno.local = ImageLocal.valueOf(value as String)
-			
-			if (key == 'retinopathy')
-				anno.retinopathy = Retinopathy.valueOf(value as String)
-			
-			if (key == 'maculopathy')
-				anno.maculopathy = Maculopathy.valueOf(value as String)
-			
-			if (key == 'photocoagulation')
-				anno.photocoagulation = Photocoagulation.valueOf(value as String)
 		]
 	}
 }
 
+
+
 @Data
-class ImageRef {
-	Long id
-	String url
+class AnnotationInfo {
+	Long imageId
+	Map<String, NodeInfo> nodes
 }
 
 @Data
-class ImageDataset {
-	Integer total
-	List<ImageRef> images
+class NodeInfo {
+	@Optional Long id
+	String type
+	Map<String, Object> fields
 }

@@ -6,19 +6,16 @@ import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx
 import java.io.FileInputStream
 import java.util.Properties
+import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import pt.ua.dpf.dicoogle.DicoogleClient
 import pt.ua.dpf.srv.AnnotationService
+import pt.ua.dpf.srv.ConfigService
+import pt.ua.dpf.srv.DatasetService
 import pt.ua.dpf.srv.DicoogleProxyService
 import pt.ua.dpf.srv.IndexService
 import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
-import pt.ua.ieeta.rpacs.model.Image
-import pt.ua.ieeta.rpacs.model.Patient
-import pt.ua.ieeta.rpacs.model.Serie
-import pt.ua.ieeta.rpacs.model.Study
-import pt.ua.ieeta.rpacs.model.ext.Annotation
-import pt.ua.ieeta.rpacs.model.ext.Annotator
-import pt.ua.ieeta.rpacs.model.ext.Lesion
+import pt.ua.ieeta.rpacs.utils.DefaultConfig
 import rt.plugin.service.WebMethod
 import rt.utils.interceptor.AccessControlInterceptor
 import rt.utils.interceptor.JwtAuthInterceptor
@@ -29,10 +26,6 @@ import rt.utils.service.SubscriberService
 import rt.utils.service.WebFileService
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.FolderManagerService
-import pt.ua.dpf.srv.ConfigService
-import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
-import pt.ua.ieeta.rpacs.model.ext.Dataset
-import pt.ua.dpf.srv.DatasetService
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -97,16 +90,7 @@ class DpfServerStarter extends AbstractVerticle {
 		EbeanServerFactory.create(new ServerConfig => [
 			name = 'db'
 			defaultServer = true
-			
-			addClass(Patient)
-			addClass(Study)
-			addClass(Serie)
-			addClass(Image)
-			
-			addClass(Annotator)
-			addClass(Annotation)
-			addClass(Lesion)
-			addClass(Dataset)
+			DefaultConfig.addClasses(it)
 			
 			loadFromProperties
 		])
@@ -128,7 +112,9 @@ class DpfServerStarter extends AbstractVerticle {
 					'/upload' 		-> '/',
 					'/annotate' 	-> '/',
 					'/viewer' 		-> '/',
-					'/dataset' 		-> '/'
+					'/dataset' 		-> '/',
+					'/profile' 		-> '/',
+					'/realm' 		-> '/'
 				}
 			]
 		
@@ -155,8 +141,8 @@ class DpfServerStarter extends AbstractVerticle {
 		val transfersSrv = TransferService.B => [ folder = './downloads' dicoogle = dicoogleClient srvPoint = servicePointSrv ]
 		val dicoogleProxySrv = DicoogleProxyService.B => [ dicoogle = dicoogleClient queryProvider = propDicoogleQueryProvider ]
 		
-		val annoSrv = AnnotationService.B => [ prefixURI = propPrefixURI ]
-		val dsSrv = DatasetService.create
+		val annoSrv = AnnotationService.create
+		val dsSrv = DatasetService.B => [ imagePrefixURI = propPrefixURI ]
 		
 		server.pipeline => [
 			addInterceptor(jwtAuth)

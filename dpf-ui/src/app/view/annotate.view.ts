@@ -1,51 +1,64 @@
-import { Component, OnInit, ChangeDetectorRef }     from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef }               from '@angular/core';
 
-import { ClientRouter }                             from 'rts-ts-client';
-import { AnnotationService, ImageDataset, ImageRef, Annotation }  from '../srv/annotation.srv';
+import { ClientRouter }                                       from 'rts-ts-client';
+import { DatasetService, DatasetInfo, PointerInfo, ImageRef } from '../srv/dataset.srv';
+import { AnnotationService, AnnotationInfo, NodeInfo }        from '../srv/annotation.srv';
 
 @Component({
   selector: 'annotate-view',
   templateUrl: 'annotate.view.html'
 })
 export class AnnotateView implements OnInit {
+  private dsProxy: DatasetService
   private annoProxy: AnnotationService
 
-  //limit the number of "Recently Annotated" image list
-  readonly limit = 3
+  readonly QUALITY        = 'quality'
+  readonly DIAGNOSIS      = 'diagnosis'
 
-  readonly annDefault: string = JSON.stringify({
-    id: 0,
-    image: 0,
+  readonly PRELOAD_LIMIT  = 3 //limit the preload of images and AnnotationInfo
+  readonly BACK_LIMIT     = 5 //limit the number of "Recently Annotated" image list
 
-    quality: 'UNDEFINED',
-    local: 'UNDEFINED',
-
-    retinopathy:'UNDEFINED',
-    maculopathy:'UNDEFINED',
-    photocoagulation:'UNDEFINED'
-  })
+  context: string = this.QUALITY //default context
+  dataset: DatasetInfo
+  progress: number
+  
+  last = 0
+  index = -1
+  images: ImageRef[] = []
+  
+  //info part...
+  image: ImageRef = { id: 0, url: '//:0', loaded: false }
+  annotation: AnnotationInfo = { imageId: 0, nodes: {} }
 
   tab = 0
-  loading = false
 
-  start = 0
-  index = 0
-  
-  pValue = 0
-  pTotal = 0
-  
-  images: ImageRef[]
-  image: ImageRef = { id: 0, url: '//:0'}
-
-  annotations: Annotation[]
-  annotation: Annotation = JSON.parse(this.annDefault)
-  
   constructor(private router: ClientRouter) {
+    this.dsProxy = router.createProxy('ds')
     this.annoProxy = router.createProxy('anno')
   }
 
-  ngOnInit() {
-    this.load()
+  ngOnInit() { this.loadDataset() }
+
+  select(img: ImageRef) {
+    this.index = this.images.indexOf(img)
+    this.loadInfo()
+  }
+
+  loadDataset() {
+    this.dsProxy.myDefault().then(ds => {
+      //BEGIN - FIX: when schema is available on the server, this should be pre-assigned
+      if (!ds.pointers[this.QUALITY])
+        ds.pointers[this.QUALITY] = { type: this.QUALITY, last: -1, next: 0 }
+
+      if (!ds.pointers[this.DIAGNOSIS])
+        ds.pointers[this.DIAGNOSIS] = { type: this.DIAGNOSIS, last: -1, next: 0 }
+      //END - FIX: when schema is available on the server, this should be pre-assigned
+
+      this.dataset = ds
+      this.progress = ds.pointers[this.context].next
+      this.updateProgress()
+      this.setNext()
+    }).catch(error => toastr.error(error.message))
   }
 
   updateProgress() {
@@ -53,100 +66,108 @@ export class AnnotateView implements OnInit {
     pBar.progress({
       label: 'ratio',
       text: { ratio: '{value} of {total}' },
-      value: this.pValue,
-      total: this.pTotal
+      value: this.progress,
+      total: this.dataset.size
     })
   }
 
-  select(img: ImageRef) {
-    let idx = this.images.indexOf(img)
-    this.selectIndex(idx)
-  }
-
-  selectIndex(idx: number) {
-    this.tab = 0
-    this.image = this.images[idx]
-    this.annotation = this.annotations[idx]
-  }
-
-  load() {
-    this.annoProxy.currentDatasetNonAnnotatedImages().then(dataset => {
-      this.images = dataset.images
-      this.start = 0
-      this.index = 0
-
-      this.pTotal = dataset.total
-      this.pValue = this.pTotal - dataset.images.length
-
-      this.annotations = dataset.images.map(img => {
-        let ann = JSON.parse(this.annDefault)
-        ann.image = img.id
-        return ann
-      })
-
-      this.loadImage()
+  setNext() {
+    if (this.index === this.last) {
+      this.last++
+      this.progress++
       this.updateProgress()
-    })
+    }
+
+    this.index = this.last
+    if (this.index >= this.images.length)
+      this.loadImageRefs()
+    else
+      this.loadInfo()
   }
 
-  preload(fromIdx: number, toIdx: number) {
-    if (fromIdx < this.images.length && fromIdx < toIdx) {
-      if (!this.images[fromIdx].preloaded) {
-        this.images[fromIdx].preloaded =  true
+  loadImageRefs() {
+    if (this.progress <= this.dataset.size)
+      this.dsProxy.getImageRefsFromDefault(this.progress, this.PRELOAD_LIMIT).then(refs => {
+        this.images = this.images.concat(refs)
+        this.preloadImages(0, refs)
+        this.loadInfo()
+      }).catch(error => toastr.error(error.message))
+  }
 
-        let img = new Image()
-        img.onload = _ => this.preload(fromIdx + 1, toIdx)
-        img.src = this.images[fromIdx].url
+  loadInfo() {
+    this.image = this.images[this.index]
+    this.annoProxy.readAnnotation(this.image.id)
+      .then(ann => this.annotation = ann)
+      .catch(error => toastr.error(error.message))
+  }
+
+  preloadImages(idx: number, imgRefs: ImageRef[]) {
+    if (idx < imgRefs.length) {
+      let img = new Image()
+      img.onload = _ => {
+        imgRefs[idx].loaded = true
+        this.preloadImages(idx + 1, imgRefs)
       }
+      img.src = imgRefs[idx].url
     }
   }
 
-  loadImage() {
-    if (this.index < this.images.length) {
-      this.selectIndex(this.index)
-      this.loading = true
-
-      this.preload(this.index + 1, this.index + 3)
+  node(nType: string) {
+    let tNode = this.annotation.nodes[nType]
+    if (!tNode) {
+      tNode = { type: nType, fields: {} }
+      this.annotation.nodes[nType] = tNode
     }
+
+    return tNode.fields
   }
 
   setQuality(quality: string) {
-    this.annotation.quality = quality
-    if (this.annotation.quality === 'BAD')
-       this.annotation.local = 'UNDEFINED'
+    let qNode = this.node(this.QUALITY)
+    qNode.quality = quality
+    if (qNode.quality === 'BAD')
+       delete qNode.local
   }
 
   setLocal(local: string) {
-    if (this.annotation.quality !== 'BAD')
-      this.annotation.local = local
+    let qNode = this.node(this.QUALITY)
+    if (qNode.quality !== 'BAD')
+      qNode.local = local
   }
 
   setRetinopathy(retinopathy: string) {
-    this.annotation.retinopathy = retinopathy
-    if (this.annotation.retinopathy === 'R0')
-      this.annotation.maculopathy = 'M0'
+    let dNode = this.node(this.DIAGNOSIS)
+    dNode.retinopathy = retinopathy
+    if (dNode.retinopathy === 'R0')
+      dNode.maculopathy = 'M0'
   }
 
   setMaculopathy(maculopathy: string) {
-    if (this.annotation.retinopathy !== 'R0')
-      this.annotation.maculopathy = maculopathy
+    let dNode = this.node(this.DIAGNOSIS)
+    if (dNode.retinopathy !== 'R0')
+      dNode.maculopathy = maculopathy
   }
 
   setPhotocoagulation(photocoagulation: string) {
-    this.annotation.photocoagulation = photocoagulation
+    let dNode = this.node(this.DIAGNOSIS)
+    dNode.photocoagulation = photocoagulation
   }
 
   isReadyForNext() {
-    return this.annotation.quality == 'BAD' || this.annotation.quality != 'UNDEFINED' && this.annotation.local != 'UNDEFINED'
+    let qNode = this.node(this.QUALITY)
+    return qNode.quality === 'BAD' || qNode.quality && qNode.local
   }
 
   isReadyToDone() {
-    return this.annotation.quality == 'BAD' || this.annotation.retinopathy != 'UNDEFINED' && this.annotation.maculopathy != 'UNDEFINED' && this.annotation.photocoagulation != 'UNDEFINED'
+    let qNode = this.node(this.QUALITY)
+    let dNode = this.node(this.DIAGNOSIS)
+    return qNode.quality === 'BAD' || dNode.retinopathy && dNode.maculopathy && dNode.photocoagulation
   }
 
   onQualityNext() {
     if (this.isReadyForNext()) {
-      if (this.annotation.quality == 'BAD') {
+      let qNode = this.node(this.QUALITY)
+      if (qNode.quality === 'BAD') {
         this.done()
       } else {
         this.tab = 1
@@ -155,40 +176,11 @@ export class AnnotateView implements OnInit {
   }
 
   done() {
-    if (this.isReadyToDone()) {
-      if (this.annotation.id == -1) {
-        toastr.warning('Annotation save in progress, please wait!')
-        return
-      }
-
-      if (this.annotation.id == 0) {
-        this.annotation.id = -1
-        this.annoProxy.createAnnotation(this.annotation)
-          .then(newId => {
-            this.annotation.id = newId
-            this.index++
-            this.pValue++
-            
-            if (this.index > this.limit)
-              this.start = this.index - this.limit
-            
-            this.onDoneOk()
-          })
-          .catch(error => {
-            this.annotation.id = 0
-            toastr.error('Annotation save error:' + error.message)
-          })
-      } else {
-        this.annoProxy.updateAnnotation(this.annotation)
-          .then(_ => this.onDoneOk())
-          .catch(error => toastr.error('Annotation save error:' + error.message))
-      }
-    }
-  }
-
-  onDoneOk() {
-    toastr.success('Annotation saved')
-    this.loadImage()
-    this.updateProgress()
+    if (this.isReadyToDone())
+      this.annoProxy.saveAnnotation(this.annotation).then(_ => {
+        this.tab = 0
+        this.setNext()
+        toastr.success('Annotation saved')
+      }).catch(error => toastr.error('Error saving Annotation:' + error.message))
   }
 }

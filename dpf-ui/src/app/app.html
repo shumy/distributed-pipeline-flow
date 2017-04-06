@@ -17,9 +17,13 @@
           <i class="database icon"></i>
           Datasets
         </a>
-        <a class="item" [href]="profile">
+        <a class="item" [routerLink]="['profile']">
           <i class="user icon"></i>
           Profile
+        </a>
+        <a *ngIf="contains('/ui-console')" class="item" [routerLink]="['realm']">
+          <i class="users icon"></i>
+          Realm
         </a>
         <a class="item" (click)="logout()">
           <i class="power icon"></i>

@@ -1,103 +1,149 @@
 package pt.ua.dpf.srv
 
-import rt.data.Data
-import rt.plugin.service.an.Service
-import rt.async.promise.Promise
-import java.util.List
-import rt.plugin.service.an.Public
-import rt.plugin.service.an.Context
-import rt.utils.interceptor.UserInfo
-import rt.async.AsyncUtils
-import pt.ua.ieeta.rpacs.model.ext.Annotator
-import java.util.Collections
-import pt.ua.ieeta.rpacs.model.ext.Dataset
 import com.avaje.ebean.Ebean
+import java.util.Collections
+import java.util.List
+import java.util.Map
+import pt.ua.ieeta.rpacs.model.ext.Annotator
+import pt.ua.ieeta.rpacs.model.ext.Dataset
+import rt.data.Data
+import rt.plugin.service.an.Context
+import rt.plugin.service.an.Public
+import rt.plugin.service.an.Service
+import rt.utils.interceptor.UserInfo
+import pt.ua.ieeta.rpacs.model.Image
 
 @Data
 @Service
 class DatasetService {
+	val String imagePrefixURI
 	
-	@Public
+	@Public(worker = true)
 	@Context(name = 'user', type = UserInfo)
-	def Promise<List<DatasetInfo>> myDatasets() {
-		AsyncUtils.task[
-			val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
-			if (thisAnnotator === null)
-				return Collections.EMPTY_LIST
-			
-			return thisAnnotator.dataset.map[ ds |
-				DatasetInfo.B => [
-					id = ds.id
-					name = ds.name
-					size = ds.images.size
-					progress = ds.images.filter[ annotations.findFirst[ annotator == thisAnnotator ] !== null ].size
-					isDefault = ds === thisAnnotator.currentDataset
+	def DatasetInfo myDefault() {
+		val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
+		val ds = thisAnnotator.currentDataset
+		
+		return DatasetInfo.B => [
+			id = ds.id
+			name = ds.name
+			size = ds.images.size
+			isDefault = true
+			pointers = ds.pointers.filter[ annotator == thisAnnotator ].map[ pointer |
+				PointerInfo.B => [
+					type = pointer.type.name
+					last = pointer.last
+					next = pointer.next
 				]
+			].toMap[ type ]
+		]
+	}
+	
+	@Public(worker = true)
+	@Context(name = 'user', type = UserInfo)
+	def List<ImageRef> getImageRefsFromDefault(Integer offset, Integer limit) {
+		val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
+		val ds = thisAnnotator.currentDataset
+		
+		val images = Image.getImageRefs(ds, offset, limit)
+		return images.map[ img |
+			ImageRef.B => [
+				id = img.id
+				url = imagePrefixURI + img.uid
 			]
 		]
 	}
 	
-	@Public
+	@Public(worker = true)
 	@Context(name = 'user', type = UserInfo)
-	def Promise<Void> setMyDefault(Long defaultId) {
-		AsyncUtils.task[
-			Ebean.execute[
-				val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
-				val defDs = thisAnnotator.dataset.findFirst[ id === defaultId ]
+	def void setMyDefault(Long defaultId) {
+		Ebean.execute[
+			Annotator.getOrCreateAnnotator(user.name) => [
+				val defDs = datasets.findFirst[ id === defaultId ]
 				if (defDs !== null) {
-					thisAnnotator.currentDataset = defDs
-					thisAnnotator.save
+					currentDataset = defDs
+					save
 				}
-				return null
 			]
 		]
 	}
 	
-	@Public
+	@Public(worker = true)
 	@Context(name = 'user', type = UserInfo)
-	def Promise<Void> subscribe(List<Long> ids) {
-		AsyncUtils.task[
-			Ebean.execute[
-				val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
-				val subscriptions = Dataset.find.query.where.idIn(ids).findList
-				thisAnnotator.dataset.addAll(subscriptions)
-				
-				thisAnnotator.save
-				return null
+	def List<DatasetInfo> myDatasets() {
+		val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
+		if (thisAnnotator === null)
+			return Collections.EMPTY_LIST
+		
+		return thisAnnotator.datasets.map[ ds |
+			DatasetInfo.B => [
+				id = ds.id
+				name = ds.name
+				size = ds.images.size
+				isDefault = ( ds === thisAnnotator.currentDataset )
+				pointers = ds.pointers.filter[ annotator == thisAnnotator ].map[ pointer |
+					PointerInfo.B => [
+						type = pointer.type.name
+						last = pointer.last
+						next = pointer.next
+					]
+				].toMap[ type ]
 			]
 		]
 	}
 	
-	@Public
+	@Public(worker = true)
 	@Context(name = 'user', type = UserInfo)
-	def Promise<List<DatasetInfo>> otherDatasets() {
-		AsyncUtils.task[
-			val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
-			val allDatasets = Dataset.find.all
-			
-			val Iterable<Dataset> filteredDs = if (thisAnnotator === null) allDatasets else {
-				allDatasets.filter[ !thisAnnotator.dataset.contains(it) ]
-			}
-			
-			return filteredDs.map[ ds |
-				DatasetInfo.B => [
-					id = ds.id
-					name = ds.name
-					size = ds.images.size
-					progress = 0
-					isDefault = ds.isIsDefault 
-				]
-			].toList
+	def List<DatasetInfo> otherDatasets() {
+		val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
+		val otherDatasets = Dataset.find.query
+			.fetch('pointers')
+			.where
+				.not.contains('annotators.name', thisAnnotator.name)
+			.findList
+		
+		return otherDatasets.map[ ds |
+			DatasetInfo.B => [
+				id = ds.id
+				name = ds.name
+				size = ds.images.size
+				isDefault = ds.isIsDefault
+				pointers = Collections.EMPTY_MAP as Map<String, PointerInfo>
+			]
+		]
+	}
+	
+	@Public(worker = true)
+	@Context(name = 'user', type = UserInfo)
+	def void subscribe(List<Long> ids) {
+		Ebean.execute[
+			val subscriptions = Dataset.find.query.where.idIn(ids).findList
+			Annotator.getOrCreateAnnotator(user.name) => [
+				datasets.addAll(subscriptions)
+				save
+			]
 		]
 	}
 }
 
-//id: 2, name: 'my-xpto', size: 15, progress: 8, default: true
 @Data
 class DatasetInfo {
 	Long id
 	String name
 	Integer size
-	Integer progress
 	Boolean isDefault
+	Map<String, PointerInfo> pointers
+}
+
+@Data
+class PointerInfo {
+	String type
+	Long last
+	Long next
+}
+
+@Data
+class ImageRef {
+	Long id
+	String url
 }
