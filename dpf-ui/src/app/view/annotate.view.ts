@@ -30,7 +30,11 @@ export class AnnotateView implements OnInit {
   image: ImageRef = { id: 0, url: '//:0', loaded: false }
   annotation: AnnotationInfo = { imageId: 0, nodes: {} }
 
-  tab = 0
+  //html objects...
+  magnifier: JQuery
+  magsmall: JQuery
+  maglarge: JQuery
+  imageObj = new Image()
 
   get start() {
     let _start = this.last - this.BACK_LIMIT
@@ -43,7 +47,10 @@ export class AnnotateView implements OnInit {
     this.annoProxy = router.createProxy('anno')
   }
 
-  ngOnInit() { this.loadDataset() }
+  ngOnInit() {
+    this.loadDataset()
+    this.magnify()
+  }
 
   select(img: ImageRef) {
     this.index = this.images.indexOf(img)
@@ -57,8 +64,8 @@ export class AnnotateView implements OnInit {
         ds.pointers[this.QUALITY] = { type: this.QUALITY, last: -1, next: 0 }
 
       if (!ds.pointers[this.DIAGNOSIS])
-        ds.pointers[this.DIAGNOSIS] = { type: this.DIAGNOSIS, last: -1, next: 0 }
-      //END - FIX: when schema is available on the server, this should be pre-assigned
+          ds.pointers[this.DIAGNOSIS] = { type: this.DIAGNOSIS, last: -1, next: 0 }
+        //END - FIX: when schema is available on the server, this should be pre-assigned
 
       this.dataset = ds
       this.progress = ds.pointers[this.context].next
@@ -75,6 +82,46 @@ export class AnnotateView implements OnInit {
       value: this.progress,
       total: this.dataset.size
     })
+  }
+
+  magnify() {
+      this.magnifier = $(".magnify")
+      this.magsmall = $(".magsmall")
+      this.maglarge = $(".maglarge")
+
+      window.onmousemove = e => {
+        let mag = {
+          width: this.maglarge.width()/2,
+          height: this.maglarge.height()/2
+        }
+
+        let box = {
+          top: this.magsmall.offset().top,
+          left: this.magsmall.offset().left,
+          width: this.magsmall.width(),
+          height: this.magsmall.height()
+        }
+
+        let mx = e.pageX
+        let my = e.pageY
+        
+        if(mx < (box.width + box.left) && my < (box.height + box.top) && mx > box.left && my > box.top) {
+          this.maglarge.fadeIn(10)
+        } else {
+          this.maglarge.fadeOut(10)
+        }
+        
+        if(this.maglarge.is(":visible")) {
+          let rx = -1 * Math.round((mx - box.left)/box.width * this.imageObj.width - mag.width)
+          let ry = -1 * Math.round((my - box.top)/box.height * this.imageObj.height - mag.height)
+          let bgp = rx + "px " + ry + "px"
+          
+          let px = mx - mag.width
+          let py = my - mag.height
+          
+          this.maglarge.css({left: px, top: py, backgroundPosition: bgp, zIndex: 100})
+        }
+      }
   }
 
   setNext() {
@@ -102,6 +149,10 @@ export class AnnotateView implements OnInit {
 
   loadInfo() {
     this.image = this.images[this.index]
+    this.imageObj = new Image()
+    this.imageObj.src = this.image.url
+    this.maglarge.css("background", "url(" + this.image.url + ") no-repeat")
+
     this.annoProxy.readAnnotation(this.image.id)
       .then(ann => this.annotation = ann)
       .catch(error => toastr.error(error.message))
@@ -118,21 +169,47 @@ export class AnnotateView implements OnInit {
     }
   }
 
-  node(nType: string) {
+  getOrCreateNode(nType: string) {
     let tNode = this.annotation.nodes[nType]
     if (!tNode) {
       tNode = { type: nType, fields: {} }
       this.annotation.nodes[nType] = tNode
     }
 
-    return tNode.fields
+    return tNode
+  }
+
+  node(nType: string) {
+    return this.getOrCreateNode(nType).fields
+  }
+
+  done() {
+    if (this.isReadyToDone())
+      this.annoProxy.saveAnnotation(this.annotation).then(_ => {
+        this.setNext()
+        toastr.success('Annotation saved')
+      }).catch(error => toastr.error('Error saving Annotation:' + error.message))
+  }
+
+  //FIX: from here it should be replaced by a rule engine?
+  isReadyToDone() {
+    let qNode = this.node(this.QUALITY)
+    let dNode = this.node(this.DIAGNOSIS)
+    return qNode.quality === 'BAD' || qNode.quality && qNode.local && dNode.retinopathy && dNode.maculopathy && dNode.photocoagulation
   }
 
   setQuality(quality: string) {
     let qNode = this.node(this.QUALITY)
+    let dNode = this.node(this.DIAGNOSIS)
+
     qNode.quality = quality
-    if (qNode.quality === 'BAD')
+    if (qNode.quality === 'BAD') {
        delete qNode.local
+       delete dNode.retinopathy
+       delete dNode.maculopathy
+       delete dNode.photocoagulation
+       this.getOrCreateNode(this.DIAGNOSIS).implicit = true
+    }
   }
 
   setLocal(local: string) {
@@ -142,51 +219,31 @@ export class AnnotateView implements OnInit {
   }
 
   setRetinopathy(retinopathy: string) {
-    let dNode = this.node(this.DIAGNOSIS)
-    dNode.retinopathy = retinopathy
-    if (dNode.retinopathy === 'R0')
-      dNode.maculopathy = 'M0'
-  }
-
-  setMaculopathy(maculopathy: string) {
-    let dNode = this.node(this.DIAGNOSIS)
-    if (dNode.retinopathy !== 'R0')
-      dNode.maculopathy = maculopathy
-  }
-
-  setPhotocoagulation(photocoagulation: string) {
-    let dNode = this.node(this.DIAGNOSIS)
-    dNode.photocoagulation = photocoagulation
-  }
-
-  isReadyForNext() {
-    let qNode = this.node(this.QUALITY)
-    return qNode.quality === 'BAD' || qNode.quality && qNode.local
-  }
-
-  isReadyToDone() {
     let qNode = this.node(this.QUALITY)
     let dNode = this.node(this.DIAGNOSIS)
-    return qNode.quality === 'BAD' || dNode.retinopathy && dNode.maculopathy && dNode.photocoagulation
-  }
-
-  onQualityNext() {
-    if (this.isReadyForNext()) {
-      let qNode = this.node(this.QUALITY)
-      if (qNode.quality === 'BAD') {
-        this.done()
-      } else {
-        this.tab = 1
-      }
+    
+    if (qNode.quality !== 'BAD') {
+      dNode.retinopathy = retinopathy
+      if (dNode.retinopathy === 'R0')
+        dNode.maculopathy = 'M0'
     }
   }
 
-  done() {
-    if (this.isReadyToDone())
-      this.annoProxy.saveAnnotation(this.annotation).then(_ => {
-        this.tab = 0
-        this.setNext()
-        toastr.success('Annotation saved')
-      }).catch(error => toastr.error('Error saving Annotation:' + error.message))
+  setMaculopathy(maculopathy: string) {
+    let qNode = this.node(this.QUALITY)
+    let dNode = this.node(this.DIAGNOSIS)
+
+    if (qNode.quality !== 'BAD') {
+      if (dNode.retinopathy !== 'R0')
+        dNode.maculopathy = maculopathy
+    }
+  }
+
+  setPhotocoagulation(photocoagulation: string) {
+    let qNode = this.node(this.QUALITY)
+    let dNode = this.node(this.DIAGNOSIS)
+
+    if (qNode.quality !== 'BAD')
+      dNode.photocoagulation = photocoagulation
   }
 }

@@ -93,18 +93,22 @@ class AnnotationService {
 			
 			//save all nodes if not empty
 			annoInfo.nodes.forEach[ nType, nodeInfo |
+				val nodeType = thisNodeTypes.get(nType)
+				
 				if (!nodeInfo.fields.empty) {
 					val node = if (nodeInfo.id !== null) Node.find.byId(nodeInfo.id) else new Node => [
-						type = thisNodeTypes.get(nType)
+						type = nodeType
 						annotation = thisAnnotation
 					]
 					
 					//new data...
 					node.fields = nodeInfo.fields
 					node.save
-					
+				}
+				
+				if (!nodeInfo.fields.empty || nodeInfo.implicit === true) {
 					//update pointer if necessary
-					thisAnnotator.getOrPreCreatePointer(node.type) => [
+					thisAnnotator.getOrPreCreatePointer(nodeType) => [
 						if (imageSeq >= next)
 							next = imageSeq + 1L
 						
@@ -129,6 +133,8 @@ class AnnotationInfo {
 @Data
 class NodeInfo {
 	@Optional Long id
+	@Optional Boolean implicit //no fields are needed when implicit is true to update the pointer
+	
 	String type
 	Map<String, Object> fields
 }

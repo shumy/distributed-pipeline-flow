@@ -6,6 +6,8 @@ export interface AnnotationInfo {
 
 export interface NodeInfo {
 	id?: number
+  implicit?: boolean
+
 	type: string
 	fields: any
 }
