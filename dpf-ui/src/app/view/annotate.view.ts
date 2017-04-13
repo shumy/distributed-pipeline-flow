@@ -198,6 +198,19 @@ export class AnnotateView implements OnInit {
     return qNode.quality === 'BAD' || qNode.quality && qNode.local && dNode.retinopathy && dNode.maculopathy && dNode.photocoagulation
   }
 
+  getStateClass(state: string, position: string) {
+    if (
+      this.node(this.QUALITY).quality === 'BAD' && ['GOOD', 'PARTIAL', 'BAD'].indexOf(position) === -1
+      ||
+      this.node(this.DIAGNOSIS).retinopathy === 'R0' && position === 'M1'
+    )
+      return 'basic disabled'
+
+    if (state === position) return ''
+
+    return 'basic'
+  }
+
   setQuality(quality: string) {
     let qNode = this.node(this.QUALITY)
     let dNode = this.node(this.DIAGNOSIS)
