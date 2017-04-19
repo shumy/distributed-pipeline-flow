@@ -18,13 +18,16 @@ export class AnnotateView implements OnInit {
   readonly PRELOAD_LIMIT  = 3 //limit the preload of images and AnnotationInfo
   readonly BACK_LIMIT     = 5 //limit the number of "Recently Annotated" image list
 
-  context: string = this.QUALITY //default context
+  //active contexts
+  ctxQuality = true
+  ctxDiagnosis = true
+
   dataset: DatasetInfo
   progress: number
   
-  last = 0
-  index = -1
-  images: ImageRef[] = []
+  last: number
+  index: number
+  images: ImageRef[]
   
   //info part...
   image: ImageRef = { id: 0, url: '//:0', loaded: false }
@@ -58,6 +61,10 @@ export class AnnotateView implements OnInit {
   }
 
   loadDataset() {
+    this.last = 0
+    this.index = -1
+    this.images = []
+
     this.dsProxy.myDefault().then(ds => {
       //BEGIN - FIX: when schema is available on the server, this should be pre-assigned
       if (!ds.pointers[this.QUALITY])
@@ -65,10 +72,15 @@ export class AnnotateView implements OnInit {
 
       if (!ds.pointers[this.DIAGNOSIS])
           ds.pointers[this.DIAGNOSIS] = { type: this.DIAGNOSIS, last: -1, next: 0 }
-        //END - FIX: when schema is available on the server, this should be pre-assigned
+      //END - FIX: when schema is available on the server, this should be pre-assigned
 
       this.dataset = ds
-      this.progress = ds.pointers[this.context].next
+      
+      if (this.ctxDiagnosis)
+        this.progress = ds.pointers[this.DIAGNOSIS].next
+      else
+        this.progress = ds.pointers[this.QUALITY].next
+
       this.updateProgress()
       this.setNext()
     }).catch(error => toastr.error(error.message))
@@ -184,21 +196,46 @@ export class AnnotateView implements OnInit {
   }
 
   done() {
-    if (this.isReadyToDone())
-      this.annoProxy.saveAnnotation(this.annotation).then(_ => {
+    if (this.isReadyToDone()) {
+      if (this.ctxDiagnosis)
+        this.getOrCreateNode(this.DIAGNOSIS).implicit = true
+
+      //BEGIN - save only the context...
+      let annToSave = JSON.parse(JSON.stringify(this.annotation)) as AnnotationInfo
+      
+      if (!this.ctxQuality)
+        delete annToSave.nodes[this.QUALITY]
+      
+      if (!this.ctxDiagnosis)
+        delete annToSave.nodes[this.DIAGNOSIS]
+      //END - save only the context...
+
+      this.annoProxy.saveAnnotation(annToSave).then(_ => {
         this.setNext()
         toastr.success('Annotation saved')
       }).catch(error => toastr.error('Error saving Annotation:' + error.message))
+    }
   }
 
   //FIX: from here it should be replaced by a rule engine?
   isReadyToDone() {
     let qNode = this.node(this.QUALITY)
     let dNode = this.node(this.DIAGNOSIS)
-    return qNode.quality === 'BAD' || qNode.quality && qNode.local && dNode.retinopathy && dNode.maculopathy && dNode.photocoagulation
+
+    if (this.ctxQuality &&
+      (!qNode.quality || qNode.quality !== 'BAD' && !qNode.local)
+    ) return false
+
+    if (this.ctxDiagnosis && qNode.quality !== 'BAD' &&
+      (!dNode.retinopathy || !dNode.maculopathy || !dNode.photocoagulation)
+    ) return false
+
+    return true
   }
 
   getStateClass(state: string, position: string) {
+    if (state === position) return ''
+
     if (
       this.node(this.QUALITY).quality === 'BAD' && ['GOOD', 'PARTIAL', 'BAD'].indexOf(position) === -1
       ||
@@ -206,9 +243,31 @@ export class AnnotateView implements OnInit {
     )
       return 'basic disabled'
 
-    if (state === position) return ''
+    if (!this.ctxQuality && ['GOOD', 'PARTIAL', 'BAD', 'MACULA', 'OPTIC_DICS', 'OTHER'].indexOf(position) > -1)
+      return 'basic disabled'
+
+    if (!this.ctxDiagnosis && ['R0', 'R1', 'R2_M', 'R2_S', 'R3', 'M0', 'M1', 'P0', 'P1', 'P2'].indexOf(position) > -1)
+      return 'basic disabled'
 
     return 'basic'
+  }
+
+  toogleQuality() {
+    //one must be selected
+    if (this.ctxQuality && !this.ctxDiagnosis)
+      return
+    this.ctxQuality = !this.ctxQuality
+
+    this.loadDataset()
+  }
+
+  toogleDiagnosis() {
+    //one must be selected
+    if (this.ctxDiagnosis && !this.ctxQuality)
+      return
+    this.ctxDiagnosis = !this.ctxDiagnosis
+
+    this.loadDataset()
   }
 
   setQuality(quality: string) {
@@ -221,7 +280,6 @@ export class AnnotateView implements OnInit {
        delete dNode.retinopathy
        delete dNode.maculopathy
        delete dNode.photocoagulation
-       this.getOrCreateNode(this.DIAGNOSIS).implicit = true
     }
   }
 
