@@ -222,9 +222,9 @@ export class AnnotateView implements OnInit {
     let qNode = this.node(this.QUALITY)
     let dNode = this.node(this.DIAGNOSIS)
 
-    if (this.ctxQuality &&
-      (!qNode.quality || qNode.quality !== 'BAD' && !qNode.local)
-    ) return false
+    //quality is mandatory...
+    if (!qNode.quality || qNode.quality !== 'BAD' && !qNode.local)
+      return false
 
     if (this.ctxDiagnosis && qNode.quality !== 'BAD' &&
       (!dNode.retinopathy || !dNode.maculopathy || !dNode.photocoagulation)
@@ -234,6 +234,16 @@ export class AnnotateView implements OnInit {
   }
 
   getStateClass(state: string, position: string) {
+    if (
+      !this.ctxQuality && ['GOOD', 'PARTIAL', 'BAD', 'MACULA', 'OPTIC_DICS', 'OTHER'].indexOf(position) > -1
+      ||
+      !this.ctxDiagnosis && ['R0', 'R1', 'R2_M', 'R2_S', 'R3', 'M0', 'M1', 'P0', 'P1', 'P2'].indexOf(position) > -1
+    )
+      if (state !== position)
+        return 'basic disabled'
+      else
+        return 'disabled'
+
     if (state === position) return ''
 
     if (
@@ -241,12 +251,6 @@ export class AnnotateView implements OnInit {
       ||
       this.node(this.DIAGNOSIS).retinopathy === 'R0' && position === 'M1'
     )
-      return 'basic disabled'
-
-    if (!this.ctxQuality && ['GOOD', 'PARTIAL', 'BAD', 'MACULA', 'OPTIC_DICS', 'OTHER'].indexOf(position) > -1)
-      return 'basic disabled'
-
-    if (!this.ctxDiagnosis && ['R0', 'R1', 'R2_M', 'R2_S', 'R3', 'M0', 'M1', 'P0', 'P1', 'P2'].indexOf(position) > -1)
       return 'basic disabled'
 
     return 'basic'
