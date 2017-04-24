@@ -5,7 +5,7 @@
     </div>
   </div>
 
-  <div style="display: flex; height: calc(100vh - 165px);">
+  <div style="display: flex; height: calc(100vh - 105px);"> <!-- calc(100vh - 165px) when using Recently Annotated -->
     <div class="magnify">
       <div class="maglarge"></div>
       <img class="ui magsmall image" [src]="image.url"/>
@@ -63,14 +63,14 @@
         </div>
 
         <div class="ui {{ isReadyToDone() ? '' : 'basic disabled' }} small button" style="margin-top: 2em;" (click)="done()">
-          <div class="visible content">Next Image</div>
+          <div class="visible content">Save</div>
         </div>
       </div>
     </div>
   </div>
 
   <!--Recently Annotated-->
-  <div class="ui eye-stream main tiny menu" style="background-color:black; height:10%; max-height:60px; margin:0px;">
+  <!--div class="ui eye-stream main tiny menu" style="background-color:black; height:10%; max-height:60px; margin:0px;">
     <div class="menu menu-eye" style="margin-right:0!important;overflow: hidden; width:100%">
       <div class="item item-menu" style="padding: 0; width: 100%;">
         <div class="ui images" style="height: 100%;">
@@ -79,7 +79,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div-->
   
   <!--Progress and Load-->
   <div class="column" style="margin: auto; padding: 10px 5px 0px 10px; display:flex;">
@@ -87,6 +87,15 @@
       <div class="bar" style="height:100%; min-width:6em;">
         <div class="progress"></div>
       </div>
+    </div>
+    <div style="display: flex; align-items: center; margin-left: 0.3em;">
+      <i class="fast backward large link icon" (click)="setPosition(1)"></i>
+      <i class="step backward large link icon" (click)="setPosition(progress)"></i>
+      <div class="ui mini input">
+        <input #pos type="number" style="text-align: right;" (keyup.enter)="setPosition(pos.value)" [value]="progress + 1">
+      </div>
+      <i class="step forward large link icon" (click)="setPosition(progress + 2)"></i>
+      <i class="fast forward large link icon" (click)="setPosition()"></i>
     </div>
   </div>
 </div>

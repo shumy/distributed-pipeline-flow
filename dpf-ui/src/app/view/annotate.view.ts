@@ -15,7 +15,7 @@ export class AnnotateView implements OnInit {
   readonly QUALITY        = 'quality'
   readonly DIAGNOSIS      = 'diagnosis'
 
-  readonly PRELOAD_LIMIT  = 3 //limit the preload of images and AnnotationInfo
+  readonly PRELOAD_LIMIT  = 5 //limit the preload of images and AnnotationInfo
   readonly BACK_LIMIT     = 5 //limit the number of "Recently Annotated" image list
 
   //active contexts
@@ -23,9 +23,9 @@ export class AnnotateView implements OnInit {
   ctxDiagnosis = true
 
   dataset: DatasetInfo
+  dsLast: number = -1
   progress: number
   
-  last: number
   index: number
   images: ImageRef[]
   
@@ -39,11 +39,11 @@ export class AnnotateView implements OnInit {
   maglarge: JQuery
   imageObj = new Image()
 
-  get start() {
+  /*get start() {
     let _start = this.last - this.BACK_LIMIT
     if (_start < 0) _start = 0
     return _start
-  }
+  }*/
 
   constructor(private router: ClientRouter) {
     this.dsProxy = router.createProxy('ds')
@@ -55,13 +55,19 @@ export class AnnotateView implements OnInit {
     this.magnify()
   }
 
+  getProgressFromContext() {
+    if (this.ctxDiagnosis)
+      return this.dataset.pointers[this.DIAGNOSIS].next
+    else
+      return this.dataset.pointers[this.QUALITY].next
+  }
+
   select(img: ImageRef) {
     this.index = this.images.indexOf(img)
     this.loadInfo()
   }
 
-  loadDataset() {
-    this.last = 0
+  loadDataset(progress?: number) {
     this.index = -1
     this.images = []
 
@@ -76,12 +82,12 @@ export class AnnotateView implements OnInit {
 
       this.dataset = ds
       
-      if (this.ctxDiagnosis)
-        this.progress = ds.pointers[this.DIAGNOSIS].next
+      if (progress != null)
+        this.progress = progress
       else
-        this.progress = ds.pointers[this.QUALITY].next
+        this.progress = this.getProgressFromContext()
 
-      this.updateProgress()
+      this.progress--
       this.setNext()
     }).catch(error => toastr.error(error.message))
   }
@@ -90,7 +96,7 @@ export class AnnotateView implements OnInit {
     let pBar: any = $('.ui.progress')
     pBar.progress({
       label: 'ratio',
-      text: { ratio: '{value} of {total}' },
+      text: { ratio: '{value} of {total} Done' },
       value: this.progress,
       total: this.dataset.size
     })
@@ -136,14 +142,29 @@ export class AnnotateView implements OnInit {
       }
   }
 
-  setNext() {
-    if (this.index === this.last) {
-      this.last++
-      this.progress++
-      this.updateProgress()
-    }
+  setPosition(pos?: number) {
+    //position == progress + 1
+    if (pos == null)
+      pos = this.dsLast + 1
 
-    this.index = this.last
+    //bound limits...
+    if (pos < 1) pos = 1
+    if (pos > this.dsLast + 1) pos = this.dsLast + 1
+
+    if (pos == this.progress + 2)
+      this.setNext()
+    else
+      this.loadDataset(pos - 1) //TODO: optimize when position is valid in the preload array
+  }
+
+  setNext() {
+    this.index++
+    this.progress++
+    this.updateProgress()
+
+    if (this.progress > this.dsLast)
+      this.dsLast = this.progress
+
     if (this.index >= this.images.length)
       this.loadImageRefs()
     else

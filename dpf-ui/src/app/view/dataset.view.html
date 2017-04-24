@@ -31,7 +31,7 @@
           <h5 class="ui header"><div class="content">{{ds.name}}</div></h5>
         </td>
         <td>
-          <div class="ui progress" [attr.data-value]="ds.progress" [attr.data-total]="ds.size">
+          <div class="ui progress" [attr.data-value]="ds.pointers['diagnosis']?.last" [attr.data-total]="ds.size">
             <div class="bar"><div class="progress"></div></div>
           </div>
         </td>

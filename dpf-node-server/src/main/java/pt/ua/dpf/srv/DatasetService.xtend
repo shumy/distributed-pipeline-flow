@@ -4,6 +4,7 @@ import com.avaje.ebean.Ebean
 import java.util.Collections
 import java.util.List
 import java.util.Map
+import pt.ua.ieeta.rpacs.model.Image
 import pt.ua.ieeta.rpacs.model.ext.Annotator
 import pt.ua.ieeta.rpacs.model.ext.Dataset
 import rt.data.Data
@@ -11,7 +12,6 @@ import rt.plugin.service.an.Context
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
 import rt.utils.interceptor.UserInfo
-import pt.ua.ieeta.rpacs.model.Image
 
 @Data
 @Service
@@ -96,10 +96,18 @@ class DatasetService {
 	@Context(name = 'user', type = UserInfo)
 	def List<DatasetInfo> otherDatasets() {
 		val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
+		
+		val sql = '''
+			select distinct dataset_id as id from dataset_annotator
+			where annotator_id = (select id from annotator where name = '«thisAnnotator.name»');
+		'''
+		
+		val query = Ebean.createSqlQuery(sql);
+		
 		val otherDatasets = Dataset.find.query
 			.fetch('pointers')
 			.where
-				.not.contains('annotators.name', thisAnnotator.name)
+				.notIn('id', query.findList.map[ getLong('id') ])
 			.findList
 		
 		return otherDatasets.map[ ds |
