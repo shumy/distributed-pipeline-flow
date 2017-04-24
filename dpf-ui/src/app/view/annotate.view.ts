@@ -151,6 +151,7 @@ export class AnnotateView implements OnInit {
     if (pos < 1) pos = 1
     if (pos > this.dsLast + 1) pos = this.dsLast + 1
 
+    console.log('setPosition: ', pos)
     if (pos == this.progress + 2)
       this.setNext()
     else

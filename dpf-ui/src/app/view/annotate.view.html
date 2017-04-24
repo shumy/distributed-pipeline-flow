@@ -91,8 +91,8 @@
     <div style="display: flex; align-items: center; margin-left: 0.3em;">
       <i class="fast backward large link icon" (click)="setPosition(1)"></i>
       <i class="step backward large link icon" (click)="setPosition(progress)"></i>
-      <div class="ui mini input">
-        <input #pos type="number" style="text-align: right;" (keyup.enter)="setPosition(pos.value)" [value]="progress + 1">
+      <div class="ui mini input" style="width: 6em">
+        <input #pos type="number" [min]="1" [max]="dsLast + 1" style="text-align: right;" (keyup.enter)="setPosition(pos.value)" [value]="progress + 1">
       </div>
       <i class="step forward large link icon" (click)="setPosition(progress + 2)"></i>
       <i class="fast forward large link icon" (click)="setPosition()"></i>
