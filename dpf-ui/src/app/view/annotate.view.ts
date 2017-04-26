@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef }               from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener }               from '@angular/core';
 
 import { ClientRouter }                                       from 'rts-ts-client';
 import { DatasetService, DatasetInfo, PointerInfo, ImageRef } from '../srv/dataset.srv';
@@ -146,6 +146,17 @@ export class AnnotateView implements OnInit {
       }
   }
 
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event) {
+    console.log('onKeyDown: ', event)
+    switch (event.key) {
+      case "ArrowDown": this.setPosition(1); break
+      case "ArrowLeft": this.setPosition(this.progress); break
+      case "ArrowRight": this.setPosition(this.progress + 2); break
+      case "ArrowUp": this.setPosition(); break
+    }
+  }
+
   setPosition(pos?: number) {
     //position == progress + 1
     if (pos == null)
@@ -154,7 +165,7 @@ export class AnnotateView implements OnInit {
     //bound limits...
     if (pos < 1) pos = 1
     if (pos > this.dsLast + 1) pos = this.dsLast + 1
-
+    
     if (pos == this.progress + 2)
       this.setNext()
     else
