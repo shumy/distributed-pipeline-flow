@@ -68,6 +68,7 @@ export class AnnotateView implements OnInit {
   }
 
   loadDataset(progress?: number) {
+    this.image = { id: 0, url: '//:0', loaded: false }
     this.index = -1
     this.images = []
 
@@ -108,6 +109,9 @@ export class AnnotateView implements OnInit {
       this.maglarge = $(".maglarge")
 
       window.onmousemove = e => {
+        if (this.dataset != null && this.progress >= this.dataset.size)
+          return
+
         let mag = {
           width: this.maglarge.width()/2,
           height: this.maglarge.height()/2
@@ -151,7 +155,6 @@ export class AnnotateView implements OnInit {
     if (pos < 1) pos = 1
     if (pos > this.dsLast + 1) pos = this.dsLast + 1
 
-    console.log('setPosition: ', pos)
     if (pos == this.progress + 2)
       this.setNext()
     else
@@ -159,8 +162,6 @@ export class AnnotateView implements OnInit {
   }
 
   setNext() {
-    console.log('setNext: ', this.index, this.progress, this.dataset.size)
-
     this.index++
     this.progress++
     this.updateProgress()
@@ -175,9 +176,8 @@ export class AnnotateView implements OnInit {
   }
 
   loadImageRefs() {
-    console.log('loadImageRefs: ', this.progress, this.dataset.size)
     if (this.progress >= this.dataset.size) {
-      this.image = { id: 0, url: '//:0', loaded: true }
+      this.image = { id: 0, url: 'assets/img/ni.png', loaded: true }
       this.setMagImage()
       return
     }
@@ -190,9 +190,8 @@ export class AnnotateView implements OnInit {
   }
 
   loadInfo() {
-    console.log('loadInfo: ', this.progress, this.dataset.size)
     if (this.progress >= this.dataset.size) {
-      this.image = { id: 0, url: '//:0', loaded: true }
+      this.image = { id: 0, url: 'assets/img/ni.png', loaded: true }
       this.setMagImage()
       return
     }
