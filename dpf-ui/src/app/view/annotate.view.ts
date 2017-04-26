@@ -96,7 +96,7 @@ export class AnnotateView implements OnInit {
     let pBar: any = $('.ui.progress')
     pBar.progress({
       label: 'ratio',
-      text: { ratio: '{value} of {total} Done' },
+      text: { ratio: '{value} of {total}' },
       value: this.progress,
       total: this.dataset.size
     })
@@ -159,6 +159,8 @@ export class AnnotateView implements OnInit {
   }
 
   setNext() {
+    console.log('setNext: ', this.index, this.progress, this.dataset.size)
+
     this.index++
     this.progress++
     this.updateProgress()
@@ -173,23 +175,40 @@ export class AnnotateView implements OnInit {
   }
 
   loadImageRefs() {
-    if (this.progress <= this.dataset.size)
-      this.dsProxy.getImageRefsFromDefault(this.progress, this.PRELOAD_LIMIT).then(refs => {
-        this.images = this.images.concat(refs)
-        this.preloadImages(0, refs)
-        this.loadInfo()
-      }).catch(error => toastr.error(error.message))
+    console.log('loadImageRefs: ', this.progress, this.dataset.size)
+    if (this.progress >= this.dataset.size) {
+      this.image = { id: 0, url: '//:0', loaded: true }
+      this.setMagImage()
+      return
+    }
+    
+    this.dsProxy.getImageRefsFromDefault(this.progress, this.PRELOAD_LIMIT).then(refs => {
+      this.images = this.images.concat(refs)
+      this.preloadImages(0, refs)
+      this.loadInfo()
+    }).catch(error => toastr.error(error.message))
   }
 
   loadInfo() {
+    console.log('loadInfo: ', this.progress, this.dataset.size)
+    if (this.progress >= this.dataset.size) {
+      this.image = { id: 0, url: '//:0', loaded: true }
+      this.setMagImage()
+      return
+    }
+
     this.image = this.images[this.index]
-    this.imageObj = new Image()
-    this.imageObj.src = this.image.url
-    this.maglarge.css("background", "url(" + this.image.url + ") no-repeat")
+    this.setMagImage()
 
     this.annoProxy.readAnnotation(this.image.id)
       .then(ann => this.annotation = ann)
       .catch(error => toastr.error(error.message))
+  }
+
+  setMagImage() {
+    this.imageObj = new Image()
+    this.imageObj.src = this.image.url
+    this.maglarge.css("background", "url(" + this.image.url + ") no-repeat")
   }
 
   preloadImages(idx: number, imgRefs: ImageRef[]) {
@@ -241,6 +260,9 @@ export class AnnotateView implements OnInit {
 
   //FIX: from here it should be replaced by a rule engine?
   isReadyToDone() {
+    if (this.dataset != null && this.progress >= this.dataset.size)
+      return false
+
     let qNode = this.node(this.QUALITY)
     let dNode = this.node(this.DIAGNOSIS)
 
@@ -256,6 +278,9 @@ export class AnnotateView implements OnInit {
   }
 
   getStateClass(state: string, position: string) {
+    if (this.dataset != null && this.progress >= this.dataset.size)
+      return 'basic disabled'
+
     if (
       !this.ctxQuality && ['GOOD', 'PARTIAL', 'BAD', 'MACULA', 'OPTIC_DICS', 'OTHER'].indexOf(position) > -1
       ||
@@ -284,6 +309,7 @@ export class AnnotateView implements OnInit {
       return
     this.ctxQuality = !this.ctxQuality
 
+    this.dsLast = -1
     this.loadDataset()
   }
 
@@ -293,6 +319,7 @@ export class AnnotateView implements OnInit {
       return
     this.ctxDiagnosis = !this.ctxDiagnosis
 
+    this.dsLast = -1
     this.loadDataset()
   }
 

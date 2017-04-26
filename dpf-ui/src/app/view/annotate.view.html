@@ -13,7 +13,7 @@
 
     <div style="padding: 0 0 0 0; flex: 1;">
       <div class="ui inverted segment" style="height: 100%; display:flex; flex-direction: column;background: black;">
-        <h3 class="ui dividing header" [style.background]="ctxQuality ? '#417d44' :  '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em; cursor: pointer;" (click)="toogleQuality()">Image Quality</h3>
+        <h3 class="ui dividing header" [style.background]="ctxQuality ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em; cursor: pointer;" (click)="toogleQuality()">Image Quality</h3>
         <div class="ui inverted form" style="flex: 1">
           <div class="field">
             <label>Image Readability</label>
@@ -33,7 +33,7 @@
           </div>
         </div>
         
-        <h3 class="ui dividing header" [style.background]="ctxDiagnosis ? '#417d44' :  '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em; cursor: pointer;" (click)="toogleDiagnosis()">Diagnosis</h3>
+        <h3 class="ui dividing header" [style.background]="ctxDiagnosis ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em; cursor: pointer;" (click)="toogleDiagnosis()">Diagnosis</h3>
         <div class="ui inverted form" style="flex: 1">
           <div class="field">
             <label>Retinopathy</label>
@@ -83,11 +83,11 @@
   
   <!--Progress and Load-->
   <div class="column" style="margin: auto; padding: 10px 5px 0px 10px; display:flex;">
-    <div class="ui progress" style="flex:auto; height:30px;">
-      <div class="bar" style="height:100%; min-width:6em;">
-        <div class="progress"></div>
-      </div>
+    
+    <div class="ui progress" style="flex: auto;">
+      <div class="bar" style="height:100%; min-width:6em;"><div class="progress"></div></div>
     </div>
+
     <div style="display: flex; align-items: center; margin-left: 0.3em;">
       <i class="fast backward large link icon" (click)="setPosition(1)"></i>
       <i class="step backward large link icon" (click)="setPosition(progress)"></i>
