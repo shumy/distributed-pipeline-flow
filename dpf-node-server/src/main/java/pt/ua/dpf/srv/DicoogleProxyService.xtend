@@ -14,6 +14,25 @@ class DicoogleProxyService {
 	
 	@Public(notif = true)
 	def void dic2png(HttpServerRequest req, String sopInstanceUID) {
+		//needs conversion DICOM to PNG
+		/*req.endHandler[
+			val img = Image.findByUID(sopInstanceUID)
+			if (img === null)
+				throw new ServiceException(404, 'DB Image instance not found! With uid = ' + sopInstanceUID)
+			
+			val path = if (img.uri.startsWith('file:')) img.uri.substring(5) else img.uri
+			println('Path: ' + path)
+			
+			if(!Files.exists(Paths.get(path)))
+				throw new ServiceException(404, 'Image file not found at: ' + path)
+			
+			println('Send: ' + path)
+			req.response => [
+				putHeader('Content-Type', 'application/octet-stream')
+				sendFile(path)
+			]
+		]*/
+		
 		req.endHandler[
 			dicoogle.proxyGET('/dic2png?SOPInstanceUID=' + sopInstanceUID, req.response, true)
 		]
