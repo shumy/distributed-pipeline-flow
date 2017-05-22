@@ -1,7 +1,5 @@
 package pt.ua.dpf
 
-import com.avaje.ebean.EbeanServerFactory
-import com.avaje.ebean.config.ServerConfig
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx
 import java.io.FileInputStream
@@ -9,7 +7,6 @@ import java.util.Properties
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import pt.ua.dpf.dicoogle.DicoogleClient
 import pt.ua.dpf.srv.AnnotationService
-import pt.ua.dpf.srv.ConfigService
 import pt.ua.dpf.srv.DatasetService
 import pt.ua.dpf.srv.DicoogleProxyService
 import pt.ua.dpf.srv.IndexService
@@ -86,14 +83,8 @@ class DpfServerStarter extends AbstractVerticle {
 		val server = new DefaultVertxServer(vertx, wsBaseRoute, webBaseRoute)
 		val dicoogleClient = new DicoogleClient(vertx, propDicoogleHost, propDicooglePort)
 		
-		//config storage and index
-		EbeanServerFactory.create(new ServerConfig => [
-			name = 'db'
-			defaultServer = true
-			DefaultConfig.addClasses(it)
-			
-			loadFromProperties
-		])
+		//config database and docstore
+		DefaultConfig.initServerFromProperties
 		
 		//interceptors
 		val accessControl = AccessControlInterceptor.create
@@ -129,7 +120,6 @@ class DpfServerStarter extends AbstractVerticle {
 		val subsSrv = SubscriberService.create
 		val reposSrv = RepositoryService.B => [ repos = #[ 'srv-points' ] ]
 		val servicePointSrv = ServicePointService.B => [ repo = reposSrv.getRepo('srv-points') ]
-		val confSrv = ConfigService.B => [ configs = #{ 'issuer' -> propOicIssuer, 'audience' -> propOicAudience } ]
 		
 		val indexService = IndexService.B => [ folder = './downloads' isHomeManager = true ]
 		indexService => [
@@ -154,7 +144,6 @@ class DpfServerStarter extends AbstractVerticle {
 			addService('subscriber', subsSrv)
 			addService('repository', reposSrv)
 			addService('service-point', servicePointSrv)
-			addService('configs', confSrv)
 			
 			addService('indexer', indexService, #{ 'all' -> '/srv-home' })
 			addService('folder-manager', folderManagerSrv, #{ 'all' -> '/srv-home' })
@@ -191,7 +180,6 @@ class DpfServerStarter extends AbstractVerticle {
 				route(WebMethod.GET, '/api/specs/:name', 'specs' -> 'srvSpec')
 				
 				get('/users/me', 'users' -> 'me')
-				get('/configs', 'configs', 'configs')
 				
 				get('/file-list/:path', 'folder-manager' -> 'list')
 				get('/file-download/:filename', 'folder-manager', 'download', #['ctx.request', 'filename'])

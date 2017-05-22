@@ -96,10 +96,10 @@ class AnnotationService {
 				val nodeType = thisNodeTypes.get(nType)
 				
 				if (!nodeInfo.fields.empty) {
-					val node = if (nodeInfo.id !== null) Node.find.byId(nodeInfo.id) else new Node => [
+					val node = if (nodeInfo.id !== null) Node.find.byId(nodeInfo.id) else (new Node => [
 						type = nodeType
 						annotation = thisAnnotation
-					]
+					])
 					
 					//new data...
 					node.fields = nodeInfo.fields
@@ -119,6 +119,8 @@ class AnnotationService {
 				}
 			]
 		]
+		
+		Ebean.defaultServer.docStore.indexByQuery(Image.find.query.setId(thisImage.id))
 	}
 }
 
