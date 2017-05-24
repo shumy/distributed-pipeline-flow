@@ -4,6 +4,8 @@ import { ClientRouter }                                       from 'rts-ts-clien
 import { DatasetService, DatasetInfo, PointerInfo, ImageRef } from '../srv/dataset.srv';
 import { AnnotationService, AnnotationInfo, NodeInfo }        from '../srv/annotation.srv';
 
+declare var Raphael: any
+
 @Component({
   selector: 'annotate-view',
   templateUrl: 'annotate.view.html'
@@ -14,6 +16,7 @@ export class AnnotateView implements OnInit {
 
   readonly QUALITY        = 'quality'
   readonly DIAGNOSIS      = 'diagnosis'
+  readonly LESIONS        = 'lesions'
 
   readonly PRELOAD_LIMIT  = 5 //limit the preload of images and AnnotationInfo
   readonly BACK_LIMIT     = 5 //limit the number of "Recently Annotated" image list
@@ -21,6 +24,7 @@ export class AnnotateView implements OnInit {
   //active contexts
   ctxQuality = true
   ctxDiagnosis = true
+  ctxLesions = true
 
   dataset: DatasetInfo
   dsLast: number = -1
@@ -39,11 +43,26 @@ export class AnnotateView implements OnInit {
   maglarge: JQuery
   imageObj = new Image()
 
-  /*get start() {
-    let _start = this.last - this.BACK_LIMIT
-    if (_start < 0) _start = 0
-    return _start
-  }*/
+  readonly geoAttributes = {
+    MA: { color: "#2185D0", width: 2},  //MicroAneurisms (elipse)
+    HEM: { color: "#00B5AD", width: 2}, //Hemorhages (circle)
+    HE: { color: "#21BA45", width: 2},  //Hard Exudates (path)
+    SE: { color: "#B5CC18", width: 2},  //Soft Exudates (path)
+    NV: { color: "#767676", width: 2}   //Neovascularization (pencil)
+  }
+
+  tool = 'MAG' // (MAG, ERASER, MA, HEM, HE, SE, NV)
+  toolActive = false
+  toolData: any
+  toolGeo: any
+
+  //geometry
+  lastKey = 0
+  geoKeyOrder = []
+  geometry = {}
+
+  paper: any
+  box = { top: 0, left: 0, width: 0, height: 0 }
 
   constructor(private router: ClientRouter) {
     this.dsProxy = router.createProxy('ds')
@@ -51,8 +70,12 @@ export class AnnotateView implements OnInit {
   }
 
   ngOnInit() {
+    this.magnifier = $(".magnify")
+    this.magsmall = $(".magsmall")
+    this.maglarge = $(".maglarge")
+
+    this.tools()
     this.loadDataset()
-    this.magnify()
   }
 
   getProgressFromContext() {
@@ -79,6 +102,9 @@ export class AnnotateView implements OnInit {
 
       if (!ds.pointers[this.DIAGNOSIS])
           ds.pointers[this.DIAGNOSIS] = { type: this.DIAGNOSIS, last: -1, next: 0 }
+      
+      if (!ds.pointers[this.LESIONS])
+          ds.pointers[this.LESIONS] = { type: this.LESIONS, last: -1, next: 0 }
       //END - FIX: when schema is available on the server, this should be pre-assigned
 
       this.dataset = ds
@@ -103,47 +129,291 @@ export class AnnotateView implements OnInit {
     })
   }
 
-  magnify() {
-      this.magnifier = $(".magnify")
-      this.magsmall = $(".magsmall")
-      this.maglarge = $(".maglarge")
+  adjustLayout() {
+    this.box = {
+      top: this.magsmall.offset().top,
+      left: this.magsmall.offset().left,
+      width: this.magsmall.width(),
+      height: this.magsmall.height()
+    }
 
-      window.onmousemove = e => {
-        if (this.dataset != null && this.progress >= this.dataset.size)
-          return
+    let RaphaelDiv = $("#raphael")
+    RaphaelDiv.css({
+      cursor: "crosshair",
+      left: this.box.left,
+      top: this.box.top,
+      width: this.box.width,
+      height: this.box.height,
+      zIndex: 100
+    })
 
-        let mag = {
-          width: this.maglarge.width()/2,
-          height: this.maglarge.height()/2
-        }
+    this.paper.setSize('100%', '100%')
+    this.redraw()
+  }
 
-        let box = {
-          top: this.magsmall.offset().top,
-          left: this.magsmall.offset().left,
-          width: this.magsmall.width(),
-          height: this.magsmall.height()
-        }
+  isMouseInBox(mx: number, my: number) {
+    return mx < (this.box.width + this.box.left) && my < (this.box.height + this.box.top) && mx > this.box.left && my > this.box.top
+  }
 
-        let mx = e.pageX
-        let my = e.pageY
-        
-        if(mx < (box.width + box.left) && my < (box.height + box.top) && mx > box.left && my > box.top) {
-          this.maglarge.fadeIn(10)
-        } else {
-          this.maglarge.fadeOut(10)
-        }
-        
-        if(this.maglarge.is(":visible")) {
-          let rx = -1 * Math.round((mx - box.left)/box.width * this.imageObj.width - mag.width)
-          let ry = -1 * Math.round((my - box.top)/box.height * this.imageObj.height - mag.height)
-          let bgp = rx + "px " + ry + "px"
+  mouseToBoxPosition(mx: number, my: number) {
+    return { x: mx - this.box.left, y: my - this.box.top }
+  }
+
+  tools() {
+    this.paper = Raphael('raphael', 0, 0)
+    window.onresize = _ => this.adjustLayout()
+
+    window.onmousedown = e => {
+      let mx = e.pageX
+      let my = e.pageY
+      if (!this.isMouseInBox(mx, my)) {
+        if (this.toolActive && (this.tool == 'HE' || this.tool == 'SE') && this.toolData.length > 1)
+          this.pushGeometry({ type: this.tool, data: this.toolData})
+
+        this.toolActive = false
+        return
+      }
+
+      let pos = this.mouseToBoxPosition(mx, my)
+
+      if (e.button == 0) {
+        if (this.tool == 'MA') {
+          this.toolData = { x: pos.x, y: pos.y, rx: 0, ry: 0 }
+          this.toolGeo = this.paper.ellipse(this.toolData.x, this.toolData.y, 0, 0)
+        } else if (this.tool == 'HEM') {
+          this.toolData = { x: pos.x, y: pos.y, rx: 0, ry: 0 }
+          this.toolGeo = this.paper.ellipse(this.toolData.x, this.toolData.y, 0, 0)
+        } else if(this.tool == 'HE' || this.tool == 'SE') {
+          if (!this.toolActive)
+            this.toolData = []
           
-          let px = mx - mag.width
-          let py = my - mag.height
-          
-          this.maglarge.css({left: px, top: py, backgroundPosition: bgp, zIndex: 100})
+          this.toolData.push(pos)
+          this.toolGeo = this.paper.path(this.toolBuildPath(this.toolData, 1, 1))
+        } else if(this.tool == 'NV') {
+          if (!this.toolActive)
+            this.toolData = []
+
+          this.toolData.push(pos)
+          this.toolGeo = this.paper.path(this.toolBuildPath(this.toolData, 1, 1))
+        }
+
+        this.toolActive = true
+      } else if (this.toolActive && e.button == 1 && (this.tool == 'HE' || this.tool == 'SE')) {
+        this.toolActive = false
+        if (this.toolData.length > 1)
+          this.pushGeometry({ type: this.tool, data: this.toolData})
+      }
+    }
+
+    window.onmouseup = e => {
+      let pos = this.mouseToBoxPosition(e.pageX, e.pageY)
+
+      if (this.toolActive) {
+        if (this.tool == 'MA') {
+          this.toolActive = false
+          this.toolData.rx = Math.abs(pos.x - this.toolData.x)
+          this.toolData.ry = Math.abs(pos.y - this.toolData.y)
+          this.pushGeometry({ type: "MA", data: this.toolData})
+        } else if (this.tool == 'HEM') {
+          this.toolActive = false
+          let r = Math.sqrt(Math.pow(pos.x - this.toolData.x, 2) + Math.pow(pos.y - this.toolData.y, 2))
+          this.toolData.rx = r
+          this.toolData.ry = r
+          this.pushGeometry({ type: "HEM", data: this.toolData})
+        } else if(this.tool == 'NV') {
+          this.toolActive = false
+          if (this.toolData.length > 1)
+            this.pushGeometry({ type: "NV", data: this.toolData})
+        } else if(this.tool == 'ERASER') {
+          this.toolActive = false
         }
       }
+    }
+
+    window.onmousemove = e => {
+      let pos = this.mouseToBoxPosition(e.pageX, e.pageY)
+
+      if (this.tool == 'MAG')
+        this.magnify(e.pageX, e.pageY)
+
+      if (this.toolActive) {
+        if (this.tool == 'MA') {
+          this.toolData.rx = Math.abs(pos.x - this.toolData.x)
+          this.toolData.ry = Math.abs(pos.y - this.toolData.y)
+          this.toolGeo.attr("rx", this.toolData.rx)
+          this.toolGeo.attr("ry", this.toolData.ry)
+        } else if (this.tool == 'HEM') {
+          let r = Math.sqrt(Math.pow(pos.x - this.toolData.x, 2) + Math.pow(pos.y - this.toolData.y, 2))
+          this.toolGeo.attr("rx", r)
+          this.toolGeo.attr("ry", r)
+        } else if(this.tool == 'HE' || this.tool == 'SE') {
+          let fig = this.toolBuildPath(this.toolData, 1, 1) + "L" + pos.x + " " + pos.y
+          this.toolGeo.attr("path", fig)
+        } else if(this.tool == 'NV') {
+          let fig = this.toolBuildPath(this.toolData, 1, 1) + "L" + pos.x + " " + pos.y
+          this.toolGeo.attr("path", fig)
+
+          let index = this.toolData.length - 1
+          let dist = Math.pow(pos.x - this.toolData[index].x, 2) + Math.pow(pos.y - this.toolData[index].y, 2)
+          if (dist > 100)
+            this.toolData.push(pos)
+        }
+      }
+    }
+  }
+
+  toolBuildPath(data: any[], xScale: number, yScale: number, close = false) {
+    let path = "M" + data[0].x*xScale + " " + data[0].y*yScale
+    for (var i = 1; i < data.length; i++)
+      path += "L" + data[i].x*xScale + " " + data[i].y*yScale
+    
+    if (close)
+      path += "Z"
+
+    return path
+  }
+
+  pushGeometry(geo: any) {
+    geo.scale = { width: this.box.width, height: this.box.height }
+    this.lastKey++
+    let key = this.lastKey + ""
+
+    this.geoKeyOrder.push(key)
+    this.geometry[key] = geo
+    
+    this.redraw()
+  }
+
+  lesionsToGeometry(lNode: any) {
+    this.lastKey = 0
+    this.geoKeyOrder = []
+    this.geometry = {}
+
+    if (lNode.lesions != null)
+      lNode.lesions.forEach(lesion => {
+        this.lastKey++
+        let key = this.lastKey + ""
+        this.geoKeyOrder.push(key)
+        this.geometry[key] = lesion
+      })
+  }
+
+  geometryToLesions() {
+    let lesions = []
+    this.geoKeyOrder.forEach(key => lesions.push(this.geometry[key]))
+    return lesions
+  }
+
+  magnify(mx: number, my: number) {
+    if (this.dataset != null && this.progress >= this.dataset.size)
+      return
+
+    let mag = {
+      width: this.maglarge.width()/2,
+      height: this.maglarge.height()/2
+    }
+
+    if(this.isMouseInBox(mx, my))
+      this.maglarge.fadeIn(10)
+    else
+      this.maglarge.fadeOut(10)
+    
+    if(this.maglarge.is(":visible")) {
+      let rx = -1 * Math.round((mx - this.box.left)/this.box.width * this.imageObj.width - mag.width)
+      let ry = -1 * Math.round((my - this.box.top)/this.box.height * this.imageObj.height - mag.height)
+      let bgp = rx + "px " + ry + "px"
+      
+      let px = mx - mag.width
+      let py = my - mag.height
+      
+      this.maglarge.css({left: px, top: py, backgroundPosition: bgp, zIndex: 200})
+    }
+  }
+
+  eraseLast() {
+    let keyIndex = this.geoKeyOrder.length - 1
+    if (keyIndex > -1) {
+      let key = this.geoKeyOrder[keyIndex]
+      this.geoKeyOrder.splice(keyIndex, 1)
+      delete this.geometry[key]
+      this.redraw()
+    }
+  }
+
+  eraseAll() {
+    this.geoKeyOrder = []
+    this.geometry = {}
+    this.redraw()
+  }
+
+  erase(key: string) {
+    let keyIndex = this.geoKeyOrder.indexOf(key)
+    if (keyIndex > -1) {
+      this.geoKeyOrder.splice(keyIndex, 1)
+      delete this.geometry[key]
+      this.redraw()
+    }
+  }
+
+  redraw() {
+    this.paper.clear()
+
+    // for debug...
+    /*let circle1 = this.paper.circle(0, 0, 10)
+    circle1.attr("fill", "#f00")
+
+    let circle2 = this.paper.circle(this.box.width, 0, 10)
+    circle2.attr("fill", "#f00")
+
+    let circle3 = this.paper.circle(0, this.box.height, 10)
+    circle3.attr("fill", "#f00")
+
+    let circle4 = this.paper.circle(this.box.width, this.box.height, 10)
+    circle4.attr("fill", "#f00")
+    */
+
+    console.log('GEO-KEY: ', this.geoKeyOrder)
+    console.log('GEO: ', this.geometry)
+
+    //draw geometry
+    Object.keys(this.geometry).forEach(key => {
+      let geo = this.geometry[key]
+      let xScale = this.box.width/geo.scale.width
+      let yScale = this.box.height/geo.scale.height
+      
+      let geoElement: any
+      if (geo.type == "MA") {  
+        geoElement = this.paper.ellipse(geo.data.x*xScale, geo.data.y*yScale, geo.data.rx*xScale, geo.data.ry*yScale)
+      } else if (geo.type == "HEM") {
+        geoElement = this.paper.ellipse(geo.data.x*xScale, geo.data.y*yScale, geo.data.rx*xScale, geo.data.ry*yScale)
+      } else if(geo.type == 'HE') {
+        let path = this.toolBuildPath(geo.data, xScale, yScale, true)
+        geoElement = this.paper.path(path)
+      } else if(geo.type == 'SE') {
+        let path = this.toolBuildPath(geo.data, xScale, yScale, true)
+        geoElement = this.paper.path(path)
+      } else if(geo.type == 'NV') {
+        let path = this.toolBuildPath(geo.data, xScale, yScale)
+        geoElement = this.paper.path(path)
+      }
+
+      if (geoElement != null) {
+        geoElement.attr("stroke", this.geoAttributes[geo.type].color)
+        geoElement.attr("stroke-width", this.geoAttributes[geo.type].width)
+
+        geoElement.mouseover(_ => {
+          if (this.tool == 'ERASER' && this.toolActive)
+            this.erase(key)
+          else
+            geoElement.attr("stroke", "#ffffff")
+        })
+        geoElement.mouseout(_ => geoElement.attr("stroke", this.geoAttributes[geo.type].color))
+        geoElement.mouseup(_ => {
+          if (this.tool == 'ERASER' && this.toolActive)
+            this.erase(key)
+        })
+      }
+    })
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -210,13 +480,16 @@ export class AnnotateView implements OnInit {
     this.image = this.images[this.index]
     this.setMagImage()
 
-    this.annoProxy.readAnnotation(this.image.id)
-      .then(ann => this.annotation = ann)
-      .catch(error => toastr.error(error.message))
+    this.annoProxy.readAnnotation(this.image.id).then(ann => {
+      this.annotation = ann
+      this.lesionsToGeometry(this.node(this.LESIONS))
+      this.redraw()
+    }).catch(error => toastr.error(error.message))
   }
 
   setMagImage() {
     this.imageObj = new Image()
+    this.imageObj.onload = _ => this.adjustLayout()
     this.imageObj.src = this.image.url
     this.maglarge.css("background", "url(" + this.image.url + ") no-repeat")
   }
@@ -232,24 +505,24 @@ export class AnnotateView implements OnInit {
     }
   }
 
-  getOrCreateNode(nType: string) {
-    let tNode = this.annotation.nodes[nType]
+  getOrCreateNode(ann: AnnotationInfo, nType: string) {
+    let tNode = ann.nodes[nType]
     if (!tNode) {
       tNode = { type: nType, fields: {} }
-      this.annotation.nodes[nType] = tNode
+      ann.nodes[nType] = tNode
     }
 
     return tNode
   }
 
   node(nType: string) {
-    return this.getOrCreateNode(nType).fields
+    return this.getOrCreateNode(this.annotation, nType).fields
   }
 
   done() {
     if (this.isReadyToDone()) {
       if (this.ctxDiagnosis)
-        this.getOrCreateNode(this.DIAGNOSIS).implicit = true
+        this.getOrCreateNode(this.annotation, this.DIAGNOSIS).implicit = true
 
       //BEGIN - save only the context...
       let annToSave = JSON.parse(JSON.stringify(this.annotation)) as AnnotationInfo
@@ -259,6 +532,11 @@ export class AnnotateView implements OnInit {
       
       if (!this.ctxDiagnosis)
         delete annToSave.nodes[this.DIAGNOSIS]
+      
+      if (this.ctxDiagnosis) {
+        let lNode = this.getOrCreateNode(annToSave, this.LESIONS).fields
+        lNode.lesions = this.geometryToLesions()
+      }
       //END - save only the context...
 
       this.annoProxy.saveAnnotation(annToSave).then(_ => {
@@ -331,6 +609,10 @@ export class AnnotateView implements OnInit {
 
     this.dsLast = -1
     this.loadDataset()
+  }
+
+  toogleLesions() {
+
   }
 
   setQuality(quality: string) {

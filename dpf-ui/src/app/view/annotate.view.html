@@ -5,15 +5,19 @@
     </div>
   </div>
 
-  <div style="display: flex; height: calc(100vh - 105px);" (keyup.enter)="done()"> <!-- calc(100vh - 165px) when using Recently Annotated -->
+  <div style="display: flex; height: calc(100vh - 105px);" (keyup.enter)="done()">
     <div class="magnify">
       <div class="maglarge"></div>
       <img class="ui magsmall image" [src]="image.url"/>
+      <div id="raphael"></div>
     </div>
 
     <div style="padding: 0 0 0 0; flex: 1;">
       <div class="ui inverted segment" style="height: 100%; display:flex; flex-direction: column;background: black;">
-        <h3 class="ui dividing header" [style.background]="ctxQuality ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em; cursor: pointer;" (click)="toogleQuality()">Image Quality</h3>
+        <h3 class="ui dividing header" [style.background]="ctxQuality ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em; cursor: pointer;" (click)="toogleQuality()">
+          <!--<i class="file image outline large icon"></i>-->
+          Image Quality
+        </h3>
         <div class="ui inverted form" style="flex: 1">
           <div class="field">
             <label>Image Readability</label>
@@ -62,24 +66,43 @@
           </div>
         </div>
 
+        <h3 class="ui dividing header" [style.background]="ctxLesions ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em; cursor: pointer;" (click)="toogleLesions()">Lesions</h3>
+        <div class="ui inverted form" style="flex: 1">
+          <div class="field">
+            <!--<label>Tools</label>-->
+            <div class="ui small buttons">
+              <button class="ui blue {{ tool == 'MA' ? '' : 'basic' }} button"  (click)="tool = 'MA'">MA</button>
+              <button class="ui teal {{ tool == 'HEM' ? '' : 'basic' }} button" (click)="tool = 'HEM'">HEM</button>
+              <button class="ui green {{ tool == 'HE' ? '' : 'basic' }} button"  (click)="tool = 'HE'">HE</button>
+              <button class="ui olive {{ tool == 'SE' ? '' : 'basic' }} button"  (click)="tool = 'SE'">SE</button>
+              <button class="ui grey {{ tool == 'NV' ? '' : 'basic' }} button"  (click)="tool = 'NV'">NV</button>
+            </div>
+          </div>
+          <div class="field">
+            <!--<label>Removers</label>-->
+            <div class="ui small buttons">
+              <button class="ui icon grey basic button" (click)="eraseLast()">
+                <i class="backward large icon"></i>
+              </button>
+              <button class="ui icon grey basic button" (click)="eraseAll()">
+                <i class="trash large icon"></i>
+              </button>
+              <button class="ui icon grey {{ tool == 'ERASER' ? '' : 'basic' }} button" (click)="tool = 'ERASER'">
+                <i class="erase large icon"></i>
+              </button>
+              <button class="ui icon grey {{ tool == 'MAG' ? '' : 'basic' }} button" (click)="tool = 'MAG'">
+                <i class="zoom large icon"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="ui {{ isReadyToDone() ? '' : 'basic disabled' }} small button" style="margin-top: 2em;" (click)="done()">
           <div class="visible content">Save</div>
         </div>
       </div>
     </div>
   </div>
-
-  <!--Recently Annotated-->
-  <!--div class="ui eye-stream main tiny menu" style="background-color:black; height:10%; max-height:60px; margin:0px;">
-    <div class="menu menu-eye" style="margin-right:0!important;overflow: hidden; width:100%">
-      <div class="item item-menu" style="padding: 0; width: 100%;">
-        <div class="ui images" style="height: 100%;">
-          <img *ngFor="let img of images.slice(start, last)" class="ui image item-image" [src]="img.url" (click)="select(img)"
-            style="cursor: pointer; border: 0px dotted #d4d4d5;" [style.border-width]="img == image ? '1px' : '0px'">
-        </div>
-      </div>
-    </div>
-  </div-->
   
   <!--Progress and Load-->
   <div class="column" style="margin: auto; padding: 10px 5px 0px 10px; display:flex;">

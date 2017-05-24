@@ -139,3 +139,10 @@ div {
   margin-right: auto;
   max-height: 100%;
 }
+
+#raphael {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 50;
+}
