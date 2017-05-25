@@ -51,10 +51,15 @@ export class AnnotateView implements OnInit {
     NV: { color: "#767676", width: 2}   //Neovascularization (pencil)
   }
 
-  tool = 'MAG' // (MAG, ERASER, MA, HEM, HE, SE, NV)
+  lastTool: string
+  tool = 'MAG' // (MAG, ERASER, MOVE, MA, HEM, HE, SE, NV)
   toolActive = false
   toolData: any
   toolGeo: any
+
+  //move tool
+  selectedGeoKey: string
+  initPos: any
 
   //geometry
   lastKey = 0
@@ -64,7 +69,7 @@ export class AnnotateView implements OnInit {
   paper: any
   box = { top: 0, left: 0, width: 0, height: 0 }
 
-  constructor(private router: ClientRouter) {
+  constructor(private router: ClientRouter, private hasChange: ChangeDetectorRef) {
     this.dsProxy = router.createProxy('ds')
     this.annoProxy = router.createProxy('anno')
   }
@@ -159,16 +164,25 @@ export class AnnotateView implements OnInit {
     return { x: mx - this.box.left, y: my - this.box.top }
   }
 
+  selectTool(tool: string) {
+    this.tool = tool
+    this.redraw()
+  }
+
   tools() {
     this.paper = Raphael('raphael', 0, 0)
     window.onresize = _ => this.adjustLayout()
 
     window.onmousedown = e => {
+      if (this.tool == 'MAG') return
+
       let mx = e.pageX
       let my = e.pageY
       if (!this.isMouseInBox(mx, my)) {
-        if (this.toolActive && (this.tool == 'HE' || this.tool == 'SE') && this.toolData.length > 1)
+        if (this.toolActive && (this.tool == 'HE' || this.tool == 'SE') && this.toolData.length > 2)
           this.pushGeometry({ type: this.tool, data: this.toolData})
+        else
+          this.redraw()
 
         this.toolActive = false
         return
@@ -177,55 +191,77 @@ export class AnnotateView implements OnInit {
       let pos = this.mouseToBoxPosition(mx, my)
 
       if (e.button == 0) {
-        if (this.tool == 'MA') {
+        this.toolGeo = null
+        if (this.tool == 'MA' || this.tool == 'HEM') {
           this.toolData = { x: pos.x, y: pos.y, rx: 0, ry: 0 }
           this.toolGeo = this.paper.ellipse(this.toolData.x, this.toolData.y, 0, 0)
-        } else if (this.tool == 'HEM') {
-          this.toolData = { x: pos.x, y: pos.y, rx: 0, ry: 0 }
-          this.toolGeo = this.paper.ellipse(this.toolData.x, this.toolData.y, 0, 0)
-        } else if(this.tool == 'HE' || this.tool == 'SE') {
+        } else if(this.tool == 'HE' || this.tool == 'SE' || this.tool == 'NV') {
           if (!this.toolActive)
             this.toolData = []
           
           this.toolData.push(pos)
           this.toolGeo = this.paper.path(this.toolBuildPath(this.toolData, 1, 1))
-        } else if(this.tool == 'NV') {
-          if (!this.toolActive)
-            this.toolData = []
-
-          this.toolData.push(pos)
-          this.toolGeo = this.paper.path(this.toolBuildPath(this.toolData, 1, 1))
+        } else if(this.tool == 'MOVE') {
+          this.initPos = pos
+          this.toolActive = true
+          this.setToLastGeometryIfNotSelected()
+          this.hasChange.detectChanges()
         }
 
         this.toolActive = true
-      } else if (this.toolActive && e.button == 1 && (this.tool == 'HE' || this.tool == 'SE')) {
-        this.toolActive = false
-        if (this.toolData.length > 1)
-          this.pushGeometry({ type: this.tool, data: this.toolData})
+        if (this.toolGeo != null)
+          this.toolGeo.attr("stroke", this.geoAttributes[this.tool].color)
+
+      } else if (e.button == 1) {
+        if (this.toolActive && (this.tool == 'HE' || this.tool == 'SE')) {
+          this.toolActive = false
+          if (this.toolData.length > 2)
+            this.pushGeometry({ type: this.tool, data: this.toolData})
+          else
+            this.redraw()
+        } else {
+          this.initPos = pos
+          this.lastTool = this.tool
+          this.toolActive = true
+          this.setToLastGeometryIfNotSelected()
+          this.selectTool('MOVE')
+          this.hasChange.detectChanges()
+        }
       }
     }
 
     window.onmouseup = e => {
+      if (this.tool == 'MAG') return
       let pos = this.mouseToBoxPosition(e.pageX, e.pageY)
 
       if (this.toolActive) {
-        if (this.tool == 'MA') {
+        if (this.tool != 'HE' && this.tool != 'SE')
           this.toolActive = false
+
+        if (this.tool == 'MA') {
           this.toolData.rx = Math.abs(pos.x - this.toolData.x)
           this.toolData.ry = Math.abs(pos.y - this.toolData.y)
-          this.pushGeometry({ type: "MA", data: this.toolData})
+          if (this.toolData.rx > 5 && this.toolData.ry > 5)
+            this.pushGeometry({ type: "MA", data: this.toolData})
+          else
+            this.redraw()
         } else if (this.tool == 'HEM') {
-          this.toolActive = false
           let r = Math.sqrt(Math.pow(pos.x - this.toolData.x, 2) + Math.pow(pos.y - this.toolData.y, 2))
           this.toolData.rx = r
           this.toolData.ry = r
-          this.pushGeometry({ type: "HEM", data: this.toolData})
+
+          if (r > 5)
+            this.pushGeometry({ type: "HEM", data: this.toolData})
+          else
+            this.redraw()
         } else if(this.tool == 'NV') {
-          this.toolActive = false
-          if (this.toolData.length > 1)
+          if (this.toolData.length > 2)
             this.pushGeometry({ type: "NV", data: this.toolData})
-        } else if(this.tool == 'ERASER') {
-          this.toolActive = false
+          else
+            this.redraw()
+        } else if (this.tool == 'MOVE') {
+          this.selectTool(this.lastTool)
+          this.hasChange.detectChanges()
         }
       }
     }
@@ -233,9 +269,11 @@ export class AnnotateView implements OnInit {
     window.onmousemove = e => {
       let pos = this.mouseToBoxPosition(e.pageX, e.pageY)
 
-      if (this.tool == 'MAG')
+      if (this.tool == 'MAG') {
         this.magnify(e.pageX, e.pageY)
-
+        return
+      }
+      
       if (this.toolActive) {
         if (this.tool == 'MA') {
           this.toolData.rx = Math.abs(pos.x - this.toolData.x)
@@ -257,6 +295,9 @@ export class AnnotateView implements OnInit {
           let dist = Math.pow(pos.x - this.toolData[index].x, 2) + Math.pow(pos.y - this.toolData[index].y, 2)
           if (dist > 100)
             this.toolData.push(pos)
+        } else if (this.tool == 'MOVE') {
+          this.moveGeometry(pos.x - this.initPos.x, pos.y - this.initPos.y)
+          this.initPos = pos
         }
       }
     }
@@ -273,6 +314,33 @@ export class AnnotateView implements OnInit {
     return path
   }
 
+  setToLastGeometryIfNotSelected() {
+    if (this.selectedGeoKey == null) {
+      let index = this.geoKeyOrder.length - 1
+      if (index > -1)
+        this.selectedGeoKey = this.geoKeyOrder[index]
+    }
+  }
+
+  moveGeometry(xDelta: number, yDelta: number) {
+    let selectedGeo = this.geometry[this.selectedGeoKey]
+    if (selectedGeo != null) {
+      let type = selectedGeo.type
+      let geo = selectedGeo.data
+      if (type == "MA" || type == "HEM") {
+        geo.x += xDelta
+        geo.y += yDelta
+      } else if (type == 'HE' || type == 'SE' || type == 'NV') {
+        geo.forEach(dPos => {
+          dPos.x += xDelta
+          dPos.y += yDelta
+        })
+      }
+
+      this.redraw()
+    }
+  }
+
   pushGeometry(geo: any) {
     geo.scale = { width: this.box.width, height: this.box.height }
     this.lastKey++
@@ -281,6 +349,7 @@ export class AnnotateView implements OnInit {
     this.geoKeyOrder.push(key)
     this.geometry[key] = geo
     
+    this.selectedGeoKey = key
     this.redraw()
   }
 
@@ -334,13 +403,12 @@ export class AnnotateView implements OnInit {
     let keyIndex = this.geoKeyOrder.length - 1
     if (keyIndex > -1) {
       let key = this.geoKeyOrder[keyIndex]
-      this.geoKeyOrder.splice(keyIndex, 1)
-      delete this.geometry[key]
-      this.redraw()
+      this.erase(key)
     }
   }
 
   eraseAll() {
+    this.selectedGeoKey = null
     this.geoKeyOrder = []
     this.geometry = {}
     this.redraw()
@@ -351,6 +419,12 @@ export class AnnotateView implements OnInit {
     if (keyIndex > -1) {
       this.geoKeyOrder.splice(keyIndex, 1)
       delete this.geometry[key]
+
+      if (key == this.selectedGeoKey) {
+        this.selectedGeoKey = null
+        this.setToLastGeometryIfNotSelected()
+      }
+
       this.redraw()
     }
   }
@@ -372,8 +446,8 @@ export class AnnotateView implements OnInit {
     circle4.attr("fill", "#f00")
     */
 
-    console.log('GEO-KEY: ', this.geoKeyOrder)
-    console.log('GEO: ', this.geometry)
+    //console.log('GEO-KEY: ', this.geoKeyOrder)
+    //console.log('GEO: ', this.geometry)
 
     //draw geometry
     Object.keys(this.geometry).forEach(key => {
@@ -382,14 +456,9 @@ export class AnnotateView implements OnInit {
       let yScale = this.box.height/geo.scale.height
       
       let geoElement: any
-      if (geo.type == "MA") {  
+      if (geo.type == "MA" || geo.type == "HEM") {  
         geoElement = this.paper.ellipse(geo.data.x*xScale, geo.data.y*yScale, geo.data.rx*xScale, geo.data.ry*yScale)
-      } else if (geo.type == "HEM") {
-        geoElement = this.paper.ellipse(geo.data.x*xScale, geo.data.y*yScale, geo.data.rx*xScale, geo.data.ry*yScale)
-      } else if(geo.type == 'HE') {
-        let path = this.toolBuildPath(geo.data, xScale, yScale, true)
-        geoElement = this.paper.path(path)
-      } else if(geo.type == 'SE') {
+      } else if(geo.type == 'HE' || geo.type == 'SE') {
         let path = this.toolBuildPath(geo.data, xScale, yScale, true)
         geoElement = this.paper.path(path)
       } else if(geo.type == 'NV') {
@@ -399,18 +468,19 @@ export class AnnotateView implements OnInit {
 
       if (geoElement != null) {
         geoElement.attr("stroke", this.geoAttributes[geo.type].color)
-        geoElement.attr("stroke-width", this.geoAttributes[geo.type].width)
+
+        if (this.tool == 'MOVE' && key == this.selectedGeoKey)
+          geoElement.attr("stroke", "#ffffff")
+        else
+          geoElement.attr("stroke-width", this.geoAttributes[geo.type].width)
 
         geoElement.mouseover(_ => {
           if (this.tool == 'ERASER' && this.toolActive)
             this.erase(key)
-          else
-            geoElement.attr("stroke", "#ffffff")
-        })
-        geoElement.mouseout(_ => geoElement.attr("stroke", this.geoAttributes[geo.type].color))
-        geoElement.mouseup(_ => {
-          if (this.tool == 'ERASER' && this.toolActive)
-            this.erase(key)
+          else if (this.tool == 'MOVE' && !this.toolActive) {
+            this.selectedGeoKey = key
+            this.redraw()
+          }
         })
       }
     })
@@ -483,6 +553,8 @@ export class AnnotateView implements OnInit {
     this.annoProxy.readAnnotation(this.image.id).then(ann => {
       this.annotation = ann
       this.lesionsToGeometry(this.node(this.LESIONS))
+      this.selectedGeoKey = null
+      this.setToLastGeometryIfNotSelected()
       this.redraw()
     }).catch(error => toastr.error(error.message))
   }
