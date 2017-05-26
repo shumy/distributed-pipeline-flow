@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener }               from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { ActivatedRoute }                                     from '@angular/router';
 
 import { ClientRouter }                                       from 'rts-ts-client';
 import { DatasetService, DatasetInfo, PointerInfo, ImageRef } from '../srv/dataset.srv';
@@ -22,9 +23,9 @@ export class AnnotateView implements OnInit {
   readonly BACK_LIMIT     = 5 //limit the number of "Recently Annotated" image list
 
   //active contexts
-  ctxQuality = true
-  ctxDiagnosis = true
-  ctxLesions = true
+  ctxQuality: boolean
+  ctxDiagnosis: boolean
+  ctxLesions: boolean
 
   dataset: DatasetInfo
   dsLast: number = -1
@@ -69,7 +70,13 @@ export class AnnotateView implements OnInit {
   paper: any
   box = { top: 0, left: 0, width: 0, height: 0 }
 
-  constructor(private router: ClientRouter, private hasChange: ChangeDetectorRef) {
+  constructor(private router: ClientRouter, private route: ActivatedRoute, private hasChange: ChangeDetectorRef) {
+    let params = this.route.snapshot.queryParams
+    
+    this.ctxLesions = params['lesions'] == 'true' ? true : false
+    this.ctxQuality = !this.ctxLesions
+    this.ctxDiagnosis = !this.ctxLesions
+
     this.dsProxy = router.createProxy('ds')
     this.annoProxy = router.createProxy('anno')
   }
@@ -135,6 +142,8 @@ export class AnnotateView implements OnInit {
   }
 
   adjustLayout() {
+    if (!this.ctxLesions) return
+
     this.box = {
       top: this.magsmall.offset().top,
       left: this.magsmall.offset().left,
@@ -171,9 +180,13 @@ export class AnnotateView implements OnInit {
 
   tools() {
     this.paper = Raphael('raphael', 0, 0)
-    window.onresize = _ => this.adjustLayout()
+    window.onresize = _ => {
+      if (!this.ctxLesions) return
+      this.adjustLayout()
+    }
 
     window.onmousedown = e => {
+      if (!this.ctxLesions) return
       if (this.tool == 'MAG') return
 
       let mx = e.pageX
@@ -203,6 +216,7 @@ export class AnnotateView implements OnInit {
           this.toolGeo = this.paper.path(this.toolBuildPath(this.toolData, 1, 1))
         } else if(this.tool == 'MOVE') {
           this.initPos = pos
+          this.lastTool = 'MOVE'
           this.toolActive = true
           this.setToLastGeometryIfNotSelected()
           this.hasChange.detectChanges()
@@ -231,6 +245,7 @@ export class AnnotateView implements OnInit {
     }
 
     window.onmouseup = e => {
+      if (!this.ctxLesions) return
       if (this.tool == 'MAG') return
       let pos = this.mouseToBoxPosition(e.pageX, e.pageY)
 
@@ -267,12 +282,13 @@ export class AnnotateView implements OnInit {
     }
 
     window.onmousemove = e => {
-      let pos = this.mouseToBoxPosition(e.pageX, e.pageY)
-
       if (this.tool == 'MAG') {
         this.magnify(e.pageX, e.pageY)
         return
       }
+
+      if (!this.ctxLesions) return
+      let pos = this.mouseToBoxPosition(e.pageX, e.pageY)
       
       if (this.toolActive) {
         if (this.tool == 'MA') {
@@ -395,7 +411,7 @@ export class AnnotateView implements OnInit {
       let px = mx - mag.width
       let py = my - mag.height
       
-      this.maglarge.css({left: px, top: py, backgroundPosition: bgp, zIndex: 200})
+      this.maglarge.css({left: px, top: py, backgroundPosition: bgp, cursor: "none", zIndex: 200})
     }
   }
 
@@ -431,6 +447,7 @@ export class AnnotateView implements OnInit {
 
   redraw() {
     this.paper.clear()
+    if (!this.ctxLesions) return
 
     // for debug...
     /*let circle1 = this.paper.circle(0, 0, 10)
@@ -605,7 +622,9 @@ export class AnnotateView implements OnInit {
       if (!this.ctxDiagnosis)
         delete annToSave.nodes[this.DIAGNOSIS]
       
-      if (this.ctxDiagnosis) {
+      if (!this.ctxLesions)
+        delete annToSave.nodes[this.LESIONS]
+      else {
         let lNode = this.getOrCreateNode(annToSave, this.LESIONS).fields
         lNode.lesions = this.geometryToLesions()
       }
@@ -626,6 +645,9 @@ export class AnnotateView implements OnInit {
     let qNode = this.node(this.QUALITY)
     let dNode = this.node(this.DIAGNOSIS)
 
+    if (this.ctxLesions)
+      return true
+
     //quality is mandatory...
     if (!qNode.quality || qNode.quality !== 'BAD' && !qNode.local)
       return false
@@ -642,9 +664,9 @@ export class AnnotateView implements OnInit {
       return 'basic disabled'
 
     if (
-      !this.ctxQuality && ['GOOD', 'PARTIAL', 'BAD', 'MACULA', 'OPTIC_DICS', 'OTHER'].indexOf(position) > -1
+      !this.ctxQuality && ['GOOD', 'PARTIAL', 'BAD', 'MACULA', 'OPTIC_DISC', 'OTHER'].indexOf(position) > -1
       ||
-      !this.ctxDiagnosis && ['R0', 'R1', 'R2_M', 'R2_S', 'R3', 'M0', 'M1', 'P0', 'P1', 'P2'].indexOf(position) > -1
+      !this.ctxDiagnosis && ['R0', 'R1', 'R2_M', 'R2_S', 'R3', 'RX', 'M0', 'M1', 'MX', 'P0', 'P1', 'P2'].indexOf(position) > -1
     )
       if (state !== position)
         return 'basic disabled'
@@ -681,10 +703,6 @@ export class AnnotateView implements OnInit {
 
     this.dsLast = -1
     this.loadDataset()
-  }
-
-  toogleLesions() {
-
   }
 
   setQuality(quality: string) {
