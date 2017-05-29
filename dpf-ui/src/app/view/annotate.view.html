@@ -1,11 +1,11 @@
-<div style="padding-top: 54px;height: 100%">
+<div style="padding-top: 50px; height: 100%">
   <div>
     <div class="ui {{ image.loaded ? '' : 'active' }} dimmer">
       <div class="ui text loader">Loading Next Image</div>
     </div>
   </div>
 
-  <div style="display: flex; height: calc(100vh - 105px);" (keyup.enter)="done()">
+  <div style="display: flex; height: calc(100vh - 90px);" (keyup.enter)="done()">
     <div class="magnify">
       <div class="maglarge"></div>
       <img class="ui magsmall image" [src]="image.url"/>
@@ -13,7 +13,7 @@
     </div>
 
     <div style="padding: 0 0 0 0; flex: 1;">
-      <div class="ui inverted segment" style="height: 100%; display:flex; flex-direction: column;background: black;">
+      <div class="ui inverted segment" style="height: 100%; display:flex; flex-direction: column;background: black; padding: 0.5em 0.5em;">
         <h3 *ngIf="!ctxLesions" class="ui dividing header" [style.background]="ctxQuality ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em; cursor: pointer;" (click)="toogleQuality()">
           <!--<i class="file image outline large icon"></i>-->
           Image Quality
@@ -21,7 +21,7 @@
         <div *ngIf="!ctxLesions" class="ui inverted form" style="flex: 1">
           <div class="field">
             <label>Image Readability</label>
-            <div class="ui small buttons">
+            <div class="ui tiny buttons">
               <button class="ui grey {{ getStateClass(node(QUALITY).quality, 'GOOD') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Readable (GOOD)" (click)="setQuality('GOOD')">Readable</button>
               <button class="ui grey {{ getStateClass(node(QUALITY).quality, 'PARTIAL') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Low Confidence (PARTIAL)" (click)="setQuality('PARTIAL')">Low Confidence</button>
               <button class="ui red {{ getStateClass(node(QUALITY).quality, 'BAD') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Unreadable (BAD)" (click)="setQuality('BAD')">Unreadable</button>
@@ -29,7 +29,7 @@
           </div>
           <div class="field">
             <label>Centered in</label>
-            <div class="ui small buttons">
+            <div class="ui tiny buttons">
               <button class="ui grey {{ getStateClass(node(QUALITY).local, 'MACULA') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Centered in Macula" (click)="setLocal('MACULA')">Macula</button>
               <button class="ui grey {{ getStateClass(node(QUALITY).local, 'OPTIC_DISC') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Centered in Optic Disc" (click)="setLocal('OPTIC_DISC')">Optic Disc</button>
               <button class="ui grey {{ getStateClass(node(QUALITY).local, 'OTHER') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Centered in other location" (click)="setLocal('OTHER')">Other</button>
@@ -44,7 +44,7 @@
           </div>
           <div *ngIf="!isQualityNeeded()" class="field">
             <label>Retinopathy</label>
-            <div class="ui small buttons">
+            <div class="ui mini buttons">
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R0') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Healthy" (click)="setRetinopathy('R0')">R0</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R1') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Mild non-proliferative diabetic retinopathy (Mild NPDR)" (click)="setRetinopathy('R1')">R1</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R2_M') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Moderate NPDR" (click)="setRetinopathy('R2_M')">R2-M</button>
@@ -55,7 +55,7 @@
           </div>
           <div *ngIf="!isQualityNeeded()" class="field">
             <label>Maculopathy</label>
-            <div class="ui small buttons">
+            <div class="ui tiny buttons">
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'M0') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="No Maculopathy" (click)="setMaculopathy('M0')">M0</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'M1') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Maculopathy present" (click)="setMaculopathy('M1')">M1</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'MX') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="No possible description" (click)="setMaculopathy('MX')">X</button>
@@ -63,7 +63,7 @@
           </div>
           <div *ngIf="!isQualityNeeded()" class="field">
             <label>Photocoagulation</label>
-            <div class="ui small buttons">
+            <div class="ui tiny buttons">
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P0') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Photocoagulated retina without needing further treatment" (click)="setPhotocoagulation('P0')">P0</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P1') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Photocoagulated grading 1" (click)="setPhotocoagulation('P1')">P1</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P2') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Photocoagulated grading 2" (click)="setPhotocoagulation('P2')">P2</button>
@@ -74,7 +74,7 @@
         <h3 *ngIf="ctxLesions" class="ui dividing header" [style.background]="ctxLesions ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em;">Lesions</h3>
         <div *ngIf="ctxLesions" class="ui inverted form" style="flex: 1">
           <div class="field">
-            <div class="ui small buttons">
+            <div class="ui tiny buttons">
               <button class="ui blue {{ tool == 'MA' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Microaneurisms"  (click)="selectTool('MA')">MA</button>
               <button class="ui teal {{ tool == 'HEM' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Hemorrhages" (click)="selectTool('HEM')">HEM</button>
               <button class="ui green {{ tool == 'HE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Hard exudates" (click)="selectTool('HE')">HE</button>
@@ -83,7 +83,7 @@
             </div>
           </div>
           <div class="field">
-            <div class="ui small buttons">
+            <div class="ui tiny buttons">
               <button class="ui icon grey basic button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Erase last geometry" (click)="eraseLast()">
                 <i class="backward large icon"></i>
               </button>
@@ -103,7 +103,7 @@
           </div>
         </div>
 
-        <div class="ui {{ isReadyToDone() ? '' : 'basic disabled' }} small button" style="margin-top: 2em;" (click)="done()">
+        <div class="ui {{ isReadyToDone() ? '' : 'basic disabled' }} tiny button" style="margin-top: 2em;" (click)="done()">
           <div class="visible content">Save</div>
         </div>
       </div>
@@ -111,7 +111,7 @@
   </div>
   
   <!--Progress and Load-->
-  <div class="column" style="margin: auto; padding: 10px 5px 0px 10px; display:flex;">
+  <div class="column" style="margin: auto; padding: 5px 5px 0px 10px; display:flex;">
     <div class="ui progress" style="flex: auto;">
       <div class="bar" style="height:100%; min-width:6em;"><div class="progress"></div></div>
     </div>
