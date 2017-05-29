@@ -91,7 +91,9 @@ export class AnnotateView implements OnInit {
   }
 
   getProgressFromContext() {
-    if (this.ctxDiagnosis)
+    if (this.ctxLesions)
+      return this.dataset.pointers[this.LESIONS].next
+    else if (this.ctxDiagnosis)
       return this.dataset.pointers[this.DIAGNOSIS].next
     else
       return this.dataset.pointers[this.QUALITY].next
@@ -142,8 +144,6 @@ export class AnnotateView implements OnInit {
   }
 
   adjustLayout() {
-    if (!this.ctxLesions) return
-
     this.box = {
       top: this.magsmall.offset().top,
       left: this.magsmall.offset().left,
@@ -165,6 +165,10 @@ export class AnnotateView implements OnInit {
     this.redraw()
   }
 
+  isQualityNeeded() {
+    return !this.ctxQuality && this.ctxDiagnosis && this.node(this.QUALITY).quality == null
+  }
+
   isMouseInBox(mx: number, my: number) {
     return mx < (this.box.width + this.box.left) && my < (this.box.height + this.box.top) && mx > this.box.left && my > this.box.top
   }
@@ -180,10 +184,7 @@ export class AnnotateView implements OnInit {
 
   tools() {
     this.paper = Raphael('raphael', 0, 0)
-    window.onresize = _ => {
-      if (!this.ctxLesions) return
-      this.adjustLayout()
-    }
+    window.onresize = _ => this.adjustLayout()
 
     window.onmousedown = e => {
       if (!this.ctxLesions) return
@@ -642,11 +643,11 @@ export class AnnotateView implements OnInit {
     if (this.dataset != null && this.progress >= this.dataset.size)
       return false
 
-    let qNode = this.node(this.QUALITY)
-    let dNode = this.node(this.DIAGNOSIS)
-
     if (this.ctxLesions)
       return true
+
+    let qNode = this.node(this.QUALITY)
+    let dNode = this.node(this.DIAGNOSIS)
 
     //quality is mandatory...
     if (!qNode.quality || qNode.quality !== 'BAD' && !qNode.local)
@@ -675,11 +676,7 @@ export class AnnotateView implements OnInit {
 
     if (state === position) return ''
 
-    if (
-      this.node(this.QUALITY).quality === 'BAD' && ['GOOD', 'PARTIAL', 'BAD'].indexOf(position) === -1
-      ||
-      this.node(this.DIAGNOSIS).retinopathy === 'R0' && position === 'M1'
-    )
+    if (this.node(this.QUALITY).quality === 'BAD' && ['GOOD', 'PARTIAL', 'BAD'].indexOf(position) === -1)
       return 'basic disabled'
 
     return 'basic'
@@ -730,8 +727,10 @@ export class AnnotateView implements OnInit {
     
     if (qNode.quality !== 'BAD') {
       dNode.retinopathy = retinopathy
-      if (dNode.retinopathy === 'R0')
+      if (dNode.retinopathy === 'R0' || dNode.retinopathy === 'R1') {
         dNode.maculopathy = 'M0'
+        dNode.photocoagulation = 'P0'
+      }
     }
   }
 
@@ -739,10 +738,8 @@ export class AnnotateView implements OnInit {
     let qNode = this.node(this.QUALITY)
     let dNode = this.node(this.DIAGNOSIS)
 
-    if (qNode.quality !== 'BAD') {
-      if (dNode.retinopathy !== 'R0')
-        dNode.maculopathy = maculopathy
-    }
+    if (qNode.quality !== 'BAD')
+      dNode.maculopathy = maculopathy
   }
 
   setPhotocoagulation(photocoagulation: string) {
