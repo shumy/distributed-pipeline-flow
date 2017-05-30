@@ -219,7 +219,6 @@ export class AnnotateView implements OnInit {
           this.initPos = pos
           this.lastTool = 'MOVE'
           this.toolActive = true
-          this.setToLastGeometryIfNotSelected()
           this.hasChange.detectChanges()
         }
 
@@ -238,7 +237,6 @@ export class AnnotateView implements OnInit {
           this.initPos = pos
           this.lastTool = this.tool
           this.toolActive = true
-          this.setToLastGeometryIfNotSelected()
           this.selectTool('MOVE')
           this.hasChange.detectChanges()
         }
@@ -312,7 +310,7 @@ export class AnnotateView implements OnInit {
           let dist = Math.pow(pos.x - this.toolData[index].x, 2) + Math.pow(pos.y - this.toolData[index].y, 2)
           if (dist > 100)
             this.toolData.push(pos)
-        } else if (this.tool == 'MOVE') {
+        } else if (this.tool == 'MOVE' && this.selectedGeoKey != null) {
           this.moveGeometry(pos.x - this.initPos.x, pos.y - this.initPos.y)
           this.initPos = pos
         }
@@ -366,7 +364,6 @@ export class AnnotateView implements OnInit {
     this.geoKeyOrder.push(key)
     this.geometry[key] = geo
     
-    this.selectedGeoKey = key
     this.redraw()
   }
 
@@ -425,7 +422,7 @@ export class AnnotateView implements OnInit {
   }
 
   eraseAll() {
-    this.selectedGeoKey = null
+    delete this.selectedGeoKey
     this.geoKeyOrder = []
     this.geometry = {}
     this.redraw()
@@ -438,8 +435,8 @@ export class AnnotateView implements OnInit {
       delete this.geometry[key]
 
       if (key == this.selectedGeoKey) {
-        this.selectedGeoKey = null
-        this.setToLastGeometryIfNotSelected()
+        delete this.selectedGeoKey
+        //this.setToLastGeometryIfNotSelected()
       }
 
       this.redraw()
@@ -468,7 +465,8 @@ export class AnnotateView implements OnInit {
     //console.log('GEO: ', this.geometry)
 
     //draw geometry
-    Object.keys(this.geometry).forEach(key => {
+    //Object.keys(this.geometry).forEach(key => {
+    this.geoKeyOrder.forEach(key => {
       let geo = this.geometry[key]
       let xScale = this.box.width/geo.scale.width
       let yScale = this.box.height/geo.scale.height
@@ -485,20 +483,34 @@ export class AnnotateView implements OnInit {
       }
 
       if (geoElement != null) {
-        geoElement.attr("stroke", this.geoAttributes[geo.type].color)
+        geoElement.attr({
+          "stroke-width": this.geoAttributes[geo.type].width,
+          "stroke": this.geoAttributes[geo.type].color,
+          "fill": "#ffffff",
+          "fill-opacity": 0
+        })
 
-        if (this.tool == 'MOVE' && key == this.selectedGeoKey)
+        if (this.selectedGeoKey == key)
           geoElement.attr("stroke", "#ffffff")
-        else
-          geoElement.attr("stroke-width", this.geoAttributes[geo.type].width)
 
-        geoElement.mouseover(_ => {
-          if (this.tool == 'ERASER' && this.toolActive)
-            this.erase(key)
-          else if (this.tool == 'MOVE' && !this.toolActive) {
+        let mouseover = (event) => {
+          if (!this.toolActive) {
             this.selectedGeoKey = key
-            this.redraw()
+            geoElement.attr("stroke", "#ffffff")
           }
+        }
+
+        let mouseout = (event) => {
+          if (!this.toolActive) {
+            delete this.selectedGeoKey
+            geoElement.attr("stroke", this.geoAttributes[geo.type].color)
+          }
+        }
+
+        geoElement.hover(mouseover, mouseout)
+        geoElement.click((event) => {
+          if (this.tool == 'ERASER')
+            this.erase(key)
         })
       }
     })
@@ -571,8 +583,6 @@ export class AnnotateView implements OnInit {
     this.annoProxy.readAnnotation(this.image.id).then(ann => {
       this.annotation = ann
       this.lesionsToGeometry(this.node(this.LESIONS))
-      this.selectedGeoKey = null
-      this.setToLastGeometryIfNotSelected()
       this.redraw()
     }).catch(error => toastr.error(error.message))
   }
