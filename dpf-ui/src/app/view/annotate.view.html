@@ -5,7 +5,7 @@
     </div>
   </div>
 
-  <div style="display: flex; height: calc(100vh - 90px);" (keyup.enter)="done()">
+  <div style="display: flex; height: calc(100vh - 90px);"><!--(keyup.enter)="done()"-->
     <div class="magnify">
       <div class="maglarge"></div>
       <img class="ui magsmall image" [src]="image.url"/>
@@ -15,7 +15,6 @@
     <div style="padding: 0 0 0 0; flex: 1;">
       <div class="ui inverted segment" style="height: 100%; display:flex; flex-direction: column;background: black; padding: 0.5em 0.5em;">
         <h3 *ngIf="!ctxLesions" class="ui dividing header" [style.background]="ctxQuality ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em; cursor: pointer;" (click)="toogleQuality()">
-          <!--<i class="file image outline large icon"></i>-->
           Image Quality
         </h3>
         <div *ngIf="!ctxLesions" class="ui inverted form" style="flex: 1">
@@ -37,7 +36,9 @@
           </div>
         </div>
         
-        <h3 *ngIf="!ctxLesions" class="ui dividing header" [style.background]="ctxDiagnosis ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em; cursor: pointer;" (click)="toogleDiagnosis()">Diagnosis</h3>
+        <h3 *ngIf="!ctxLesions" class="ui dividing header" [style.background]="ctxDiagnosis ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em; cursor: pointer;" (click)="toogleDiagnosis()">
+          Diagnosis
+        </h3>
         <div *ngIf="!ctxLesions" class="ui inverted form" style="flex: 1">
           <div *ngIf="isQualityNeeded()" class="field">
             <label>There is no available Quality for this image!</label>
@@ -69,9 +70,22 @@
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P2') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Photocoagulated grading 2" (click)="setPhotocoagulation('P2')">P2</button>
             </div>
           </div>
+          <div *ngIf="!isQualityNeeded()" class="field">
+            <label>Other Disease</label>
+            <div class="ui {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} invert multiple search selection dropdown">
+              <input type="hidden" name="country">
+              <i class="inverted dropdown icon"></i>
+              <div class="default text">Select Disease</div>
+              <div class="menu">
+                <div *ngFor="let entry of diseasesOptions" class="item" [attr.data-value]="entry">{{entry}}</div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <h3 *ngIf="ctxLesions" class="ui dividing header" [style.background]="ctxLesions ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em;">Lesions</h3>
+        <h3 *ngIf="ctxLesions" class="ui dividing header" [style.background]="ctxLesions ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em;">
+          Lesions
+        </h3>
         <div *ngIf="ctxLesions" class="ui inverted form" style="flex: 1">
           <div class="field">
             <div class="ui tiny buttons">

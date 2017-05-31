@@ -22,6 +22,8 @@ export class AnnotateView implements OnInit {
   readonly PRELOAD_LIMIT  = 5 //limit the preload of images and AnnotationInfo
   readonly BACK_LIMIT     = 5 //limit the number of "Recently Annotated" image list
 
+  diseasesOptions = []
+
   //active contexts
   ctxQuality: boolean
   ctxDiagnosis: boolean
@@ -42,6 +44,7 @@ export class AnnotateView implements OnInit {
   magnifier: JQuery
   magsmall: JQuery
   maglarge: JQuery
+  diseasesDropdown: any
   imageObj = new Image()
 
   readonly geoAttributes = {
@@ -79,6 +82,10 @@ export class AnnotateView implements OnInit {
 
     this.dsProxy = router.createProxy('ds')
     this.annoProxy = router.createProxy('anno')
+
+    router.createProxy('properties').allOfKey('diagnosis.diseases')
+      .then(dList => this.diseasesOptions = dList)
+      .catch(error => console.error('Diagnosis Diseases not loaded:' + error.message))
   }
 
   ngOnInit() {
@@ -134,6 +141,14 @@ export class AnnotateView implements OnInit {
   }
 
   updateProgress() {
+    this.diseasesDropdown = $('.ui.dropdown')
+    this.diseasesDropdown.dropdown({
+      onChange: (text) => {
+        let selected = text.split(',').filter(el => el.length > 0)
+        this.node(this.DIAGNOSIS).diseases = selected
+      }
+    })
+
     let pBar: any = $('.ui.progress')
     pBar.progress({
       label: 'ratio',
@@ -367,7 +382,9 @@ export class AnnotateView implements OnInit {
     this.redraw()
   }
 
-  lesionsToGeometry(lNode: any) {
+  lesionsToGeometry() {
+    let lNode = this.node(this.LESIONS)
+
     this.lastKey = 0
     this.geoKeyOrder = []
     this.geometry = {}
@@ -379,6 +396,11 @@ export class AnnotateView implements OnInit {
         this.geoKeyOrder.push(key)
         this.geometry[key] = lesion
       })
+  }
+
+  loadDiseases() {
+    let diseases = this.node(this.DIAGNOSIS).diseases || []
+    this.diseasesDropdown.dropdown('set exactly', diseases)
   }
 
   geometryToLesions() {
@@ -518,12 +540,11 @@ export class AnnotateView implements OnInit {
 
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event) {
-    console.log('onKeyDown: ', event)
     switch (event.key) {
-      case "ArrowDown": this.setPosition(1); break
+      //case "ArrowDown": this.setPosition(1); break
       case "ArrowLeft": this.setPosition(this.progress); break
       case "ArrowRight": this.setPosition(this.progress + 2); break
-      case "ArrowUp": this.setPosition(); break
+      //case "ArrowUp": this.setPosition(); break
     }
   }
 
@@ -582,7 +603,8 @@ export class AnnotateView implements OnInit {
 
     this.annoProxy.readAnnotation(this.image.id).then(ann => {
       this.annotation = ann
-      this.lesionsToGeometry(this.node(this.LESIONS))
+      this.lesionsToGeometry()
+      this.loadDiseases()
       this.redraw()
     }).catch(error => toastr.error(error.message))
   }
@@ -632,6 +654,10 @@ export class AnnotateView implements OnInit {
       
       if (!this.ctxDiagnosis)
         delete annToSave.nodes[this.DIAGNOSIS]
+      else {
+        if (annToSave.nodes[this.DIAGNOSIS].fields.diseases.length == 0)
+          delete annToSave.nodes[this.DIAGNOSIS].fields.diseases
+      }
       
       if (!this.ctxLesions)
         delete annToSave.nodes[this.LESIONS]
@@ -677,7 +703,7 @@ export class AnnotateView implements OnInit {
     if (
       !this.ctxQuality && ['GOOD', 'PARTIAL', 'BAD', 'MACULA', 'OPTIC_DISC', 'OTHER'].indexOf(position) > -1
       ||
-      !this.ctxDiagnosis && ['R0', 'R1', 'R2_M', 'R2_S', 'R3', 'RX', 'M0', 'M1', 'MX', 'P0', 'P1', 'P2'].indexOf(position) > -1
+      !this.ctxDiagnosis && ['R0', 'R1', 'R2_M', 'R2_S', 'R3', 'RX', 'M0', 'M1', 'MX', 'P0', 'P1', 'P2', 'DISEASES'].indexOf(position) > -1
     )
       if (state !== position)
         return 'basic disabled'
@@ -722,6 +748,8 @@ export class AnnotateView implements OnInit {
        delete dNode.retinopathy
        delete dNode.maculopathy
        delete dNode.photocoagulation
+       delete dNode.diseases
+       this.loadDiseases()
     }
   }
 

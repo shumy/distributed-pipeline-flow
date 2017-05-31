@@ -10,6 +10,7 @@ import pt.ua.dpf.srv.AnnotationService
 import pt.ua.dpf.srv.DatasetService
 import pt.ua.dpf.srv.DicoogleProxyService
 import pt.ua.dpf.srv.IndexService
+import pt.ua.dpf.srv.PropertyMapService
 import pt.ua.dpf.srv.ServicePointService
 import pt.ua.dpf.srv.TransferService
 import pt.ua.ieeta.rpacs.utils.DefaultConfig
@@ -137,6 +138,8 @@ class DpfServerStarter extends AbstractVerticle {
 		server.pipeline => [
 			addInterceptor(jwtAuth)
 			addInterceptor(accessControl)
+			
+			addService('properties', PropertyMapService.create)
 			
 			addService('dpf-ui', dpfUiSrv)
 			addService('api-ui', apiUiSrv)
