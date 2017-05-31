@@ -68,6 +68,7 @@ export class AnnotateView implements OnInit {
   //geometry
   lastKey = 0
   geoKeyOrder = []
+  geoElements = {}
   geometry = {}
 
   paper: any
@@ -241,7 +242,7 @@ export class AnnotateView implements OnInit {
         if (this.toolGeo != null)
           this.toolGeo.attr("stroke", this.geoAttributes[this.tool].color)
 
-      } else if (e.button == 1) {
+      } else if (e.button == 1 || e.button == 2) {
         if (this.toolActive && (this.tool == 'HE' || this.tool == 'SE')) {
           this.toolActive = false
           if (this.toolData.length > 2)
@@ -447,6 +448,7 @@ export class AnnotateView implements OnInit {
     delete this.selectedGeoKey
     this.geoKeyOrder = []
     this.geometry = {}
+    this.geoElements = {}
     this.redraw()
   }
 
@@ -455,12 +457,11 @@ export class AnnotateView implements OnInit {
     if (keyIndex > -1) {
       this.geoKeyOrder.splice(keyIndex, 1)
       delete this.geometry[key]
+      delete this.geoElements[key]
 
-      if (key == this.selectedGeoKey) {
+      if (key == this.selectedGeoKey)
         delete this.selectedGeoKey
-        //this.setToLastGeometryIfNotSelected()
-      }
-
+      
       this.redraw()
     }
   }
@@ -487,7 +488,7 @@ export class AnnotateView implements OnInit {
     //console.log('GEO: ', this.geometry)
 
     //draw geometry
-    //Object.keys(this.geometry).forEach(key => {
+    this.geoElements = {}
     this.geoKeyOrder.forEach(key => {
       let geo = this.geometry[key]
       let xScale = this.box.width/geo.scale.width
@@ -505,6 +506,7 @@ export class AnnotateView implements OnInit {
       }
 
       if (geoElement != null) {
+        this.geoElements[key] = geoElement
         geoElement.attr({
           "stroke-width": this.geoAttributes[geo.type].width,
           "stroke": this.geoAttributes[geo.type].color,
@@ -517,6 +519,13 @@ export class AnnotateView implements OnInit {
 
         let mouseover = (event) => {
           if (!this.toolActive) {
+            if (this.selectedGeoKey != null) {
+              let selectedType = this.geometry[this.selectedGeoKey].type
+              let selectedGeoElement = this.geoElements[this.selectedGeoKey]
+              if (selectedGeoElement != null)
+                selectedGeoElement.attr("stroke", this.geoAttributes[selectedType].color)
+            }
+
             this.selectedGeoKey = key
             geoElement.attr("stroke", "#ffffff")
           }

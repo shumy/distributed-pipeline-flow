@@ -9,4 +9,5 @@ if (environment.production) {
   enableProdMode();
 }
 
+document.addEventListener('contextmenu', event => event.preventDefault())
 platformBrowserDynamic().bootstrapModule(AppModule)
