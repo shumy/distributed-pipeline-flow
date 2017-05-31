@@ -580,6 +580,7 @@ export class AnnotateView implements OnInit {
   loadImageRefs() {
     if (this.progress >= this.dataset.size) {
       this.image = { id: 0, url: 'assets/img/ni.png', loaded: true }
+      this.diseasesDropdown.dropdown('set exactly', [])
       this.setMagImage()
       return
     }
