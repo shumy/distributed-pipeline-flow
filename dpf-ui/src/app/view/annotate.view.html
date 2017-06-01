@@ -71,8 +71,8 @@
             </div>
           </div>
           <div *ngIf="!isQualityNeeded()" class="field">
-            <label>Other Disease</label>
-            <div class="ui {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} invert multiple search selection dropdown" data-position="top right" data-inverted="" data-tooltip="Comorbidities">
+            <label>Comorbidities</label>
+            <div class="ui {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} invert multiple search selection dropdown">
               <input type="hidden" name="country">
               <i class="inverted dropdown icon"></i>
               <div class="default text">Select Disease</div>
