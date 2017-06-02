@@ -147,6 +147,25 @@ div {
   z-index: 50;
 }
 
+/*button header on annotation page*/
+.button.topic {
+  display: flex;
+  align-items: flex-start;
+  min-height: 2.8em;
+  margin-bottom: 0.3em;
+  color: white;
+}
+
+.button.topic:hover {
+  color: white;
+}
+
+.button.topic span {
+  font-size: large;
+  margin: 0.3em 0em 0em 0.3em;
+}
+
+
 /*invert dropdown search*/
 .ui.invert.multiple.search.dropdown {
   background-color: black;

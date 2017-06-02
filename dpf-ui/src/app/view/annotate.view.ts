@@ -713,7 +713,7 @@ export class AnnotateView implements OnInit {
     if (
       !this.ctxQuality && ['GOOD', 'PARTIAL', 'BAD', 'MACULA', 'OPTIC_DISC', 'OTHER'].indexOf(position) > -1
       ||
-      !this.ctxDiagnosis && ['R0', 'R1', 'R2_M', 'R2_S', 'R3', 'RX', 'M0', 'M1', 'MX', 'P0', 'P1', 'P2', 'DISEASES'].indexOf(position) > -1
+      !this.ctxDiagnosis && ['R0', 'R1', 'R2_M', 'R2_S', 'R3', 'RX', 'M0', 'M1', 'MX', 'P0', 'P1', 'P2', 'PX', 'DISEASES'].indexOf(position) > -1
     )
       if (state !== position)
         return 'basic disabled'
