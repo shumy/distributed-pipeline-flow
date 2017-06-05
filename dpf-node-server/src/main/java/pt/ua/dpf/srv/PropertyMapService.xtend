@@ -12,6 +12,6 @@ class PropertyMapService {
 	
 	@Public(worker = true)
 	def List<String> allOfKey(String key) {
-		return PropertyMap.allOfKey(key).map[value].sort
+		return PropertyMap.allOfKey(key).map[value]
 	}
 }
