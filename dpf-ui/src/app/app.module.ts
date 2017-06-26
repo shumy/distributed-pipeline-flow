@@ -17,6 +17,7 @@ import { Application }                from './app';
 
 import { HomeView }                   from './view/home.view';
 import { SearchView }                 from './view/search.view';
+import { Search2View }                 from './view/search2.view';
 import { UploadView }                 from './view/upload.view';
 import { AnnotateView }               from './view/annotate.view';
 import { PacsCenterView }             from './view/pacscenter.view';
@@ -69,7 +70,7 @@ function init() {
   imports: [ BrowserModule, ReactiveFormsModule, HttpModule, routing ],
   declarations: [
     Application,
-    HomeView, SearchView, UploadView, AnnotateView, PacsCenterView, DatasetView, ProfileView, RealmView
+    HomeView, SearchView, Search2View, UploadView, AnnotateView, PacsCenterView, DatasetView, ProfileView, RealmView
   ],
   bootstrap: [ Application ],
   providers: [

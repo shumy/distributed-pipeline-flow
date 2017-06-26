@@ -12,5 +12,6 @@
         <entry type="srv" ref="pt.ua.dpf.srv.ConfigService"/>
         <entry type="srv" ref="pt.ua.dpf.srv.DatasetService"/>
         <entry type="srv" ref="pt.ua.dpf.srv.PropertyMapService"/>
+        <entry type="srv" ref="pt.ua.dpf.srv.SearchService"/>
     </entries>
 </config>

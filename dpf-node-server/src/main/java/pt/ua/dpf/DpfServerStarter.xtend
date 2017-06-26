@@ -24,6 +24,7 @@ import rt.utils.service.SubscriberService
 import rt.utils.service.WebFileService
 import rt.vertx.server.DefaultVertxServer
 import rt.vertx.server.service.FolderManagerService
+import pt.ua.dpf.srv.SearchService
 
 //import static io.vertx.core.Vertx.*
 //import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
@@ -101,6 +102,7 @@ class DpfServerStarter extends AbstractVerticle {
 				replace = #{
 					'/home' 		-> '/',
 					'/search' 		-> '/',
+					'/search2' 		-> '/',
 					'/upload' 		-> '/',
 					'/annotate' 	-> '/',
 					'/viewer' 		-> '/',
@@ -130,7 +132,9 @@ class DpfServerStarter extends AbstractVerticle {
 		
 		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' isHomeManager = true ]
 		val transfersSrv = TransferService.B => [ folder = './downloads' dicoogle = dicoogleClient srvPoint = servicePointSrv ]
+		
 		val dicoogleProxySrv = DicoogleProxyService.B => [ dicoogle = dicoogleClient queryProvider = propDicoogleQueryProvider ]
+		val searchSrv = SearchService.create
 		
 		val annoSrv = AnnotationService.create
 		val dsSrv = DatasetService.B => [ imagePrefixURI = propPrefixURI ]
@@ -151,7 +155,9 @@ class DpfServerStarter extends AbstractVerticle {
 			addService('indexer', indexService, #{ 'all' -> '/srv-home' })
 			addService('folder-manager', folderManagerSrv, #{ 'all' -> '/srv-home' })
 			addService('transfers', transfersSrv, #{ 'all' -> '/srv-transfer' })
+			
 			addService('d-proxy', dicoogleProxySrv, #{ 'all' -> '/srv-dicoogle' })
+			addService('search', searchSrv, #{ 'all' -> '/srv-dicoogle' })
 			
 			//model services
 			addService('anno', annoSrv, #{ 'all' -> '/srv-annotator' })

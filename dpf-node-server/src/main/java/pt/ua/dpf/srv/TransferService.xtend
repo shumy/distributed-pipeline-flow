@@ -72,6 +72,29 @@ class TransferService {
 		
 		return pResult.observe
 	}
+	
+	@Public
+	@Context(name = 'user', type = UserInfo)
+	def Observable<PatientTransfer> downloadImages(List<String> imageUIDs, String fileName) {
+		if (!PathValidator.isValid(fileName))
+			throw new ServiceException(500, 'File name not accepted: ' + fileName)
+		
+		val dirPath = folder + '/' + user.name
+		val fFolder = new File(dirPath)
+		if (!fFolder.exists) fFolder.mkdirs
+		
+		val filePath = dirPath + '/' + fileName + '.zip'
+		if (Files.exists(Paths.get(filePath)))
+			throw new ServiceException(500, 'File already exists: ' + fileName)
+		
+		val ObservableResult<PatientTransfer> pResult = [ sub |
+			dicoogle.downloadUIDs(imageUIDs, filePath)
+				.map[ sopUID | PatientTransfer.B => [ id = sopUID ] ]
+				.delegate(sub)
+		]
+		
+		return pResult.observe
+	}
 }
 
 @Data

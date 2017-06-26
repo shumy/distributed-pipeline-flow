@@ -1,0 +1,105 @@
+<!--Search Bar-->
+<div class="ui main menu">
+  <div class="flex item">
+    <div class="ui icon input">
+      <input type="text" placeholder="Search..." [formControl]="query">
+      <i class="search icon"></i>
+    </div>
+  </div>
+  <div class="right menu">
+    <div class="item">
+      <div class="ui tiny teal buttons">
+        <div class="ui button" [class.disabled]="selectedNumber == 0" (click)="transfer()">
+          Download
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Result Segment-->
+<div class="ui content segment" style="overflow-y: scroll; height: calc(100vh - 125px);">
+  <table class="ui very basic table">
+    <thead>
+      <tr>
+        <th>
+          <div class="ui checkbox">
+            <input type="checkbox" [checked]="allSelected" (click)="selectAll()">
+            <label></label>
+          </div>
+        </th>
+        <th>Image</th>
+        <th>Laterality</th>
+        <th>Columns x Rows</th>
+        <th>Transferred</th>
+      </tr>
+    </thead>
+    <tbody>
+      <template ngFor let-image [ngForOf]="images">
+        <!--Image Info-->
+        <tr>
+          <!--Selection-->
+          <td class="collapsing">
+            <div class="ui checkbox">
+              <input type="checkbox" [checked]="image.selected" (click)="selectImage(image)">
+              <label></label>
+            </div>
+          </td>
+          
+          <!--Image-->
+          <td>
+            <i class="large {{image.open ? 'down' : 'right'}} triangle link icon" (click)="image.open = !image.open"></i>
+            <i attr.id="image_link_{{image.uid}}" class="large blue unhide icon" (mouseenter)="openImagePopup(image.uid)"></i>
+            <div class="ui very wide popup">
+              <img class="ui fluid image" [src]="image.url">
+            </div>
+            {{image.uid}}
+          </td>
+
+          <!--Laterality-->
+          <td>{{image.laterality}}</td>
+          
+          <!--Columns x Rows-->
+          <td>{{image.columns}}x{{image.rows}}</td>
+          
+          <!--Transferred-->
+          <td>
+            <i class="large {{ image.transferred ? 'green' : '' }} upload icon"></i>
+          </td>
+        </tr>
+
+        <!--Image Details-->
+        <tr *ngIf="image.open">
+          <td colspan="5">
+            <div class="ui relaxed list" style="padding-left: 3em">
+              <!--Patient-->
+              <div class="item">
+                <i class="large blue user icon"></i>
+                <div class="content">
+                  <div class="header">Name: {{image.patient.name}}</div>
+                  <div class="ui horizontal divided list">
+                    <div class="item">BirthDate: {{image.patient.birthdate}}</div>
+                    <div class="item">Sex: {{image.patient.sex}}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!--Annotations-->
+              <div *ngFor="let anno of image.annotations" class="item">
+                <i class="large blue tags link icon"></i>
+                <div class="content">
+                  <div class="header">Readability: {{anno.nodes.quality.fields.quality}}</div>
+                  <div class="ui horizontal divided list">
+                    <div class="item">Centered: {{anno.nodes.quality.fields.local || 'N/A'}}</div>
+                    <div class="item">Diagnosis: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.maculopathy + '/' + anno.nodes.diagnosis.fields.photocoagulation + '/' + anno.nodes.diagnosis.fields.retinopathy : 'N/A'}}</div>
+                    <div class="item">Lesions: N/A</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
+</div>

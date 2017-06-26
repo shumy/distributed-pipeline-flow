@@ -262,6 +262,11 @@ class DicoogleClient {
 		return pResult.promise
 	}
 	
+	def Observable<String> downloadUIDs(List<String> imagesUIDs, String zipFilePath) {
+		val images = imagesUIDs.map[ uid | new Image => [ sopInstanceUID = uid ] ]
+		return download(images, zipFilePath)
+	}
+	
 	def Observable<String> download(List<Image> images, String zipFilePath) {
 		val ObservableResult<String> pResult = [ sub |
 			var FileOutputStream fos = null 
