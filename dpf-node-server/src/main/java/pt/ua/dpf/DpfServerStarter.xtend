@@ -102,7 +102,6 @@ class DpfServerStarter extends AbstractVerticle {
 				replace = #{
 					'/home' 		-> '/',
 					'/search' 		-> '/',
-					'/search2' 		-> '/',
 					'/upload' 		-> '/',
 					'/annotate' 	-> '/',
 					'/viewer' 		-> '/',
@@ -131,7 +130,12 @@ class DpfServerStarter extends AbstractVerticle {
 		]
 		
 		val folderManagerSrv = FolderManagerService.B => [ folder = './downloads' isHomeManager = true ]
-		val transfersSrv = TransferService.B => [ folder = './downloads' dicoogle = dicoogleClient srvPoint = servicePointSrv ]
+		val transfersSrv = TransferService.B => [
+			folder = './downloads'
+			dicoogleUrl = 'http://' + propDicoogleHost + ':' + propDicooglePort
+			//dicoogle = dicoogleClient
+			//srvPoint = servicePointSrv
+		]
 		
 		val dicoogleProxySrv = DicoogleProxyService.B => [ dicoogle = dicoogleClient queryProvider = propDicoogleQueryProvider ]
 		val searchSrv = SearchService.create

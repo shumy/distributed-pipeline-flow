@@ -3,7 +3,6 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { HomeView }             from './view/home.view';
 import { SearchView }           from './view/search.view';
-import { Search2View }           from './view/search2.view';
 import { UploadView }           from './view/upload.view';
 import { AnnotateView }         from './view/annotate.view';
 import { PacsCenterView }       from './view/pacscenter.view';
@@ -15,7 +14,6 @@ const appRoutes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomeView },
   { path: 'search', component: SearchView },
-  { path: 'search2', component: Search2View },
   { path: 'upload', component: UploadView },
   { path: 'annotate', component: AnnotateView },
   { path: 'viewer', component: PacsCenterView },

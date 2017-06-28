@@ -1,136 +1,117 @@
+<!--Search Bar-->
 <div class="ui main menu">
   <div class="flex item">
     <div class="ui icon input">
-      <input type="text" placeholder="Dicoogle Search..." [formControl]="query">
+      <input type="text" placeholder="Search..." [formControl]="query">
       <i class="search icon"></i>
     </div>
   </div>
   <div class="right menu">
     <div class="item">
+      <div class="ui basic multiple search selection dropdown">
+        <input type="hidden">
+        <i class="dropdown icon"></i>
+        <div class="default text">Select Data</div>
+        <div class="menu">
+          <div class="item" data-value="ndcm">
+            No-Dicom
+          </div>
+          <div class="item" data-value="anno">
+            Annotations
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item">
       <div class="ui tiny teal buttons">
         <div class="ui button" [class.disabled]="selectedNumber == 0" (click)="transfer()">
-          <i *ngIf="srvPointsRepo.selected.data.icon" class="cube icon"></i>
-          {{srvPointsRepo.selected.data.name}}
-        </div>
-        <div class="ui dropdown icon button">
-          <i class="dropdown icon"></i>
-          <div class="menu">
-            <div class="ui search icon input">
-              <i class="search icon"></i>
-              <input type="text" name="search" placeholder="Service Point...">
-            </div>
-            <div *ngFor="let entry of srvPointsRepo | async" id="{{entry.id}}" class="item {{ entry.selected ? 'active selected' : '' }}">
-              <i *ngIf="entry.data.icon" class="cube icon"></i> {{entry.data.name}}
-            </div>
-          </div>
+          Download
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="ui content segment" style="overflow-y: scroll; height: calc(100vh - 125px);">
+<!--Result Segment-->
+<div class="ui content segment" style="overflow-y: scroll; height: calc(100vh - 175px);">
   <table class="ui very basic table">
     <thead>
       <tr>
-        <th class="one wide">
+        <th>
           <div class="ui checkbox">
             <input type="checkbox" [checked]="allSelected" (click)="selectAll()">
             <label></label>
           </div>
         </th>
-        <th>Patient</th>
-        <th>Studies</th>
-        <th>Modalities</th>
+        <th>Image</th>
+        <th>Laterality</th>
+        <th>Columns x Rows</th>
         <th>Transferred</th>
       </tr>
     </thead>
     <tbody>
-      <template ngFor let-patient [ngForOf]="patients">
+      <template ngFor let-image [ngForOf]="images.slice(selectedPage*pageSize, selectedPage*pageSize + pageSize)">
+        <!--Image Info-->
         <tr>
+          <!--Selection-->
           <td class="collapsing">
             <div class="ui checkbox">
-              <input type="checkbox" [checked]="patient.selected" (click)="selectPatient(patient)">
+              <input type="checkbox" [checked]="image.selected" (click)="selectImage(image)">
               <label></label>
             </div>
           </td>
+          
+          <!--Image-->
           <td>
-            <h5 class="ui header">
-              <i class="large blue tags link icon"></i>
-              <!--<i class="{{patient.gender == 'M' ? 'male' : 'female'}} icon"></i>-->
-              <i class="{{patient.open ? 'down' : 'right'}} triangle link icon" (click)="patient.open = !patient.open"></i>
-              <div class="content">{{patient.name}}</div>
-            </h5>
-          </td>
-          <td>{{patient.nStudies}}</td>
-          <td>[<span *ngFor="let mod of patient.modalities"> {{mod}}</span> ]</td>
-          <td>
-            <div *ngIf="patient.transfer" class="ui active progress" attr.id="progress_{{patient.id}}">
-              <div class="bar">
-                <div class="progress"></div>
-              </div>
+            <i class="large {{image.open ? 'down' : 'right'}} triangle link icon" (click)="image.open = !image.open"></i>
+            <i attr.id="image_link_{{image.uid}}" class="large blue unhide icon" (mouseenter)="openImagePopup(image.uid)"></i>
+            <div class="ui very wide popup">
+              <img class="ui fluid image" [src]="image.url">
             </div>
+            {{image.uid}}
+          </td>
+
+          <!--Laterality-->
+          <td>{{image.laterality}}</td>
+          
+          <!--Columns x Rows-->
+          <td>{{image.columns}}x{{image.rows}}</td>
+          
+          <!--Transferred-->
+          <td>
+            <i class="large {{ image.transferred ? 'green' : '' }} upload icon"></i>
           </td>
         </tr>
-        <tr *ngIf="patient.open">
+
+        <!--Image Details-->
+        <tr *ngIf="image.open">
           <td colspan="5">
-            <!--link incon color #014cde -->
-            <div class="ui relaxed list" style="padding-left: 40px">
-              <div *ngFor="let study of patient.studies" class="item">
-                <i class="large blue tags link icon"></i>
-                <i class="{{study.open ? 'down' : 'right'}} triangle link icon" (click)="study.open = !study.open"></i>
+            <div class="ui relaxed list" style="padding-left: 3em">
+              <!--Patient-->
+              <div class="item">
+                <i class="large blue user icon"></i>
                 <div class="content">
-                  <a class="header">Study: {{study.studyInstanceUID}}</a>
+                  <div class="header">Name: {{image.patient.name}}</div>
                   <div class="ui horizontal divided list">
-                    <div class="item">Date: {{study.studyDate}}</div>
-                    <div class="item">Series: {{study.series.length}}</div>
-                    <div class="item">Modality: {{study.modalities}}</div>
+                    <div class="item">BirthDate: {{image.patient.birthdate}}</div>
+                    <div class="item">Sex: {{image.patient.sex}}</div>
                   </div>
-                  <div *ngIf="study.open" class="ui relaxed list" style="padding-left: 20px">
-                    <div *ngFor="let serie of study.series" class="item">
-                      <i class="large blue tags link icon"></i>
-                      <i class="{{serie.open ? 'down' : 'right'}} triangle link icon" (click)="toggleSerie(serie)"></i>
-                      <div class="content">
-                        <div class="header">Serie: {{serie.serieInstanceUID}}</div>
-                        <div class="ui horizontal divided list">
-                          <div class="item">Number: {{serie.serieNumber}}</div>
-                          <div class="item">Images: {{serie.images.length}}</div>
-                        </div>
-                        <div *ngIf="serie.open" class="ui relaxed list" style="padding-left: 20px">
-                          <div *ngFor="let image of serie.images" class="item">
-                            <i attr.id="tags_link_{{image.sopInstanceUID}}" class="large blue tags link icon" (click)="openTagsModel(image.sopInstanceUID)"></i>
-                            <i attr.id="image_link_{{image.sopInstanceUID}}" class="large blue unhide icon" (mouseenter)="openImagePopup(image.sopInstanceUID)" (mouseleave)="closeImagePopup(image.sopInstanceUID)"></i>
-                            <div class="content">
-                              <div class="header">Image: {{image.sopInstanceUID}}</div>
-                              <div class="ui horizontal divided list">
-                                <div class="item">FileName: {{image.filename}}</div>
-                              </div>
-                              <!--BEGIN: image popups and modals-->
-                              <div attr.id="image_{{image.sopInstanceUID}}" class="ui very wide popup">
-                                <img class="ui fluid image" [src]="image.url">
-                              </div>
-                              <div attr.id="tags_{{image.sopInstanceUID}}" class="ui modal">
-                                <table class="ui celled striped table">
-                                  <thead>
-                                    <tr>
-                                      <th>Key</th>
-                                      <th>Value</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    <tr *ngFor="let tag of tags[image.sopInstanceUID] | async">
-                                      <td>{{tag[0]}}</td>
-                                      <td>{{tag[1]}}</td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </div>
-                              <!--END: image popups and modals-->
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                </div>
+              </div>
+              
+              <!--Annotations-->
+              <div *ngFor="let anno of image.annotations" class="item">
+                <i class="large blue tags link icon"></i>
+                <div class="content">
+                  <div class="header">Readability: {{anno.nodes.quality.fields.quality}}</div>
+                  <div class="ui horizontal divided list">
+                    <div class="item">Centered: {{anno.nodes.quality.fields.local || 'N/A'}}</div>
+                    <div class="item">Retinopathy: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.retinopathy: 'N/A'}}</div>
+                    <div class="item">Maculopathy: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.maculopathy: 'N/A'}}</div>
+                    <div class="item">Photocoagulation: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.photocoagulation: 'N/A'}}</div>
+                    <div class="item">Comorbidities: [{{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.diseases : 'N/A'}}]</div>
+                    <div class="item">Lesions: N/A</div>
                   </div>
                 </div>
               </div>
@@ -140,4 +121,13 @@
       </template>
     </tbody>
   </table>
+</div>
+
+<div style="margin: 0px 20px 0px 20px;">
+  <div class="ui input" style="width: 4em">
+    <input type="number" min="10" max="100" style="text-align: right;" [value]="pageSize" (input)="changePageSize($event.target.value)">
+  </div>
+  <div class="ui pagination menu">
+    <a *ngFor="let p of pages" class="item {{p == selectedPage ? 'active' : ''}}" (click)="selectedPage = p">{{p}}</a>
+  </div>
 </div>

@@ -28,6 +28,7 @@ import rt.async.promise.Promise
 import rt.async.promise.PromiseResult
 import rt.pipeline.pipe.channel.IPipeChannel
 import rt.pipeline.pipe.channel.SendBuffer
+import io.vertx.core.buffer.Buffer
 
 class DicoogleClient {
 	val Gson gson = new Gson
@@ -265,6 +266,22 @@ class DicoogleClient {
 	def Observable<String> downloadUIDs(List<String> imagesUIDs, String zipFilePath) {
 		val images = imagesUIDs.map[ uid | new Image => [ sopInstanceUID = uid ] ]
 		return download(images, zipFilePath)
+	}
+	
+	def Promise<Buffer> downloadInstance(String uid) {
+		val PromiseResult<Buffer> pResult = [ promise |
+			httpClient.getNow('/legacy/file?uid=' + uid)[ resp |
+				if (resp.statusCode != 200) {
+					promise.reject(new TransferException(uid, resp.statusMessage))
+					return
+				}
+				
+				println('Download: ' + uid)
+				resp.bodyHandler[ promise.resolve(it) ]
+			]
+		]
+		
+		return pResult.promise
 	}
 	
 	def Observable<String> download(List<Image> images, String zipFilePath) {

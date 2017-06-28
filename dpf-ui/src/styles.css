@@ -215,3 +215,21 @@ div {
 .ui.dropdown .menu>.item:hover {
   background-color: #1b1c1d;
 }
+
+/*pagination menu*/
+/*.ui.pagination.menu .item {
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.3);
+}*/
+
+.ui.pagination.menu .active.item {
+  /*border-width: 1px;*/
+  /*border-style: solid;*/
+  /*border-color: rgba(0, 0, 0, 0.3);*/
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.ui.pagination.menu {
+  border: none;
+}
