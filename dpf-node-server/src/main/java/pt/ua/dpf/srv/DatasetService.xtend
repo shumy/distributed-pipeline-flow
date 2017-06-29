@@ -8,6 +8,7 @@ import pt.ua.ieeta.rpacs.model.Image
 import pt.ua.ieeta.rpacs.model.ext.Annotator
 import pt.ua.ieeta.rpacs.model.ext.Dataset
 import rt.data.Data
+import rt.plugin.service.ServiceException
 import rt.plugin.service.an.Context
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
@@ -37,6 +38,33 @@ class DatasetService {
 				]
 			].toMap[ type ]
 		]
+	}
+	
+	@Public(worker = true)
+	@Context(name = 'user', type = UserInfo)
+	def void create(String dsName, List<String> imageUIDs) {
+		if (Dataset.findByName(dsName) !== null)
+			throw new ServiceException(500, "Dataset with name " + dsName + " already exist!")
+				
+		val thisAnnotator = Annotator.getOrCreateAnnotator(user.name)
+		Ebean.execute[
+			val ds = new Dataset => [
+				name = dsName
+				annotators.add(thisAnnotator)
+				images.addAll(Image.find.query.where.in('uid', imageUIDs).findList)
+			]
+			ds.save
+		]
+	}
+	
+	@Public(worker = true)
+	@Context(name = 'user', type = UserInfo)
+	def void delete(String dsName) {
+		val ds = Dataset.findByName(dsName)
+		if (ds === null)
+			throw new ServiceException(500, "Dataset with name " + dsName + " doesn't exist!")
+		
+		Ebean.execute[ ds.delete ]
 	}
 	
 	@Public(worker = true)

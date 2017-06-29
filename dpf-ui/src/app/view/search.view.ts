@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ChangeDetectorRef }  from '@angular/core';
+import { Component, ViewChild, OnInit, Input, ChangeDetectorRef }  from '@angular/core';
 import { FormControl }                                  from '@angular/forms';
 
 import { UUID, ClientRouter }                           from 'rts-ts-client';
@@ -10,9 +10,15 @@ import { environment as config }                        from '../../environments
   styles: ['.main.menu { margin: 60px 20px 5px; }']
 })
 export class SearchView {
+  @ViewChild('drop_data') drop_data
+  @ViewChild('drop_action') drop_action
+  @ViewChild('modal_create_ds') modal_create_ds
+  @ViewChild('ds_name') ds_name
+
   private searchSrv: any
   private trfSrv: any
   private folderMngSrv: any
+  private dsSrv: any
 
   query = new FormControl()
   allSelected = false
@@ -25,10 +31,13 @@ export class SearchView {
 
   dataTypes = ['dcm']
 
+  dsMessageError = false
+
   constructor(router: ClientRouter, private ref: ChangeDetectorRef) {
     this.searchSrv = router.createProxy('search')
     this.trfSrv = router.createProxy('transfers')
     this.folderMngSrv = router.createProxy('folder-manager')
+    this.dsSrv = router.createProxy('ds')
 
     this.query.valueChanges.debounceTime(400).distinctUntilChanged()
       .subscribe(tQuery => {
@@ -57,14 +66,18 @@ export class SearchView {
   }
 
   ngAfterContentInit() {
-    let drop: any = $('.ui.dropdown')
-    drop.dropdown({
+    let drop_action: any = $(this.drop_action.nativeElement)
+    drop_action.dropdown()
+
+    let drop_data: any = $(this.drop_data.nativeElement)
+    drop_data.dropdown({
       onChange: (text) => {
         this.dataTypes = text.split(',').filter(el => el.length > 0)
+        console.log(this.dataTypes)
       }
     })
 
-    drop.dropdown('set exactly', this.dataTypes)
+    drop_data.dropdown('set exactly', this.dataTypes)
   }
 
   openImagePopup(uid: string) {
@@ -100,6 +113,10 @@ export class SearchView {
     this.allSelected = this.selectedNumber == this.images.length
   }
 
+  lesions(l: any) {
+    return l.fields.lesions.map(_ => _.type)
+  }
+
   transfer() {
     let selectedImages = this.images.filter(_ => _.selected == true)
     let selectedUIDs = selectedImages.map(_ => _.uid)
@@ -132,5 +149,32 @@ export class SearchView {
     let pChanged = this.images.find(_ => _.uid === notif.uid)
     pChanged.transferred = true
     this.ref.detectChanges()
+  }
+
+  //dataset creation.................................................
+  openDsModel() {
+    this.dsMessageError = false
+    let input_ds_name: any = $(this.ds_name.nativeElement)
+    input_ds_name.val('')
+
+    let modal_create: any = $(this.modal_create_ds.nativeElement)
+    modal_create.modal('show')
+  }
+
+  createDataset(name: string) {
+    if (name.length > 0) {
+      console.log('CREATE-DS: ', name)
+      let selectedImages = this.images.filter(_ => _.selected == true)
+      let selectedUIDs = selectedImages.map(_ => _.uid)
+
+      this.dsSrv.create(name, selectedUIDs)
+        .then(_ => toastr.success('Dataset created'))
+        .catch(error => toastr.error(error.message))
+
+      let modal_create: any = $(this.modal_create_ds.nativeElement)
+      modal_create.modal('hide')
+    } else {
+      this.dsMessageError = true
+    }
   }
 }

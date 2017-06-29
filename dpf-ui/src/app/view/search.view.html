@@ -8,7 +8,7 @@
   </div>
   <div class="right menu">
     <div class="item">
-      <div class="ui basic multiple search selection dropdown">
+      <div #drop_data class="ui basic multiple search selection dropdown">
         <input type="hidden">
         <i class="dropdown icon"></i>
         <div class="default text">Select Data</div>
@@ -25,8 +25,14 @@
 
     <div class="item">
       <div class="ui tiny teal buttons">
-        <div class="ui button" [class.disabled]="selectedNumber == 0" (click)="transfer()">
+        <div class="ui button" [class.disabled]="selectedNumber == 0 || dataTypes.length == 0" (click)="transfer()">
           Download
+        </div>
+        <div #drop_action class="ui floating dropdown icon button" [class.disabled]="selectedNumber == 0">
+          <i class="dropdown icon"></i>
+          <div class="menu">
+            <div class="item" (click)="openDsModel()">Create Dataset</div>
+          </div>
         </div>
       </div>
     </div>
@@ -45,6 +51,8 @@
           </div>
         </th>
         <th>Image</th>
+        <th>DateTime</th>
+        <th>Modality</th>
         <th>Laterality</th>
         <th>Columns x Rows</th>
         <th>Transferred</th>
@@ -72,6 +80,12 @@
             {{image.uid}}
           </td>
 
+          <!--DateTime-->
+          <td>{{image.datetime}}</td>
+
+          <!--Modality-->
+          <td>{{image.modality}}</td>
+
           <!--Laterality-->
           <td>{{image.laterality}}</td>
           
@@ -86,13 +100,13 @@
 
         <!--Image Details-->
         <tr *ngIf="image.open">
-          <td colspan="5">
+          <td colspan="7">
             <div class="ui relaxed list" style="padding-left: 3em">
               <!--Patient-->
               <div class="item">
                 <i class="large blue user icon"></i>
                 <div class="content">
-                  <div class="header">Name: {{image.patient.name}}</div>
+                  <div class="header">PatientName: {{image.patient.name}}</div>
                   <div class="ui horizontal divided list">
                     <div class="item">BirthDate: {{image.patient.birthdate}}</div>
                     <div class="item">Sex: {{image.patient.sex}}</div>
@@ -111,7 +125,7 @@
                     <div class="item">Maculopathy: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.maculopathy: 'N/A'}}</div>
                     <div class="item">Photocoagulation: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.photocoagulation: 'N/A'}}</div>
                     <div class="item">Comorbidities: [{{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.diseases : 'N/A'}}]</div>
-                    <div class="item">Lesions: N/A</div>
+                    <div class="item">Lesions: [{{anno.nodes.lesions ? lesions(anno.nodes.lesions) : 'N/A'}}]</div>
                   </div>
                 </div>
               </div>
@@ -129,5 +143,28 @@
   </div>
   <div class="ui pagination menu">
     <a *ngFor="let p of pages" class="item {{p == selectedPage ? 'active' : ''}}" (click)="selectedPage = p">{{p}}</a>
+  </div>
+</div>
+
+<div #modal_create_ds class="ui modal">
+  <i class="close icon"></i>
+  <div class="header">
+    Create Dataset
+  </div>
+  <div class="content">
+    <div class="description">
+      <div class="ui header">Choose a dataset name:</div>
+    </div>
+    <div class="ui fluid input">
+      <input #ds_name type="text" placeholder="Dataset Name...">
+    </div>
+    <div *ngIf="dsMessageError" class="ui negative message">
+      <p>Please provide a dataset name!</p>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui green button" (click)="createDataset(ds_name.value)">
+      Create
+    </div>
   </div>
 </div>

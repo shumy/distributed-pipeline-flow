@@ -165,7 +165,7 @@ class TransferService {
 				return null
 			].then[
 				println('DOWNLOAD-TASK-COMPLETED')
-				sub.complete
+				AsyncUtils.schedule[ sub.complete ]
 			]
 		]
 		

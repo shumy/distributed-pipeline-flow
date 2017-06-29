@@ -20,13 +20,17 @@ class SearchService {
 	}
 	
 	def static toImageInfo(Image image) {
+		val dbSerie = image.serie
+		val dbPatient = image.serie.study.patient
+		
 		ImageInfo.B => [
 			uid = image.uid
+			datetime = dbSerie.datetime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).replaceAll('T', ' ')
+			modality = dbSerie.modality
 			laterality = image.laterality
 			columns = image.columns
 			rows = image.rows
 			
-			val dbPatient = image.serie.study.patient
 			patient = PatientInfo.B => [
 				name = dbPatient.name
 				sex = dbPatient.sex
@@ -51,6 +55,8 @@ class SearchService {
 @Data
 class ImageInfo {
 	String uid
+	String datetime
+	String modality
 	String laterality
 	Integer columns
 	Integer rows
@@ -63,6 +69,8 @@ class ImageInfo {
 		
 		val jsonString = '''{
 			"uid": "«uid»",
+			"datetime": "«datetime»",
+			"modality": "«modality»",
 			"laterality": "«laterality»",
 			"columns": «columns»,
 			"rows": «rows»,
