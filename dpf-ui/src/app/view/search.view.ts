@@ -31,7 +31,7 @@ export class SearchView {
 
   dataTypes = ['dcm']
 
-  dsMessageError = false
+  dsMessageError = ''
 
   constructor(router: ClientRouter, private ref: ChangeDetectorRef) {
     this.searchSrv = router.createProxy('search')
@@ -153,7 +153,7 @@ export class SearchView {
 
   //dataset creation.................................................
   openDsModel() {
-    this.dsMessageError = false
+    this.dsMessageError = ''
     let input_ds_name: any = $(this.ds_name.nativeElement)
     input_ds_name.val('')
 
@@ -167,14 +167,13 @@ export class SearchView {
       let selectedImages = this.images.filter(_ => _.selected == true)
       let selectedUIDs = selectedImages.map(_ => _.uid)
 
-      this.dsSrv.create(name, selectedUIDs)
-        .then(_ => toastr.success('Dataset created'))
-        .catch(error => toastr.error(error.message))
-
-      let modal_create: any = $(this.modal_create_ds.nativeElement)
-      modal_create.modal('hide')
+      this.dsSrv.create(name, selectedUIDs).then(_ => {
+        let modal_create: any = $(this.modal_create_ds.nativeElement)
+        modal_create.modal('hide')
+        toastr.success('Dataset created')
+      }).catch(error => this.dsMessageError = error.message)
     } else {
-      this.dsMessageError = true
+      this.dsMessageError = 'Please provide a dataset name!'
     }
   }
 }

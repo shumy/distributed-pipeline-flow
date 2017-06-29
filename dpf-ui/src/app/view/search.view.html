@@ -158,8 +158,8 @@
     <div class="ui fluid input">
       <input #ds_name type="text" placeholder="Dataset Name...">
     </div>
-    <div *ngIf="dsMessageError" class="ui negative message">
-      <p>Please provide a dataset name!</p>
+    <div *ngIf="dsMessageError.length > 0" class="ui negative message">
+      <p>{{dsMessageError}}</p>
     </div>
   </div>
   <div class="actions">
