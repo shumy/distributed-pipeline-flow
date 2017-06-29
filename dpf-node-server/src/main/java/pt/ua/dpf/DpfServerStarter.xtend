@@ -196,6 +196,7 @@ class DpfServerStarter extends AbstractVerticle {
 				
 				get('/file-list/:path', 'folder-manager' -> 'list')
 				get('/file-download/:filename', 'folder-manager', 'download', #['ctx.request', 'filename'])
+				get('/file-download-and-delete/:filename', 'folder-manager', 'downloadAndDelete', #['ctx.request', 'filename'])
 				post('/file-upload', 'folder-manager', 'upload', #['ctx.request'])
 				
 				get('/proxy/dic2png/:uid', 'd-proxy', 'dic2png', #['ctx.request', 'uid'])

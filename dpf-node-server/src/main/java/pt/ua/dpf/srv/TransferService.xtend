@@ -1,16 +1,14 @@
 package pt.ua.dpf.srv
 
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.List
 import java.util.zip.Deflater
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import pt.ua.dpf.dicoogle.TransferException
 import pt.ua.ieeta.rpacs.model.Image
 import rt.async.AsyncUtils
 import rt.async.observable.Observable
@@ -23,6 +21,8 @@ import rt.plugin.service.an.Context
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
 import rt.utils.interceptor.UserInfo
+import java.net.URL
+import java.net.HttpURLConnection
 
 @Service
 @Data(metadata = false)
@@ -98,15 +98,20 @@ class TransferService {
 		val zipFile = newZip(filePath)
 		val ObservableResult<TransferInfo> pResult = [ sub |
 			AsyncUtils.task[
-				imageUIDs.forEach[ uid |
+				val images = Image.find.query
+					.fetch('serie.study.patient')
+					.fetch('annotations.nodes')
+				.where.in('uid', imageUIDs).findList
+				
+				images.forEach[ image |
 					try {
-						if (!dataTypes.contains('ndcm')) {
-							val url = new URL(dicoogleUrl + '/legacy/file?uid=' + uid)
-							val httpConn = url.openConnection as HttpURLConnection
-							if (httpConn.responseCode == HttpURLConnection.HTTP_OK) {
-								zipFile.putNextEntry(new ZipEntry(uid + '.dcm'))
-									val inputStream = httpConn.inputStream
-									val buffer = newByteArrayOfSize(1024*1024)
+						if (dataTypes.contains('dcm')) {
+							val buffer = newByteArrayOfSize(1024*1024)
+							try {
+								//FileSystem direct download is faster...
+								zipFile.putNextEntry(new ZipEntry(image.uid + '.dcm'))
+									val path = if (image.uri.startsWith('file:')) image.uri.substring(5) else image.uri
+									val inputStream = new FileInputStream(path)
 									
 									var bytesRead = -1
 									while ((bytesRead = inputStream.read(buffer)) != -1)
@@ -114,28 +119,44 @@ class TransferService {
 									
 									inputStream.close
 								zipFile.closeEntry
-							} else
-								throw new RuntimeException('Dicoogle replied HTTP code: ' + httpConn.responseCode)
-							httpConn.disconnect
+							} catch(Throwable ex) {
+								//Retry with Dicoogle...
+								val url = new URL(dicoogleUrl + '/legacy/file?uid=' + image.uid)
+								val httpConn = url.openConnection as HttpURLConnection
+								if (httpConn.responseCode == HttpURLConnection.HTTP_OK) {
+									zipFile.putNextEntry(new ZipEntry(image.uid + '.dcm'))
+										val inputStream = httpConn.inputStream
+										
+										var bytesRead = -1
+										while ((bytesRead = inputStream.read(buffer)) != -1)
+											zipFile.write(buffer, 0, bytesRead)
+										
+										inputStream.close
+									zipFile.closeEntry
+								} else {
+									httpConn.disconnect
+									throw new RuntimeException('Dicoogle replied HTTP code: ' + httpConn.responseCode)
+								}
+								
+								httpConn.disconnect
+							}
 						}
 						
 						if (dataTypes.contains('anno')) {
-							val image = Image.findByUID(uid)
 							val imageInfo = SearchService.toImageInfo(image)
-							
-							zipFile.putNextEntry(new ZipEntry(uid + '.json'))
+							zipFile.putNextEntry(new ZipEntry(image.uid + '.json'))
 								zipFile.write(imageInfo.toJson.getBytes("UTF-8"))
 							zipFile.closeEntry
 						}
 						
 						AsyncUtils.schedule[
-							sub.next(TransferInfo.B => [ id = uid ])
+							sub.next(TransferInfo.B => [ uid = image.uid ])
 						]
 					} catch(Throwable ex) {
 						zipFile.close
 						Files.delete(Paths.get(filePath))
 						AsyncUtils.schedule[
-							sub.reject(new TransferException(uid, ex.message))
+							sub.next(TransferInfo.B => [uid = image.uid error = ex.message])
 						]
 					}
 				]
@@ -166,6 +187,6 @@ class TransferService {
 
 @Data
 class TransferInfo {
-	@Optional val String id	//PatientID
+	@Optional val String uid
 	@Optional val String error
 }

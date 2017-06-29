@@ -12,6 +12,7 @@ import { environment as config }                        from '../../environments
 export class SearchView {
   private searchSrv: any
   private trfSrv: any
+  private folderMngSrv: any
 
   query = new FormControl()
   allSelected = false
@@ -22,11 +23,12 @@ export class SearchView {
   pageSize = 10
   selectedPage = 0
 
-  dataTypes: string[] = []
+  dataTypes = ['dcm']
 
   constructor(router: ClientRouter, private ref: ChangeDetectorRef) {
     this.searchSrv = router.createProxy('search')
     this.trfSrv = router.createProxy('transfers')
+    this.folderMngSrv = router.createProxy('folder-manager')
 
     this.query.valueChanges.debounceTime(400).distinctUntilChanged()
       .subscribe(tQuery => {
@@ -61,6 +63,8 @@ export class SearchView {
         this.dataTypes = text.split(',').filter(el => el.length > 0)
       }
     })
+
+    drop.dropdown('set exactly', this.dataTypes)
   }
 
   openImagePopup(uid: string) {
@@ -110,7 +114,7 @@ export class SearchView {
         notif => this.onTransferredNotif(notif),
         error => toastr.error(error.message),
         _ => {
-          let uri = config.base + '/file-download/' + fileName + '.zip'
+          let uri = config.base + '/file-download-and-delete/' + fileName + '.zip'
           window.location.href = uri
           toastr.success('Downloading file...')
         }
@@ -125,7 +129,7 @@ export class SearchView {
       return
     }
 
-    let pChanged = this.images.find(_ => _.uid === notif.id)
+    let pChanged = this.images.find(_ => _.uid === notif.uid)
     pChanged.transferred = true
     this.ref.detectChanges()
   }
