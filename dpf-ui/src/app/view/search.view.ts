@@ -13,6 +13,7 @@ export class SearchView {
   @ViewChild('drop_data') drop_data
   @ViewChild('drop_action') drop_action
   @ViewChild('modal_create_ds') modal_create_ds
+  @ViewChild('modal_help') modal_help
   @ViewChild('ds_name') ds_name
 
   readonly POPUP_SIZE = 600
@@ -90,6 +91,11 @@ export class SearchView {
   closePreview(uid: string) {
     let preview = $('div[id="image_popup_' + uid + '"]')
     preview.css({display: "none"})
+  }
+
+  help() {
+    let modal: any = $(this.modal_help.nativeElement)
+    modal.modal('show')
   }
 
   changePageSize(newSize: number) {

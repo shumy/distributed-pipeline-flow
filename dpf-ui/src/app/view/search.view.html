@@ -1,8 +1,11 @@
 <!--Search Bar-->
 <div class="ui main menu">
   <div class="flex item">
-    <div class="ui icon input">
-      <input type="text" placeholder="Search..." [formControl]="query">
+    <div class="ui labeled icon input">
+      <div class="ui basic label" style="padding: .6em 0em .6em .95em; cursor:pointer;" (click)="help()">
+        <i class="circle help large icon"></i>
+      </div>
+      <input type="text" placeholder="Search..." [formControl]="query" style="border-radius:0;">
       <i class="search icon"></i>
     </div>
   </div>
@@ -166,5 +169,65 @@
     <div class="ui green button" (click)="createDataset(ds_name.value)">
       Create
     </div>
+  </div>
+</div>
+
+<div #modal_help class="ui modal">
+  <i class="close icon"></i>
+  <div class="header">Search Help</div>
+  <div class="content">
+    <h3>General Query Format</h3>
+    <p>Simple field search: <strong>Laterality:L</strong></p>
+    <p>Range field search: <strong>Columns:[1000 TO 4000]</strong></p>
+    <p>Conditional field search: <strong>Columns:>3000</strong></p>
+    <p>Special Chars: (*, ?)</p>
+    
+    <h3>Field Types</h3>
+    <ul class="ui list">
+      <li>text</li>
+      <li>numeric</li>
+      <li>date</li>
+      <li>option</li>
+    </ul>
+
+    <!--<div class="ui segment">
+      <p>Laterality:(L OR R)</p>
+    </div>-->
+
+    <h3>All Searchable Fields</h3>
+    <ul class="ui list">
+      <li>
+        <strong>Using Image Fields:</strong>
+        <ul>
+          <li>Image -> <strong>text</strong> type, ex: <strong>Image:1.2.392.200046.100.3.8.101983.6690.20160506092052.2.1.1.1</strong></li>
+          <li>DateTime -> <strong>date</strong> type, ex: <strong>DateTime:[2016-01-06 TO 2016-05-07]</strong></li>
+          <li>Modality -> <strong>text</strong> type, ex: <strong>Modality:XC</strong></li>
+          <li>Laterality -> <strong>text</strong> type (normally L or R), ex: <strong>Laterality:L</strong></li>
+          <li>Columns -> <strong>numeric</strong> type, ex: <strong>Columns:[1000 TO 4000]</strong></li>
+          <li>Rows-> <strong>numeric</strong> type, ex: <strong>Rows:>1000</strong></li>
+        </ul>
+      </li>
+      <li>
+        <strong>Using Patient Fields:</strong>
+        <ul>
+          <li>PatientName -> <strong>text</strong> type, ex: <strong>PatientName:B8XIP*</strong></li>
+          <li>BirthDate -> <strong>date</strong> type, ex: <strong>BirthDate:[1936-07-22 TO 1936-07-24]</strong></li>
+          <li>Sex -> <strong>text</strong> type (normally M or F), ex: <strong>Sex:M</strong></li>
+        </ul>
+      </li>
+      <li>
+        <strong>Using Annotation Fields:</strong>
+        <ul>
+          <li>Readability -> <strong>option</strong> type with options (GOOD, PARTIAL, BAD), ex: <strong>Readability:GOOD</strong></li>
+          <li>Centered -> <strong>option</strong> type with options (MACULA, OPTIC_DISC, OTHER), ex: <strong>Centered:(MACULA OR OTHER)</strong></li>
+          <li>Retinopathy -> <strong>option</strong> type with options (R0, R1, R2_M, R2_S, R3, RX), ex: <strong>Retinopathy:R2*</strong></li>
+          <li>Maculopathy -> <strong>option</strong> type with options (M0, M1, MX), ex: <strong>Maculopathy:MX</strong></li>
+          <li>Photocoagulation -> <strong>option</strong> type with options (P0, P1, P2, PX), ex: <strong>Photocoagulation:(P0 AND P1)</strong></li>
+          <li>Comorbidities -> <strong>text</strong> type, ex: <strong>Comorbidities:Glau*</strong></li>
+          <li>Lesions -> <strong>option</strong> type with options (MA, HEM, HE, SE, NV), ex: <strong>Lesions:MA</strong></li>
+        </ul>
+      </li>
+    </ul>
+    <p>Special Queries</p>
   </div>
 </div>
