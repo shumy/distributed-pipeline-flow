@@ -73,8 +73,8 @@
           <!--Image-->
           <td>
             <i class="large {{image.open ? 'down' : 'right'}} triangle link icon" (click)="image.open = !image.open"></i>
-            <i attr.id="image_link_{{image.uid}}" class="large blue unhide icon" (mouseenter)="openImagePopup(image.uid)"></i>
-            <div class="ui very wide popup">
+            <i class="large blue unhide icon" (mouseenter)="openPreview(image.uid, $event)" (mouseleave)="closePreview(image.uid)"></i>
+            <div attr.id="image_popup_{{image.uid}}" style="display:none; box-shadow: rgba(34, 36, 38, 0.6) -3px 5px 5px 2px;">
               <img class="ui fluid image" [src]="image.url">
             </div>
             {{image.uid}}
@@ -116,7 +116,7 @@
               
               <!--Annotations-->
               <div *ngFor="let anno of image.annotations" class="item">
-                <i class="large blue tags link icon"></i>
+                <i class="large blue tags icon"></i>
                 <div class="content">
                   <div class="header">Readability: {{anno.nodes.quality.fields.quality}}</div>
                   <div class="ui horizontal divided list">

@@ -15,6 +15,8 @@ export class SearchView {
   @ViewChild('modal_create_ds') modal_create_ds
   @ViewChild('ds_name') ds_name
 
+  readonly POPUP_SIZE = 600
+
   private searchSrv: any
   private trfSrv: any
   private folderMngSrv: any
@@ -80,17 +82,14 @@ export class SearchView {
     drop_data.dropdown('set exactly', this.dataTypes)
   }
 
-  openImagePopup(uid: string) {
-    let imagePopup: any = $('i[id="image_link_' + uid + '"]')
-    imagePopup.popup({
-      inline: true,
-      hoverable: true,
-      position: 'bottom left',
-      lastResort: 'bottom left'//,
-      //boundary: '.ui.content.segment'
-    })
-      
-    imagePopup.popup('show')
+  openPreview(uid: string, event: any) {
+    let preview = $('div[id="image_popup_' + uid + '"]')
+    preview.css({position: "fixed", left: "calc(50vw - " + this.POPUP_SIZE/2 + "px)", top: "60px", width: (this.POPUP_SIZE + "px"), zIndex: 100, display: "block"})
+  }
+
+  closePreview(uid: string) {
+    let preview = $('div[id="image_popup_' + uid + '"]')
+    preview.css({display: "none"})
   }
 
   changePageSize(newSize: number) {
