@@ -2,10 +2,37 @@
 <div class="ui main menu">
   <div class="flex item">
     <div class="ui labeled icon input">
-      <div class="ui basic label" style="padding: .6em 0em .6em .95em; cursor:pointer;" (click)="help()">
+      <div class="ui basic label" style="padding: .6em 0em .6em .95em; cursor:pointer; border-right:none;" (click)="help()">
         <i class="circle help large icon"></i>
       </div>
-      <input type="text" placeholder="Search..." [formControl]="query" style="border-radius:0;">
+      
+      <div #search_drop_help class="ui inline dropdown">
+        <div #search_drop_menu class="search menu">
+          <div class="header">Image Fields</div>
+          <div class="item">Image</div>
+          <div class="item">DateTime</div>
+          <div class="item">Modality</div>
+          <div class="item">Laterality</div>
+          <div class="item">Columns</div>
+          <div class="item">Rows</div>
+
+          <div class="header">Patient Fields</div>
+          <div class="item">PatientName</div>
+          <div class="item">BirthDate</div>
+          <div class="item">Sex</div>
+
+          <div class="header">Annotation Fields</div>
+          <div class="item">Readability</div>
+          <div class="item">Centered</div>
+          <div class="item">Retinopathy</div>
+          <div class="item">Maculopathy</div>
+          <div class="item">Photocoagulation</div>
+          <div class="item">Comorbidities</div>
+          <div class="item">Lesions</div>
+        </div>
+      </div>
+      
+      <input #search type="text" placeholder="Search..." [formControl]="query" style="border-radius:0;" (keydown.control.Space)="searchHelp()">
       <i class="search icon"></i>
     </div>
   </div>

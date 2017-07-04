@@ -16,6 +16,12 @@ export class SearchView {
   @ViewChild('modal_help') modal_help
   @ViewChild('ds_name') ds_name
 
+  //search help
+  @ViewChild('search') search
+  @ViewChild('search_drop_help') search_drop_help
+  @ViewChild('search_drop_menu') search_drop_menu
+  
+
   readonly POPUP_SIZE = 600
 
   private searchSrv: any
@@ -180,5 +186,23 @@ export class SearchView {
     } else {
       this.dsMessageError = 'Please provide a dataset name!'
     }
+  }
+
+  //search help dropdown..............................................
+  searchHelp() {
+    let jSearch: any = $(this.search.nativeElement)
+    let jSearchMenu: any = $(this.search_drop_menu.nativeElement)
+    jSearchMenu.css({ width: jSearch.width() })
+
+    let jDrop: any = $(this.search_drop_help.nativeElement)
+    jDrop.dropdown({
+      action: (text, value) => {
+        jDrop.dropdown('hide')
+        jSearch.focus()
+        jSearch.val(jSearch.val() + text)
+      }
+    })
+
+    jDrop.focus()
   }
 }
