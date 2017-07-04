@@ -35,7 +35,7 @@ export class SearchView {
 
   images = []
   pages = [0]
-  pageSize = 10
+  pageSize = 20
   selectedPage = 0
 
   dataTypes = ['dcm']
