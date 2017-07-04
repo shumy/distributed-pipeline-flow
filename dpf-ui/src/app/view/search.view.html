@@ -173,26 +173,51 @@
 </div>
 
 <div #modal_help class="ui modal">
-  <i class="close icon"></i>
   <div class="header">Search Help</div>
   <div class="content">
-    <h3>General Query Format</h3>
-    <p>Simple field search: <strong>Laterality:L</strong></p>
-    <p>Range field search: <strong>Columns:[1000 TO 4000]</strong></p>
-    <p>Conditional field search: <strong>Columns:>3000</strong></p>
-    <p>Special Chars: (*, ?)</p>
-    
-    <h3>Field Types</h3>
+
+    <h3>Query Language</h3>
+    <p>
+      The query language can be used with free text of simple boolean logic. Although some uppercase words are used here, the language is case free.
+      When selecting the field and data to search, the format is the following: <strong>&lt;field&gt;:&lt;data&gt;</strong>.
+      Boolean compositions can be made from several fields like: <strong>&lt;field1&gt;:&lt;data1&gt; OR &lt;field2&gt;:&lt;data2&gt;</strong>
+      or in the same field like: <strong>&lt;field&gt;:(data1 OR data2)</strong>
+    </p>
+    <p>
+      The free text exclude the use of fields, we can for example search by Glaucoma Comorbidities using only <strong>Glauco*</strong>
+      although there is a higher chance of colliding with results with other fields not related to Comorbidities.
+    </p>
+
+    <h4>Boolean Operators</h4>
+    <p>Available <strong>boolean</strong> operators are:</p>
     <ul class="ui list">
-      <li>text</li>
-      <li>numeric</li>
-      <li>date</li>
-      <li>option</li>
+      <li>OR -> joins 2 sentences indicating that the presence of one condition is a valid result</li>
+      <li>AND -> joins 2 sentences indicating that the presence of both conditions is required</li>
+      <li>+ -> applied to single sentence indicating this term must be present</li>
+      <li>- -> applied to single sentence indicating this term must not be present</li>
+    </ul>
+    <p>
+      When searching by annotations sometimes different annotations in the same image can be contradictory.
+      Some boolean combinations can be used to refine the search, ex: <strong>Readability:(GOOD AND -PARTIAL)</strong>
+      will select all images with Readability:GOOD but discarding any that as a contradictory annotation with Readability:PARTIAL.
+    </p>
+
+    <h4>Range Operators</h4>
+    <p>
+      Ranges can be specified for date, numeric or string fields.
+      Inclusive ranges are specified with square brackets [min TO max] and exclusive ranges with curly brackets {{'{min TO max}'}}.
+    </p>
+    <p>Available <strong>range</strong> operators are:</p>
+    <ul class="ui list">
+      <li>TO -> define a range interval, ex: <strong>BirthDate:[1936-07-22 TO 1936-07-24]</strong></li>
+      <li>&lt;, &gt;, &lt;=, &gt;= -> range limiters, ex: <strong>Columns:>3000</strong></li>
     </ul>
 
-    <!--<div class="ui segment">
-      <p>Laterality:(L OR R)</p>
-    </div>-->
+    <h4>Wildcards</h4>
+    <p>
+      Wildcard searches can be run on individual terms, using ? to replace a single character, and * to replace zero or more characters, ex:
+      <strong>Comorbidities:Vascu*</strong>
+    </p>
 
     <h3>All Searchable Fields</h3>
     <ul class="ui list">
@@ -228,6 +253,19 @@
         </ul>
       </li>
     </ul>
-    <p>Special Queries</p>
+
+    <h4>Field Types</h4>
+    <ul class="ui list">
+      <li>text -> free text field</li>
+      <li>numeric -> natural numbers</li>
+      <li>date -> dates used with format YYYY-MM-DD</li>
+      <li>option -> a set of pre-defined text options</li>
+    </ul>
+
+    <h3>Special Queries</h3>
+    <p>
+      These queries do not go through the Query Language and are used for special situations,
+      the only available special query is to select datasets, ex: <strong>dataset:&lt;dataset name&gt;</strong>
+    </p>
   </div>
 </div>
