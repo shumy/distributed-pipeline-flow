@@ -177,7 +177,15 @@
   <div class="ui pagination menu">
     <a *ngFor="let p of pages" class="item {{p == selectedPage ? 'active' : ''}}" (click)="selectedPage = p">{{p}}</a>
   </div>
-  <div class="ui large label">Page {{ (selectedPage*pageSize + 1) + ' to ' + (selectedPage + 1)*pageSize + ' of ' + images.length }} results.</div>
+  <div class="ui large label">
+    Images from {{
+      (images.length == 0 ? 0 : (selectedPage*pageSize + 1)) +
+      ' to ' + 
+      ((selectedPage + 1)*pageSize > images.length ? images.length : (selectedPage + 1)*pageSize) + 
+      ' of ' + 
+      images.length }}
+    results.
+  </div>
 </div>
 
 <div #modal_create_ds class="ui modal">
