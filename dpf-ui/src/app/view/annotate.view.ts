@@ -11,7 +11,7 @@ declare var Raphael: any
   selector: 'annotate-view',
   templateUrl: 'annotate.view.html'
 })
-export class AnnotateView implements OnInit {
+export class AnnotateView {
   private dsProxy: DatasetService
   private annoProxy: AnnotationService
 
@@ -48,11 +48,11 @@ export class AnnotateView implements OnInit {
   imageObj = new Image()
 
   readonly geoAttributes = {
-    MA: { color: "#2185D0", width: 2},  //MicroAneurisms (elipse)
-    HEM: { color: "#00B5AD", width: 2}, //Hemorhages (circle)
-    HE: { color: "#21BA45", width: 2},  //Hard Exudates (path)
-    SE: { color: "#B5CC18", width: 2},  //Soft Exudates (path)
-    NV: { color: "#767676", width: 2}   //Neovascularization (pencil)
+    MA:  { color: "#FF0000", width: 2},  //MicroAneurisms (elipse)
+    HEM: { color: "#00FF00", width: 2},  //Hemorhages (circle)
+    HE:  { color: "#0000FF", width: 2},  //Hard Exudates (path)
+    SE:  { color: "#FFFF00", width: 2},  //Soft Exudates (path)
+    NV:  { color: "#000000", width: 2}   //Neovascularization (pencil)
   }
 
   lastTool: string
@@ -76,10 +76,13 @@ export class AnnotateView implements OnInit {
 
   constructor(private router: ClientRouter, private route: ActivatedRoute, private hasChange: ChangeDetectorRef) {
     let params = this.route.snapshot.queryParams
-    
-    this.ctxLesions = params['lesions'] == 'true' ? true : false
-    this.ctxQuality = !this.ctxLesions
-    this.ctxDiagnosis = !this.ctxLesions
+    this.initContext(params)
+
+    this.route.queryParams.subscribe(params => {
+      this.initContext(params)
+      if (this.magnifier != null)
+        this.loadDataset()
+    })
 
     this.dsProxy = router.createProxy('ds')
     this.annoProxy = router.createProxy('anno')
@@ -96,6 +99,12 @@ export class AnnotateView implements OnInit {
 
     this.tools()
     this.loadDataset()
+  }
+
+  initContext(params: any) {
+    this.ctxLesions = params['lesions'] == 'true' ? true : false
+    this.ctxQuality = !this.ctxLesions
+    this.ctxDiagnosis = !this.ctxLesions
   }
 
   getProgressFromContext() {

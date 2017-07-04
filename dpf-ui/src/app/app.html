@@ -12,6 +12,10 @@
     <i class="tags large icon"></i>
     Annotate
   </a>
+  <a *ngIf="contains('/ui-annotate')" [routerLink]="['annotate']" [queryParams]="{lesions: true}" class="header item">
+    <i class="edit large icon"></i>
+    Lesions
+  </a>
   <a *ngIf="contains('/ui-viewer')"   [routerLink]="['viewer']" class="header item">
     <i class="unhide large icon"></i>
     Viewer

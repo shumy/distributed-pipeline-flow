@@ -103,7 +103,7 @@
           <!--Image-->
           <td>
             <i class="large {{image.open ? 'down' : 'right'}} triangle link icon" (click)="image.open = !image.open"></i>
-            <i class="large blue unhide icon" (mouseenter)="openPreview(image.uid, $event)" (mouseleave)="closePreview(image.uid)"></i>
+            <i class="large blue image icon" (mouseenter)="openPreview(image.uid, $event)" (mouseleave)="closePreview(image.uid)"></i>
             <div attr.id="image_popup_{{image.uid}}" style="display:none; box-shadow: rgba(34, 36, 38, 0.6) -3px 5px 5px 2px;">
               <img class="ui fluid image" [src]="image.url">
             </div>

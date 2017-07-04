@@ -192,7 +192,7 @@ export class SearchView {
   searchHelp() {
     let jSearch: any = $(this.search.nativeElement)
     let jSearchMenu: any = $(this.search_drop_menu.nativeElement)
-    jSearchMenu.css({ width: jSearch.width() })
+    jSearchMenu.css({ width: jSearch.outerWidth() })
 
     let jDrop: any = $(this.search_drop_help.nativeElement)
     jDrop.dropdown({

@@ -98,9 +98,9 @@
         <div *ngIf="ctxLesions" class="ui inverted form" style="flex: 1">
           <div class="field">
             <div class="ui tiny buttons">
-              <button class="ui blue {{ tool == 'MA' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Microaneurisms"  (click)="selectTool('MA')">MA</button>
-              <button class="ui teal {{ tool == 'HEM' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Hemorrhages" (click)="selectTool('HEM')">HEM</button>
-              <button class="ui green {{ tool == 'HE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Hard exudates" (click)="selectTool('HE')">HE</button>
+              <button class="ui red {{ tool == 'MA' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Microaneurisms"  (click)="selectTool('MA')">MA</button>
+              <button class="ui green {{ tool == 'HEM' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Hemorrhages" (click)="selectTool('HEM')">HEM</button>
+              <button class="ui blue {{ tool == 'HE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Hard exudates" (click)="selectTool('HE')">HE</button>
               <button class="ui olive {{ tool == 'SE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Soft exudates" (click)="selectTool('SE')">SE</button>
               <button class="ui grey {{ tool == 'NV' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Neovascularizations" (click)="selectTool('NV')">NV</button>
             </div>
