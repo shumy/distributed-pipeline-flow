@@ -14,7 +14,7 @@ export class Application {
   }
 
   showMenu() {
-    return this.wRouter.url !== '/home'// && this.auth.isLogged
+    return this.wRouter.url !== '/home'
   }
 
   contains(group: string): boolean {

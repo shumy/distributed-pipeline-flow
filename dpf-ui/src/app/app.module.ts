@@ -58,8 +58,9 @@ const repoSrv = new RepositoryService(router, evtSrv)
 
 function init() {
   return new Promise<void>((resolve) => {
-    authMgr.load().then(_ => {
+    authMgr.load().then((isAuthorized: boolean) => {
       console.log('Auth-Manager ready...')
+      console.log('Authorized: ', isAuthorized)
       resolve()
     })
   })

@@ -43,6 +43,11 @@ export class SearchView {
   dsMessageError = ''
 
   constructor(router: ClientRouter, private ref: ChangeDetectorRef) {
+    if(!router.authMgr.isLogged) {
+      toastr.error('Session timeout or not properly authenticated. Please login again!')
+      setTimeout(_ => window.location.href=config.base, 3000)
+    }
+
     this.searchSrv = router.createProxy('search')
     this.trfSrv = router.createProxy('transfers')
     this.folderMngSrv = router.createProxy('folder-manager')
@@ -82,7 +87,6 @@ export class SearchView {
     drop_data.dropdown({
       onChange: (text) => {
         this.dataTypes = text.split(',').filter(el => el.length > 0)
-        console.log(this.dataTypes)
       }
     })
 

@@ -12,18 +12,18 @@ export class AuthService implements IAuthManager {
   constructor(private idp: string, private clientId: string) {}
 
   load() {
-    return new Promise<void>((resolve) => {
+    return new Promise<boolean>((resolve) => {
       OIDC.discover(this.idp).then(issuer => {
         this._client = issuer.createClient(this.clientId)
         if (this._client.authInfo) {
           this.setAuthInfo()
-          this.setUserInfo().then(_ => resolve())
+          this.setUserInfo().then(_ => resolve(_))
         } else {
-          resolve()
+          resolve(false)
         }
       }, error => {
         console.error('IDP discover: ', error)
-        resolve()
+        resolve(false)
       })
     })
   }
@@ -49,7 +49,7 @@ export class AuthService implements IAuthManager {
   }
 
   private setUserInfo() {
-    return new Promise<void>((resolve) => {
+    return new Promise<boolean>((resolve) => {
       this._client.userInfo().then(info => {
         console.log('UserInfo: ', info)
         this.userInfo = { name: info.name, email: info.email, avatar: info.picture, groups: info.groups }
@@ -57,11 +57,11 @@ export class AuthService implements IAuthManager {
           this.userInfo.avatar = 'assets/img/default_user.png'
         
         this.setLogin()
-        resolve()
+        resolve(true)
       }, error => {
         console.log('UserInfo: ', error)
         this.setLogout()
-        resolve()
+        resolve(false)
       })
     })
   }
