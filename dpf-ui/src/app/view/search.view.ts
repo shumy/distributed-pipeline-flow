@@ -38,7 +38,7 @@ export class SearchView {
   pageSize = 20
   selectedPage = 0
 
-  dataTypes = ['dcm']
+  dataTypes = ['dcm', 'anno']
 
   dsMessageError = ''
 
@@ -201,6 +201,7 @@ export class SearchView {
     let jDrop: any = $(this.search_drop_help.nativeElement)
     jDrop.dropdown({
       action: (text, value) => {
+        console.log('drop-action: ', text, value)
         jDrop.dropdown('hide')
         jSearch.focus()
         jSearch.val(jSearch.val() + text)

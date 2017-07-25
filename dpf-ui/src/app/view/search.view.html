@@ -1,11 +1,11 @@
 <!--Search Bar-->
 <div class="ui main menu">
   <div class="flex item">
-    <div class="ui labeled icon input">
+    <div class="ui labeled icon input" data-inverted="" data-position="bottom center" data-tooltip="Press Ctrl + Space to present a list of searchable fields.">
       <div class="ui basic label" style="padding: .6em 0em .6em .95em; cursor:pointer; border-right:none;" (click)="help()">
         <i class="circle help large icon"></i>
       </div>
-      
+
       <div #search_drop_help class="ui inline dropdown">
         <div #search_drop_menu class="search menu">
           <div class="header">Image Fields</div>
@@ -34,7 +34,7 @@
           <div class="item">Dataset</div>
         </div>
       </div>
-      
+
       <input #search type="text" placeholder="Search..." [formControl]="query" style="border-radius:0;" (keydown.control.Space)="searchHelp()">
       <i class="search icon"></i>
     </div>
