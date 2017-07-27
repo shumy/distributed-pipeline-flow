@@ -151,9 +151,9 @@
               <div *ngFor="let anno of image.annotations" class="item">
                 <i class="large blue tags icon"></i>
                 <div class="content">
-                  <div class="header">Readability: {{anno.nodes.quality.fields.quality}}</div>
+                  <div class="header">Readability: {{anno.nodes.quality ? anno.nodes.quality.fields.quality: 'N/A'}}</div>
                   <div class="ui horizontal divided list">
-                    <div class="item">Centered: {{anno.nodes.quality.fields.local || 'N/A'}}</div>
+                    <div class="item">Centered: {{anno.nodes.quality ? anno.nodes.quality.fields.local: 'N/A'}}</div>
                     <div class="item">Retinopathy: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.retinopathy: 'N/A'}}</div>
                     <div class="item">Maculopathy: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.maculopathy: 'N/A'}}</div>
                     <div class="item">Photocoagulation: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.photocoagulation: 'N/A'}}</div>
