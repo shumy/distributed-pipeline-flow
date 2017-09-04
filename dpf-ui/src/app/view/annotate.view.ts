@@ -306,9 +306,10 @@ export class AnnotateView {
     }
 
     window.onmousemove = e => {
-      if (this.tool == 'MAG') {
+      //if (this.tool == 'MAG') {
+      if (['MAG', 'MA', 'HEM', 'HE', 'SE', 'NV'].indexOf(this.tool) > -1) {
         this.magnify(e.pageX, e.pageY)
-        return
+        //return
       }
 
       if (!this.ctxLesions) return
@@ -441,7 +442,22 @@ export class AnnotateView {
       let px = mx - mag.width
       let py = my - mag.height
       
-      this.maglarge.css({left: px, top: py, backgroundPosition: bgp, cursor: "none", zIndex: 200})
+      //BEGIN: set SVG background copy with correct scale...
+      let svgElm = $("#raphael svg").clone()[0]
+      svgElm.setAttribute("viewBox", "0 0 " + this.box.width + " " + this.box.height)
+      svgElm.setAttribute("width", this.imageObj.width + "px")
+      svgElm.setAttribute("height", this.imageObj.height + "px")
+      //END
+
+      this.maglarge.css({
+        left: px,
+        top: py,
+        cursor: "crosshair",
+        zIndex: 200,
+        backgroundPosition: bgp + ", " + bgp,
+        backgroundRepeat: "no-repeat, no-repeat",
+        backgroundImage: "url('data:image/svg+xml;charset=utf8," + svgElm.outerHTML + "'), url(" + this.image.url + ")"
+      })
     }
   }
 
@@ -632,7 +648,7 @@ export class AnnotateView {
     this.imageObj = new Image()
     this.imageObj.onload = _ => this.adjustLayout()
     this.imageObj.src = this.image.url
-    this.maglarge.css("background", "url(" + this.image.url + ") no-repeat")
+    //this.maglarge.css("background", "url(" + this.image.url + ") no-repeat")
   }
 
   preloadImages(idx: number, imgRefs: ImageRef[]) {
