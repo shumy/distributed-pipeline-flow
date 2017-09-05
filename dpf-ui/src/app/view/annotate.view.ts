@@ -409,8 +409,35 @@ export class AnnotateView {
       })
   }
 
+  addDisease(dInput: HTMLInputElement) {
+    let disease = dInput.value
+    if (disease !== "") {
+      dInput.value = ""
+
+      if (this.node(this.DIAGNOSIS).diseases == null)
+        this.node(this.DIAGNOSIS).diseases = []
+
+      this.node(this.DIAGNOSIS).diseases.push(disease)
+      this.loadDiseases()
+    }
+  }
+
   loadDiseases() {
     let diseases = this.node(this.DIAGNOSIS).diseases || []
+    diseases.forEach(el => {
+      if (this.diseasesOptions.indexOf(el) == -1)
+        this.diseasesOptions.push(el)
+    })
+
+    this.hasChange.detectChanges()
+
+    this.diseasesDropdown.dropdown({
+      onChange: (text) => {
+        let selected = text.split(',').filter(el => el.length > 0)
+        this.node(this.DIAGNOSIS).diseases = selected
+      }
+    })
+
     this.diseasesDropdown.dropdown('set exactly', diseases)
   }
 

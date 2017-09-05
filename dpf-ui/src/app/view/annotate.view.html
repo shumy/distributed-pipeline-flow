@@ -83,10 +83,16 @@
             <div class="ui {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} invert multiple search selection dropdown">
               <input type="hidden">
               <i class="inverted dropdown icon"></i>
-              <div class="default text">Select Disease</div>
+              <div class="default text">Select ...</div>
               <div class="menu">
                 <div *ngFor="let entry of diseasesOptions" class="item" [attr.data-value]="entry">{{entry}}</div>
               </div>
+            </div>
+          </div>
+          <div *ngIf="!isQualityNeeded()" class="field">
+            <div class="ui {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} action input">
+              <input #dInput type="text" placeholder="New ..." style="color: rgba(191,191,191,.87); background-color: black;">
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} button" (click)="addDisease(dInput)">Add</button>
             </div>
           </div>
         </div>
