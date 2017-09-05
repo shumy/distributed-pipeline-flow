@@ -56,7 +56,8 @@ export class AnnotateView {
   }
 
   lastTool: string
-  tool = 'MAG' // (MAG, ERASER, MOVE, MA, HEM, HE, SE, NV)
+  tool = 'MAG' // (ERASER, MOVE, MA, HEM, HE, SE, NV)
+  magnifierTool = true
   toolActive = false
   toolData: any
   toolGeo: any
@@ -203,7 +204,22 @@ export class AnnotateView {
   }
 
   selectTool(tool: string) {
-    this.tool = tool
+    //Eraser and Move are not compatible with Magnifier
+    if (tool === 'ERASER' || tool === 'MOVE')
+      this.magnifierTool = false
+
+    if (this.tool === 'ERASER' || this.tool === 'MOVE') {
+      if (tool === 'MAG')
+        this.magnifierTool = true
+      this.tool = tool
+    } else if (tool === 'MAG') {
+      this.magnifierTool = !this.magnifierTool
+      if (!this.magnifierTool && this.tool === 'MAG')
+        this.tool = "NONE"
+    } else {
+      this.tool = tool
+    }
+
     this.redraw()
   }
 
@@ -213,10 +229,10 @@ export class AnnotateView {
 
     window.onmousedown = e => {
       if (!this.ctxLesions) return
-      if (this.tool == 'MAG') return
 
       let mx = e.pageX
       let my = e.pageY
+
       if (!this.isMouseInBox(mx, my)) {
         if (this.toolActive && (this.tool == 'HE' || this.tool == 'SE') && this.toolData.length > 2)
           this.pushGeometry({ type: this.tool, data: this.toolData})
@@ -258,7 +274,7 @@ export class AnnotateView {
             this.pushGeometry({ type: this.tool, data: this.toolData})
           else
             this.redraw()
-        } else {
+        } else if (!this.magnifierTool) {
           this.initPos = pos
           this.lastTool = this.tool
           this.toolActive = true
@@ -266,11 +282,15 @@ export class AnnotateView {
           this.hasChange.detectChanges()
         }
       }
+
+      //update last change to the magnifier
+      if (this.magnifierTool)
+        this.magnify(mx, my)
     }
 
     window.onmouseup = e => {
       if (!this.ctxLesions) return
-      if (this.tool == 'MAG') return
+
       let pos = this.mouseToBoxPosition(e.pageX, e.pageY)
 
       if (this.toolActive) {
@@ -306,11 +326,8 @@ export class AnnotateView {
     }
 
     window.onmousemove = e => {
-      //if (this.tool == 'MAG') {
-      if (['MAG', 'MA', 'HEM', 'HE', 'SE', 'NV'].indexOf(this.tool) > -1) {
+      if (this.magnifierTool)
         this.magnify(e.pageX, e.pageY)
-        //return
-      }
 
       if (!this.ctxLesions) return
       let pos = this.mouseToBoxPosition(e.pageX, e.pageY)

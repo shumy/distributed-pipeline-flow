@@ -91,7 +91,7 @@
           </div>
           <div *ngIf="!isQualityNeeded()" class="field">
             <div class="ui {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} action input">
-              <input #dInput type="text" placeholder="New ..." style="color: rgba(191,191,191,.87); background-color: black;">
+              <input #dInput type="text" placeholder="New ..." (keyup.enter)="addDisease(dInput)" style="color: rgba(191,191,191,.87); background-color: black;">
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} button" (click)="addDisease(dInput)">Add</button>
             </div>
           </div>
@@ -122,7 +122,7 @@
               <button class="ui icon grey {{ tool == 'ERASER' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Erase selected geometry" (click)="selectTool('ERASER')">
                 <i class="erase large icon"></i>
               </button>
-              <button class="ui icon grey {{ tool == 'MAG' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Magnifying glass" (click)="selectTool('MAG')">
+              <button class="ui icon grey {{ magnifierTool ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Magnifying glass" (click)="selectTool('MAG')">
                 <i class="zoom large icon"></i>
               </button>
               <button class="ui icon grey {{ tool == 'MOVE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Move selected geometry (activated with middle mouse button)" (click)="selectTool('MOVE')">
