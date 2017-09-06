@@ -257,8 +257,8 @@ export class AnnotateView {
       let my = e.pageY
 
       if (!this.isMouseInBox(mx, my)) {
-        if (this.toolActive && (this.tool == 'HE' || this.tool == 'SE') && this.toolData.length > 2)
-          this.pushGeometry({ type: this.tool, data: this.toolData})
+        if (this.toolActive && (this.geometryTool == 'P') && this.toolData.length > 2)
+          this.pushGeometry()
         else
           this.redraw()
 
@@ -270,10 +270,10 @@ export class AnnotateView {
 
       if (e.button == 0) {
         this.toolGeo = null
-        if (this.tool == 'MA' || this.tool == 'HEM') {
+        if (this.geometryTool == 'E' || this.geometryTool == 'C') {
           this.toolData = { x: pos.x, y: pos.y, rx: 0, ry: 0 }
           this.toolGeo = this.paper.ellipse(this.toolData.x, this.toolData.y, 0, 0)
-        } else if(this.tool == 'HE' || this.tool == 'SE' || this.tool == 'NV') {
+        } else if(this.geometryTool == 'P' || this.geometryTool == 'F') {
           if (!this.toolActive)
             this.toolData = []
           
@@ -291,10 +291,10 @@ export class AnnotateView {
           this.toolGeo.attr("stroke", this.geoAttributes[this.tool].color)
 
       } else if (e.button == 1 || e.button == 2) {
-        if (this.toolActive && (this.tool == 'HE' || this.tool == 'SE')) {
+        if (this.toolActive && (this.geometryTool == 'P')) {
           this.toolActive = false
           if (this.toolData.length > 2)
-            this.pushGeometry({ type: this.tool, data: this.toolData})
+            this.pushGeometry()
           else
             this.redraw()
         } else if (!this.magnifierTool) {
@@ -318,28 +318,28 @@ export class AnnotateView {
       let pos = this.mouseToBoxPosition(e.pageX, e.pageY)
 
       if (this.toolActive) {
-        if (this.tool != 'HE' && this.tool != 'SE')
+        if (this.geometryTool != 'P')
           this.toolActive = false
 
-        if (this.tool == 'MA') {
+        if (this.geometryTool == 'E') {
           this.toolData.rx = Math.abs(pos.x - this.toolData.x)
           this.toolData.ry = Math.abs(pos.y - this.toolData.y)
           if (this.toolData.rx > 5 && this.toolData.ry > 5)
-            this.pushGeometry({ type: "MA", data: this.toolData})
+            this.pushGeometry()
           else
             this.redraw()
-        } else if (this.tool == 'HEM') {
+        } else if (this.geometryTool == 'C') {
           let r = Math.sqrt(Math.pow(pos.x - this.toolData.x, 2) + Math.pow(pos.y - this.toolData.y, 2))
           this.toolData.rx = r
           this.toolData.ry = r
 
           if (r > 5)
-            this.pushGeometry({ type: "HEM", data: this.toolData})
+            this.pushGeometry()
           else
             this.redraw()
-        } else if(this.tool == 'NV') {
+        } else if(this.geometryTool == 'F') {
           if (this.toolData.length > 2)
-            this.pushGeometry({ type: "NV", data: this.toolData})
+            this.pushGeometry()
           else
             this.redraw()
         } else if (this.tool == 'MOVE') {
@@ -358,19 +358,19 @@ export class AnnotateView {
       let pos = this.mouseToBoxPosition(e.pageX, e.pageY)
       
       if (this.toolActive) {
-        if (this.tool == 'MA') {
+        if (this.geometryTool == 'E') {
           this.toolData.rx = Math.abs(pos.x - this.toolData.x)
           this.toolData.ry = Math.abs(pos.y - this.toolData.y)
           this.toolGeo.attr("rx", this.toolData.rx)
           this.toolGeo.attr("ry", this.toolData.ry)
-        } else if (this.tool == 'HEM') {
+        } else if (this.geometryTool == 'C') {
           let r = Math.sqrt(Math.pow(pos.x - this.toolData.x, 2) + Math.pow(pos.y - this.toolData.y, 2))
           this.toolGeo.attr("rx", r)
           this.toolGeo.attr("ry", r)
-        } else if(this.tool == 'HE' || this.tool == 'SE') {
+        } else if(this.geometryTool == 'P') {
           let fig = this.toolBuildPath(this.toolData, 1, 1) + "L" + pos.x + " " + pos.y
           this.toolGeo.attr("path", fig)
-        } else if(this.tool == 'NV') {
+        } else if(this.geometryTool == 'F') {
           let fig = this.toolBuildPath(this.toolData, 1, 1) + "L" + pos.x + " " + pos.y
           this.toolGeo.attr("path", fig)
 
@@ -408,12 +408,12 @@ export class AnnotateView {
   moveGeometry(xDelta: number, yDelta: number) {
     let selectedGeo = this.geometry[this.selectedGeoKey]
     if (selectedGeo != null) {
-      let type = selectedGeo.type
+      let geoType = selectedGeo.geo
       let geo = selectedGeo.data
-      if (type == "MA" || type == "HEM") {
+      if (geoType == 'E' || geoType == 'C') {
         geo.x += xDelta
         geo.y += yDelta
-      } else if (type == 'HE' || type == 'SE' || type == 'NV') {
+      } else if (geoType == 'P' || geoType == 'F') {
         geo.forEach(dPos => {
           dPos.x += xDelta
           dPos.y += yDelta
@@ -424,13 +424,19 @@ export class AnnotateView {
     }
   }
 
-  pushGeometry(geo: any) {
-    geo.scale = { width: this.box.width, height: this.box.height }
+  pushGeometry() {
+    let geometry = {
+      type: this.tool,
+      geo: this.geometryTool,
+      data: this.toolData,
+      scale: { width: this.box.width, height: this.box.height }
+    }
+    
     this.lastKey++
     let key = this.lastKey + ""
 
     this.geoKeyOrder.push(key)
-    this.geometry[key] = geo
+    this.geometry[key] = geometry
     
     this.redraw()
   }
@@ -444,6 +450,10 @@ export class AnnotateView {
 
     if (lNode.lesions != null)
       lNode.lesions.forEach(lesion => {
+        // lesion may not have the geometry type! Select the default.
+        if (lesion.geo == null)
+          lesion.geo = this.defaultGeometryTool(lesion.type)
+
         this.lastKey++
         let key = this.lastKey + ""
         this.geoKeyOrder.push(key)
@@ -589,12 +599,12 @@ export class AnnotateView {
       let yScale = this.box.height/geo.scale.height
       
       let geoElement: any
-      if (geo.type == "MA" || geo.type == "HEM") {  
+      if (geo.geo == 'E' || geo.geo == 'C') {  
         geoElement = this.paper.ellipse(geo.data.x*xScale, geo.data.y*yScale, geo.data.rx*xScale, geo.data.ry*yScale)
-      } else if(geo.type == 'HE' || geo.type == 'SE') {
+      } else if(geo.geo == 'P') {
         let path = this.toolBuildPath(geo.data, xScale, yScale, true)
         geoElement = this.paper.path(path)
-      } else if(geo.type == 'NV') {
+      } else if(geo.geo == 'F') {
         let path = this.toolBuildPath(geo.data, xScale, yScale)
         geoElement = this.paper.path(path)
       }
