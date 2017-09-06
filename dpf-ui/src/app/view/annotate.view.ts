@@ -56,7 +56,10 @@ export class AnnotateView {
   }
 
   lastTool: string
-  tool = 'MAG' // (ERASER, MOVE, MA, HEM, HE, SE, NV)
+  lastGeometryTool: string
+
+  tool = 'MAG'            // (MAG, ERASER, MOVE)  (MA, HEM, HE, SE, NV)
+  geometryTool = 'N'      // (C-"Circle", E-"Elipse", P-"Polygon", F-"Free-Hand", N-"None")
   magnifierTool = true
   toolActive = false
   toolData: any
@@ -203,6 +206,17 @@ export class AnnotateView {
     return { x: mx - this.box.left, y: my - this.box.top }
   }
 
+  defaultGeometryTool(tool: string): string {
+      switch (tool) {
+        case "MA": return "E"
+        case "HEM": return "C"
+        case "HE": 
+        case "SE": return "P"
+        case "NV": return "F"
+        default: return "N"
+      } 
+  }
+
   selectTool(tool: string) {
     //Eraser and Move are not compatible with Magnifier
     if (tool === 'ERASER' || tool === 'MOVE')
@@ -220,7 +234,16 @@ export class AnnotateView {
       this.tool = tool
     }
 
+    // select the default geometry tool
+    if (tool !== 'MAG')
+      this.geometryTool = this.defaultGeometryTool(this.tool)
+
     this.redraw()
+  }
+
+  selectGeometryTool(geoTool: string) {
+    if (['MA', 'HEM', 'HE', 'SE', 'NV'].indexOf(this.tool) > -1)
+      this.geometryTool = geoTool
   }
 
   tools() {
@@ -277,6 +300,7 @@ export class AnnotateView {
         } else if (!this.magnifierTool) {
           this.initPos = pos
           this.lastTool = this.tool
+          this.lastGeometryTool = this.geometryTool
           this.toolActive = true
           this.selectTool('MOVE')
           this.hasChange.detectChanges()
@@ -320,6 +344,7 @@ export class AnnotateView {
             this.redraw()
         } else if (this.tool == 'MOVE') {
           this.selectTool(this.lastTool)
+          this.selectGeometryTool(this.lastGeometryTool)
           this.hasChange.detectChanges()
         }
       }

@@ -113,6 +113,14 @@
           </div>
           <div class="field">
             <div class="ui tiny buttons">
+              <button class="ui grey {{ geometryTool == 'E' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Elipse"    (click)="selectGeometryTool('E')">E</button>
+              <button class="ui grey {{ geometryTool == 'C' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Circle"    (click)="selectGeometryTool('C')">C</button>
+              <button class="ui grey {{ geometryTool == 'P' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Polygon"   (click)="selectGeometryTool('P')">P</button>
+              <button class="ui grey {{ geometryTool == 'F' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Free-Hand" (click)="selectGeometryTool('F')">F</button>
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui tiny buttons">
               <button class="ui icon grey basic button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Erase last geometry" (click)="eraseLast()">
                 <i class="backward large icon"></i>
               </button>
@@ -125,7 +133,7 @@
               <button class="ui icon grey {{ magnifierTool ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Magnifying glass" (click)="selectTool('MAG')">
                 <i class="zoom large icon"></i>
               </button>
-              <button class="ui icon grey {{ tool == 'MOVE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Move selected geometry (activated with middle mouse button)" (click)="selectTool('MOVE')">
+              <button class="ui icon grey {{ tool == 'MOVE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Move selected geometry (activated with left mouse button)" (click)="selectTool('MOVE')">
                 <i class=" {{ tool == 'MOVE' && toolActive ? 'hand rock' : 'hand paper' }} large icon"></i>
               </button>
             </div>
