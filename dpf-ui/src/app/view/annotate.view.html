@@ -112,15 +112,27 @@
             </div>
           </div>
           <div class="field">
-            <div class="ui tiny buttons">
-              <button class="ui grey {{ geometryTool == 'E' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Elipse"    (click)="selectGeometryTool('E')">E</button>
-              <button class="ui grey {{ geometryTool == 'C' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Circle"    (click)="selectGeometryTool('C')">C</button>
-              <button class="ui grey {{ geometryTool == 'P' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Polygon"   (click)="selectGeometryTool('P')">P</button>
-              <button class="ui grey {{ geometryTool == 'F' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Free-Hand" (click)="selectGeometryTool('F')">F</button>
+            <div class="ui buttons">
+              <button class="ui grey {{ geometryTool == 'E' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Ellipse"    (click)="selectGeometryTool('E')">
+                <img *ngIf="geometryTool != 'E'" class="ui image" style="width: 32px;" src="assets/icons/ellipse-normal.png">
+                <img *ngIf="geometryTool == 'E'" class="ui image" style="width: 32px;" src="assets/icons/ellipse-selected.png">
+              </button>
+              <button class="ui grey {{ geometryTool == 'C' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Circle"    (click)="selectGeometryTool('C')">
+                <img *ngIf="geometryTool != 'C'" class="ui image" style="width: 32px;" src="assets/icons/circle-normal.png">
+                <img *ngIf="geometryTool == 'C'" class="ui image" style="width: 32px;" src="assets/icons/circle-selected.png">
+              </button>
+              <button class="ui grey {{ geometryTool == 'P' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Polygon"   (click)="selectGeometryTool('P')">
+                <img *ngIf="geometryTool != 'P'" class="ui image" style="width: 32px;" src="assets/icons/box-normal.png">
+                <img *ngIf="geometryTool == 'P'" class="ui image" style="width: 32px;" src="assets/icons/box-selected.png">
+              </button>
+              <button class="ui grey {{ geometryTool == 'F' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Free-Hand" (click)="selectGeometryTool('F')">
+                <img *ngIf="geometryTool != 'F'" class="ui image" style="width: 32px;" src="assets/icons/line-normal.png">
+                <img *ngIf="geometryTool == 'F'" class="ui image" style="width: 32px;" src="assets/icons/line-selected.png">
+              </button>
             </div>
           </div>
           <div class="field">
-            <div class="ui tiny buttons">
+            <div class="ui buttons">
               <button class="ui icon grey basic button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Erase last geometry" (click)="eraseLast()">
                 <i class="backward large icon"></i>
               </button>
