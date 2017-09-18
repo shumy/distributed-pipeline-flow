@@ -22,6 +22,9 @@ export class AnnotateView {
   readonly PRELOAD_LIMIT  = 5 //limit the preload of images and AnnotationInfo
   readonly BACK_LIMIT     = 5 //limit the number of "Recently Annotated" image list
 
+  //registering time between readAnnotation and saveAnnotation
+  clockInSeconds = 0
+
   diseasesOptions = []
 
   //active contexts
@@ -716,6 +719,8 @@ export class AnnotateView {
     this.setMagImage()
 
     this.annoProxy.readAnnotation(this.image.id).then(ann => {
+      this.clockInSeconds = new Date().getTime() / 1000
+
       this.annotation = ann
       this.lesionsToGeometry()
       this.loadDiseases()
@@ -760,9 +765,26 @@ export class AnnotateView {
       if (this.ctxDiagnosis)
         this.getOrCreateNode(this.annotation, this.DIAGNOSIS).implicit = true
 
+      //BEGIN: colect the time spent between read and save annotation...
+      let now = new Date().getTime() / 1000
+      let timeSpent = now - this.clockInSeconds
+
+      console.log('QUALITY:', this.node(this.QUALITY))
+      if (this.ctxQuality && this.node(this.QUALITY).timeSpent == null && this.node(this.QUALITY).quality != null)
+        this.node(this.QUALITY).timeSpent = timeSpent
+      
+      console.log('DIAGNOSIS:', this.node(this.DIAGNOSIS))
+      if (this.ctxDiagnosis && this.node(this.DIAGNOSIS).timeSpent == null && this.node(this.DIAGNOSIS).maculopathy != null)
+        this.node(this.DIAGNOSIS).timeSpent = timeSpent
+      
+      console.log('LESIONS:', this.node(this.LESIONS))
+      if (this.ctxLesions && this.node(this.LESIONS).timeSpent == null)
+        this.node(this.LESIONS).timeSpent = timeSpent
+      //END -------------------------------------------------------------------
+
       //BEGIN - save only the context...
       let annToSave = JSON.parse(JSON.stringify(this.annotation)) as AnnotationInfo
-      
+
       if (!this.ctxQuality)
         delete annToSave.nodes[this.QUALITY]
       
