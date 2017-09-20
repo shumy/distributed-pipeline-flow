@@ -1,4 +1,4 @@
-<div style="padding-top: 50px; height: 100%">
+<div style="padding-top: 50px; height: 100%" (wheel)="zoom($event)">
   <div>
     <div class="ui {{ image.loaded ? '' : 'active' }} dimmer">
       <div class="ui text loader">Loading Next Image</div>
@@ -8,8 +8,10 @@
   <div style="display: flex; height: calc(100vh - 90px);"><!--(keyup.enter)="done()"-->
     <div class="magnify">
       <div class="maglarge"></div>
-      <img class="ui magsmall image" [src]="image.url"/>
-      <div id="raphael"></div>
+      <div class="magsmall" (ps-scroll-x)="adjustBox()" (ps-scroll-y)="adjustBox()" (wheel)="zoom($event)">
+        <img id="imageElm" [src]="image.url"/>
+        <div id="raphael"></div>
+      </div>
     </div>
 
     <div style="padding: 0 0 0 0; flex: 1;">

@@ -17,6 +17,7 @@
         "../semantic/dist/semantic.min.css",
         "../node_modules/toastr/build/toastr.min.css",
         "../node_modules/dropzone/dist/min/dropzone.min.css",
+        "../node_modules/perfect-scrollbar/dist/css/perfect-scrollbar.css",
         "styles.css"
       ],
       "scripts": [

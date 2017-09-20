@@ -5,6 +5,8 @@ import { ClientRouter }                                       from 'rts-ts-clien
 import { DatasetService, DatasetInfo, PointerInfo, ImageRef } from '../srv/dataset.srv';
 import { AnnotationService, AnnotationInfo, NodeInfo }        from '../srv/annotation.srv';
 
+import * as Ps from 'perfect-scrollbar';
+
 declare var Raphael: any
 
 @Component({
@@ -43,10 +45,17 @@ export class AnnotateView {
   image: ImageRef = { id: 0, url: '//:0', loaded: false }
   annotation: AnnotationInfo = { imageId: 0, nodes: {} }
 
+  //last mouse position on page
+  mx = 0
+  my = 0
+
   //html objects...
   magnifier: JQuery
-  magsmall: JQuery
   maglarge: JQuery
+  magsmall: JQuery
+  imageElm: JQuery
+  raphaelElm: JQuery
+
   diseasesDropdown: any
   imageObj = new Image()
 
@@ -80,6 +89,7 @@ export class AnnotateView {
 
   paper: any
   box = { top: 0, left: 0, width: 0, height: 0 }
+  magBox = { top: 0, left: 0, width: 0, height: 0 }
 
   constructor(private router: ClientRouter, private route: ActivatedRoute, private hasChange: ChangeDetectorRef) {
     let params = this.route.snapshot.queryParams
@@ -101,8 +111,11 @@ export class AnnotateView {
 
   ngOnInit() {
     this.magnifier = $(".magnify")
-    this.magsmall = $(".magsmall")
     this.maglarge = $(".maglarge")
+
+    this.magsmall = $(".magsmall")
+    this.imageElm = $("#imageElm")
+    this.raphaelElm = $("#raphael")
 
     this.tools()
     this.loadDataset()
@@ -176,37 +189,97 @@ export class AnnotateView {
   }
 
   adjustLayout() {
-    this.box = {
+    this.magBox = {
       top: this.magsmall.offset().top,
       left: this.magsmall.offset().left,
       width: this.magsmall.width(),
       height: this.magsmall.height()
     }
 
-    let RaphaelDiv = $("#raphael")
-    RaphaelDiv.css({
+    this.box = {
+      top: this.imageElm.offset().top,
+      left: this.imageElm.offset().left,
+      width: this.imageElm.width(),
+      height: this.imageElm.height()
+    }
+
+    this.raphaelElm.css({
       cursor: "crosshair",
-      left: this.box.left,
-      top: this.box.top,
       width: this.box.width,
       height: this.box.height,
       zIndex: 100
     })
 
+    //BEGIN: center image when non existent scroll
+    let marginLeft = (this.magBox.width - this.box.width)/2
+    let marginTop = (this.magBox.height - this.box.height)/2
+
+    marginLeft = marginLeft < 0 ? 0 : marginLeft
+    this.imageElm.css("marginLeft", marginLeft + 'px')
+    this.raphaelElm.css("marginLeft", marginLeft + 'px')
+
+    marginTop = marginTop < 0 ? 0 : marginTop
+    this.imageElm.css("marginTop", marginTop + 'px')
+    this.raphaelElm.css("marginTop", marginTop + 'px')
+    //END: center image when non existent scroll
+
     this.paper.setSize('100%', '100%')
+    Ps.update(this.magsmall[0])
     this.redraw()
+  }
+
+  adjustBox() {
+    this.box.top = this.imageElm.offset().top
+    this.box.left = this.imageElm.offset().left
+  }
+
+  zoom(event: any) {
+    event.stopImmediatePropagation()
+
+    let width = this.imageElm.width()
+    if (event.deltaY < 0) {
+      //wheel up
+      if (width > 400)
+        this.imageElm.width(width*0.95)
+    } else {
+      //wheel down
+      if(width < this.imageObj.width)
+        this.imageElm.width(width/0.95)
+    }
+
+    this.adjustLayout()
+
+    
+    //BEGIN: center when zooming
+    //if (!isWidthInZoom && this.box.width > this.magBox.width) {
+      //if just entered in width zoom
+      let maxLeft = this.box.width - this.magBox.width
+      this.magsmall[0].scrollLeft = maxLeft/2
+    //}
+    
+    //if (!isHeightInZoom && this.box.height > this.magBox.height) {
+      //if just entered in height zoom
+      let maxTop = this.box.height - this.magBox.height
+      this.magsmall[0].scrollTop = maxTop/2
+    //}
+    //END: center when zooming
+
+    this.adjustBox()
+    
+    if (this.magnifierTool)
+      this.magnify()
   }
 
   isQualityNeeded() {
     return !this.ctxQuality && this.ctxDiagnosis && this.node(this.QUALITY).quality == null
   }
 
-  isMouseInBox(mx: number, my: number) {
-    return mx < (this.box.width + this.box.left) && my < (this.box.height + this.box.top) && mx > this.box.left && my > this.box.top
+  isMouseInBox() {
+    return this.mx < (this.magBox.width + this.magBox.left) && this.my < (this.magBox.height + this.magBox.top) && this.mx > this.magBox.left && this.my > this.magBox.top
   }
 
-  mouseToBoxPosition(mx: number, my: number) {
-    return { x: mx - this.box.left, y: my - this.box.top }
+  mouseToBoxPosition() {
+    return { x: this.mx - this.box.left, y: this.my - this.box.top }
   }
 
   defaultGeometryTool(tool: string): string {
@@ -250,16 +323,17 @@ export class AnnotateView {
   }
 
   tools() {
+    Ps.initialize(this.magsmall[0])
     this.paper = Raphael('raphael', 0, 0)
+    
+    this.imageElm.width(this.magsmall.width())
+
     window.onresize = _ => this.adjustLayout()
 
     window.onmousedown = e => {
       if (!this.ctxLesions) return
 
-      let mx = e.pageX
-      let my = e.pageY
-
-      if (!this.isMouseInBox(mx, my)) {
+      if (!this.isMouseInBox()) {
         if (this.toolActive && (this.geometryTool == 'P') && this.toolData.length > 2)
           this.pushGeometry()
         else
@@ -269,7 +343,7 @@ export class AnnotateView {
         return
       }
 
-      let pos = this.mouseToBoxPosition(mx, my)
+      let pos = this.mouseToBoxPosition()
 
       if (e.button == 0) {
         this.toolGeo = null
@@ -312,13 +386,13 @@ export class AnnotateView {
 
       //update last change to the magnifier
       if (this.magnifierTool)
-        this.magnify(mx, my)
+        this.magnify()
     }
 
     window.onmouseup = e => {
       if (!this.ctxLesions) return
 
-      let pos = this.mouseToBoxPosition(e.pageX, e.pageY)
+      let pos = this.mouseToBoxPosition()
 
       if (this.toolActive) {
         if (this.geometryTool != 'P')
@@ -354,11 +428,14 @@ export class AnnotateView {
     }
 
     window.onmousemove = e => {
+      this.mx = e.pageX
+      this.my = e.pageY
+
       if (this.magnifierTool)
-        this.magnify(e.pageX, e.pageY)
+        this.magnify()
 
       if (!this.ctxLesions) return
-      let pos = this.mouseToBoxPosition(e.pageX, e.pageY)
+      let pos = this.mouseToBoxPosition()
       
       if (this.toolActive) {
         if (this.geometryTool == 'E') {
@@ -411,15 +488,20 @@ export class AnnotateView {
   moveGeometry(xDelta: number, yDelta: number) {
     let selectedGeo = this.geometry[this.selectedGeoKey]
     if (selectedGeo != null) {
+      let scale = {
+        x: selectedGeo.scale.width/this.box.width,
+        y: selectedGeo.scale.height/this.box.height
+      }
+
       let geoType = selectedGeo.geo
       let geo = selectedGeo.data
       if (geoType == 'E' || geoType == 'C') {
-        geo.x += xDelta
-        geo.y += yDelta
+        geo.x += xDelta * scale.x
+        geo.y += yDelta * scale.y
       } else if (geoType == 'P' || geoType == 'F') {
         geo.forEach(dPos => {
-          dPos.x += xDelta
-          dPos.y += yDelta
+          dPos.x += xDelta * scale.x
+          dPos.y += yDelta * scale.y
         })
       }
 
@@ -502,7 +584,7 @@ export class AnnotateView {
     return lesions
   }
 
-  magnify(mx: number, my: number) {
+  magnify() {
     if (this.dataset != null && this.progress >= this.dataset.size)
       return
 
@@ -511,18 +593,18 @@ export class AnnotateView {
       height: this.maglarge.height()/2
     }
 
-    if(this.isMouseInBox(mx, my))
+    if(this.isMouseInBox())
       this.maglarge.fadeIn(10)
     else
       this.maglarge.fadeOut(10)
     
     if(this.maglarge.is(":visible")) {
-      let rx = -1 * Math.round((mx - this.box.left)/this.box.width * this.imageObj.width - mag.width)
-      let ry = -1 * Math.round((my - this.box.top)/this.box.height * this.imageObj.height - mag.height)
+      let rx = -1 * Math.round((this.mx - this.box.left)/this.box.width * this.imageObj.width - mag.width)
+      let ry = -1 * Math.round((this.my - this.box.top)/this.box.height * this.imageObj.height - mag.height)
       let bgp = rx + "px " + ry + "px"
       
-      let px = mx - mag.width
-      let py = my - mag.height
+      let px = this.mx - mag.width
+      let py = this.my - mag.height
       
       //BEGIN: set SVG background copy with correct scale...
       let svgElm = $("#raphael svg").clone()[0]
