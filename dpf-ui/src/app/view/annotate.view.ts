@@ -188,7 +188,7 @@ export class AnnotateView {
     })
   }
 
-  adjustLayout() {
+  adjustLayout(leftScrollRatio = 0.5, topScrollRatio = 0.5) {
     this.magBox = {
       top: this.magsmall.offset().top,
       left: this.magsmall.offset().left,
@@ -225,7 +225,12 @@ export class AnnotateView {
 
     this.paper.setSize('100%', '100%')
     Ps.update(this.magsmall[0])
+
+    this.adjustScroll(leftScrollRatio, topScrollRatio)
     this.redraw()
+
+    if (this.magnifierTool)
+      this.magnify()
   }
 
   adjustBox() {
@@ -233,13 +238,31 @@ export class AnnotateView {
     this.box.left = this.imageElm.offset().left
   }
 
+  adjustScroll(leftScrollRatio: number, topScrollRatio: number) {
+    let maxLeft = this.box.width - this.magBox.width
+    this.magsmall[0].scrollLeft = maxLeft*leftScrollRatio
+
+    let maxTop = this.box.height - this.magBox.height
+    this.magsmall[0].scrollTop = maxTop*topScrollRatio
+
+    this.adjustBox()
+  }
+
   zoom(event: any) {
     event.stopImmediatePropagation()
 
+    let maxLeft = this.box.width - this.magBox.width
+    let maxTop = this.box.height - this.magBox.height
+
+    let leftScrollRatio = maxLeft <= 0 ? 0.5 : this.magsmall[0].scrollLeft/maxLeft
+    let topScrollRatio  = maxTop <= 0  ? 0.5 : this.magsmall[0].scrollTop/maxTop
+
+
     let width = this.imageElm.width()
+    let height = this.imageElm.height()
     if (event.deltaY < 0) {
       //wheel up
-      if (width > 400)
+      if ( width > (this.magBox.width - 100) || height > (this.magBox.height - 100) )
         this.imageElm.width(width*0.95)
     } else {
       //wheel down
@@ -247,27 +270,7 @@ export class AnnotateView {
         this.imageElm.width(width/0.95)
     }
 
-    this.adjustLayout()
-
-    
-    //BEGIN: center when zooming
-    //if (!isWidthInZoom && this.box.width > this.magBox.width) {
-      //if just entered in width zoom
-      let maxLeft = this.box.width - this.magBox.width
-      this.magsmall[0].scrollLeft = maxLeft/2
-    //}
-    
-    //if (!isHeightInZoom && this.box.height > this.magBox.height) {
-      //if just entered in height zoom
-      let maxTop = this.box.height - this.magBox.height
-      this.magsmall[0].scrollTop = maxTop/2
-    //}
-    //END: center when zooming
-
-    this.adjustBox()
-    
-    if (this.magnifierTool)
-      this.magnify()
+    this.adjustLayout(leftScrollRatio, topScrollRatio)
   }
 
   isQualityNeeded() {
@@ -325,8 +328,6 @@ export class AnnotateView {
   tools() {
     Ps.initialize(this.magsmall[0])
     this.paper = Raphael('raphael', 0, 0)
-    
-    this.imageElm.width(this.magsmall.width())
 
     window.onresize = _ => this.adjustLayout()
 
@@ -613,6 +614,7 @@ export class AnnotateView {
       svgElm.setAttribute("height", this.imageObj.height + "px")
       //END
 
+      let svgData = svgElm.outerHTML.replace(new RegExp('#', 'g'), '%23')
       this.maglarge.css({
         left: px,
         top: py,
@@ -620,7 +622,7 @@ export class AnnotateView {
         zIndex: 200,
         backgroundPosition: bgp + ", " + bgp,
         backgroundRepeat: "no-repeat, no-repeat",
-        backgroundImage: "url('data:image/svg+xml;charset=utf8," + svgElm.outerHTML + "'), url(" + this.image.url + ")"
+        backgroundImage: "url('data:image/svg+xml;charset=utf8," + svgData + "'), url(" + this.image.url + ")"
       })
     }
   }
@@ -812,9 +814,16 @@ export class AnnotateView {
 
   setMagImage() {
     this.imageObj = new Image()
-    this.imageObj.onload = _ => this.adjustLayout()
+    this.imageObj.onload = _ => {
+      //adjust to magsmall size...
+      let boxRatio = this.magsmall.width() / this.magsmall.height()
+      let imgRatio = this.imageElm.width() / this.imageElm.height()
+      this.imageElm.width(this.magsmall.width() * imgRatio/boxRatio - 10)
+
+      this.adjustLayout()
+    }
+    
     this.imageObj.src = this.image.url
-    //this.maglarge.css("background", "url(" + this.image.url + ") no-repeat")
   }
 
   preloadImages(idx: number, imgRefs: ImageRef[]) {

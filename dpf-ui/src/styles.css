@@ -136,11 +136,13 @@ div {
 .magsmall {
   position: relative;
   height: calc(100vh - 90px);
-  width: calc(100vw - 450px);
+  /*width: calc(100vw - 450px);*/
+  width: calc(75vw);
 }
 
 .ps__scrollbar-x-rail, .ps__scrollbar-y-rail  {
   z-index: 150;
+  background-color: transparent !important;
 }
 
 #raphael {
