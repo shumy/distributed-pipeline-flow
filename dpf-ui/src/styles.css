@@ -136,8 +136,8 @@ div {
 .magsmall {
   position: relative;
   height: calc(100vh - 90px);
-  /*width: calc(100vw - 450px);*/
   width: calc(75vw);
+  background-color: black;
 }
 
 .ps__scrollbar-x-rail, .ps__scrollbar-y-rail  {

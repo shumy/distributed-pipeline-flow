@@ -313,6 +313,9 @@ export class AnnotateView {
       this.tool = tool
     }
 
+    if (!this.magnifierTool)
+      this.maglarge.fadeOut(10)
+
     // select the default geometry tool
     if (tool !== 'MAG')
       this.geometryTool = this.defaultGeometryTool(this.tool)
