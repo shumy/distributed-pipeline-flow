@@ -70,16 +70,16 @@ export class AnnotateView {
   lastTool: string
   lastGeometryTool: string
 
-  tool = 'MAG'            // (MAG, ERASER, MOVE)  (MA, HEM, HE, SE, NV)
+  tool = 'NONE'           // (MAG, ERASER, MOVE, ZOOM-MOVE)  (MA, HEM, HE, SE, NV)
   geometryTool = 'N'      // (C-"Circle", E-"Elipse", P-"Polygon", F-"Free-Hand", N-"None")
-  magnifierTool = true
+  magnifierTool = false
   toolActive = false
   toolData: any
   toolGeo: any
 
   //move tool
   selectedGeoKey: string
-  initPos: any
+  initPos: { x: number; y: number; }
 
   //geometry
   lastKey = 0
@@ -122,6 +122,11 @@ export class AnnotateView {
   }
 
   initContext(params: any) {
+    this.tool = 'ZOOM-MOVE'
+    this.geometryTool = 'N'
+    this.magnifierTool = false
+    this.toolActive = false
+
     this.ctxLesions = params['lesions'] == 'true' ? true : false
     this.ctxQuality = !this.ctxLesions
     this.ctxDiagnosis = !this.ctxLesions
@@ -298,17 +303,20 @@ export class AnnotateView {
 
   selectTool(tool: string) {
     //Eraser and Move are not compatible with Magnifier
-    if (tool === 'ERASER' || tool === 'MOVE')
+    if (tool === 'ERASER' || tool === 'MOVE' || tool == 'ZOOM-MOVE')
       this.magnifierTool = false
 
-    if (this.tool === 'ERASER' || this.tool === 'MOVE') {
+    if (this.tool === 'ERASER' || this.tool === 'MOVE' || this.tool === 'ZOOM-MOVE') {
       if (tool === 'MAG')
         this.magnifierTool = true
       this.tool = tool
     } else if (tool === 'MAG') {
       this.magnifierTool = !this.magnifierTool
-      if (!this.magnifierTool && this.tool === 'MAG')
-        this.tool = "NONE"
+      if (!this.magnifierTool && this.tool === 'MAG') {
+        this.tool = 'NONE'
+        if (!this.ctxLesions) 
+          this.tool = 'ZOOM-MOVE'
+      }
     } else {
       this.tool = tool
     }
@@ -319,7 +327,7 @@ export class AnnotateView {
     // select the default geometry tool
     if (tool !== 'MAG')
       this.geometryTool = this.defaultGeometryTool(this.tool)
-
+    
     this.redraw()
   }
 
@@ -335,7 +343,7 @@ export class AnnotateView {
     window.onresize = _ => this.adjustLayout()
 
     window.onmousedown = e => {
-      if (!this.ctxLesions) return
+      let pos = this.mouseToBoxPosition()
 
       if (!this.isMouseInBox()) {
         if (this.toolActive && (this.geometryTool == 'P') && this.toolData.length > 2)
@@ -347,24 +355,23 @@ export class AnnotateView {
         return
       }
 
-      let pos = this.mouseToBoxPosition()
-
       if (e.button == 0) {
         this.toolGeo = null
         if (this.geometryTool == 'E' || this.geometryTool == 'C') {
           this.toolData = { x: pos.x, y: pos.y, rx: 0, ry: 0 }
           this.toolGeo = this.paper.ellipse(this.toolData.x, this.toolData.y, 0, 0)
-        } else if(this.geometryTool == 'P' || this.geometryTool == 'F') {
+        } else if (this.geometryTool == 'P' || this.geometryTool == 'F') {
           if (!this.toolActive)
             this.toolData = []
           
           this.toolData.push(pos)
           this.toolGeo = this.paper.path(this.toolBuildPath(this.toolData, 1, 1))
-        } else if(this.tool == 'MOVE') {
+        } else if (this.tool == 'MOVE') {
           this.initPos = pos
-          this.lastTool = 'MOVE'
-          this.toolActive = true
+          this.lastTool = this.tool
           this.hasChange.detectChanges()
+        } else if (this.tool == 'ZOOM-MOVE') {
+          this.initPos = pos
         }
 
         this.toolActive = true
@@ -394,8 +401,6 @@ export class AnnotateView {
     }
 
     window.onmouseup = e => {
-      if (!this.ctxLesions) return
-
       let pos = this.mouseToBoxPosition()
 
       if (this.toolActive) {
@@ -423,10 +428,12 @@ export class AnnotateView {
             this.pushGeometry()
           else
             this.redraw()
-        } else if (this.tool == 'MOVE') {
+        } else if (this.tool == 'MOVE' ) {
           this.selectTool(this.lastTool)
           this.selectGeometryTool(this.lastGeometryTool)
           this.hasChange.detectChanges()
+        } else if (this.tool == 'ZOOM-MOVE' ) {
+          this.adjustBox()
         }
       }
     }
@@ -434,12 +441,11 @@ export class AnnotateView {
     window.onmousemove = e => {
       this.mx = e.pageX
       this.my = e.pageY
+      
+      let pos = this.mouseToBoxPosition()
 
       if (this.magnifierTool)
         this.magnify()
-
-      if (!this.ctxLesions) return
-      let pos = this.mouseToBoxPosition()
       
       if (this.toolActive) {
         if (this.geometryTool == 'E') {
@@ -464,6 +470,12 @@ export class AnnotateView {
             this.toolData.push(pos)
         } else if (this.tool == 'MOVE' && this.selectedGeoKey != null) {
           this.moveGeometry(pos.x - this.initPos.x, pos.y - this.initPos.y)
+          this.initPos = pos
+        } else if(this.tool == 'ZOOM-MOVE') {
+          //move image
+          this.magsmall[0].scrollLeft += this.initPos.x - pos.x
+          this.magsmall[0].scrollTop += this.initPos.y - pos.y
+
           this.initPos = pos
         }
       }
@@ -741,15 +753,13 @@ export class AnnotateView {
     })
   }
 
-  @HostListener('window:keydown', ['$event'])
+  /*@HostListener('window:keydown', ['$event'])
   onKeyDown(event) {
     switch (event.key) {
-      //case "ArrowDown": this.setPosition(1); break
       case "ArrowLeft": this.setPosition(this.progress); break
       case "ArrowRight": this.setPosition(this.progress + 2); break
-      //case "ArrowUp": this.setPosition(); break
     }
-  }
+  }*/
 
   setPosition(pos?: number) {
     //position == progress + 1
