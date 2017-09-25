@@ -441,7 +441,7 @@ export class AnnotateView {
     window.onmousemove = e => {
       this.mx = e.pageX
       this.my = e.pageY
-      
+
       let pos = this.mouseToBoxPosition()
 
       if (this.magnifierTool)
@@ -600,6 +600,18 @@ export class AnnotateView {
     return lesions
   }
 
+  encodeOptimizedSVGDataUri(svgString) {
+    let uriPayload = encodeURIComponent(svgString)
+      .replace(/%0A/g, '')
+      .replace(/%20/g, ' ')
+      .replace(/%3D/g, '=')
+      .replace(/%3A/g, ':')
+      .replace(/%2F/g, '/')
+      .replace(/%22/g, "'")
+
+    return 'data:image/svg+xml,' + uriPayload
+  }
+
   magnify() {
     if (this.dataset != null && this.progress >= this.dataset.size)
       return
@@ -623,13 +635,13 @@ export class AnnotateView {
       let py = this.my - mag.height
       
       //BEGIN: set SVG background copy with correct scale...
-      let svgElm = $("#raphael svg").clone()[0]
+      let svgElm = $('#raphael svg').clone()[0]
       svgElm.setAttribute("viewBox", "0 0 " + this.box.width + " " + this.box.height)
       svgElm.setAttribute("width", this.imageObj.width + "px")
       svgElm.setAttribute("height", this.imageObj.height + "px")
       //END
-
-      let svgData = svgElm.outerHTML.replace(new RegExp('#', 'g'), '%23')
+      
+      let svgData = this.encodeOptimizedSVGDataUri(svgElm.outerHTML)
       this.maglarge.css({
         left: px,
         top: py,
@@ -637,7 +649,7 @@ export class AnnotateView {
         zIndex: 200,
         backgroundPosition: bgp + ", " + bgp,
         backgroundRepeat: "no-repeat, no-repeat",
-        backgroundImage: "url('data:image/svg+xml;charset=utf8," + svgData + "'), url(" + this.image.url + ")"
+        backgroundImage: "url(\"" + svgData + "\"), url(" + this.image.url + ")"
       })
     }
   }
