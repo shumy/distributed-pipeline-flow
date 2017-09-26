@@ -28,6 +28,7 @@ export class AnnotateView {
   clockInSeconds = 0
 
   diseasesOptions = []
+  tempDiseasesOptions = []
 
   //active contexts
   ctxQuality: boolean
@@ -569,9 +570,15 @@ export class AnnotateView {
 
       if (this.node(this.DIAGNOSIS).diseases == null)
         this.node(this.DIAGNOSIS).diseases = []
-
+      
       this.node(this.DIAGNOSIS).diseases.push(disease)
-      this.loadDiseases()
+
+      if (this.diseasesOptions.indexOf(disease) == -1) {
+        this.tempDiseasesOptions.push(disease)
+        this.diseasesOptions.push(disease)
+      }
+
+      setTimeout(_ => this.diseasesDropdown.dropdown('set selected', disease), 1)
     }
   }
 
@@ -588,6 +595,17 @@ export class AnnotateView {
       onChange: (text) => {
         let selected = text.split(',').filter(el => el.length > 0)
         this.node(this.DIAGNOSIS).diseases = selected
+        console.log('SELECTED: ', selected)
+      },
+
+      onRemove: (value) => {
+        console.log('REMOVE: ', value)
+        console.log('TMP: ', this.tempDiseasesOptions)
+        let index = this.tempDiseasesOptions.indexOf(value)
+        if (index != -1) {
+          this.tempDiseasesOptions.splice(index, 1)
+          this.diseasesOptions.splice(this.diseasesOptions.indexOf(value), 1)
+        }
       }
     })
 
@@ -640,7 +658,7 @@ export class AnnotateView {
       svgElm.setAttribute("width", this.imageObj.width + "px")
       svgElm.setAttribute("height", this.imageObj.height + "px")
       //END
-      
+
       let svgData = this.encodeOptimizedSVGDataUri(svgElm.outerHTML)
       this.maglarge.css({
         left: px,

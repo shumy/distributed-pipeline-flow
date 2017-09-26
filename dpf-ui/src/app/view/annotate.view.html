@@ -100,8 +100,8 @@
           </div>
           <div *ngIf="!isQualityNeeded()" class="field">
             <div class="ui {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} action input">
-              <input #dInput type="text" placeholder="New ..." (keyup.enter)="addDisease(dInput)" style="color: rgba(191,191,191,.87); background-color: black;">
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} button" (click)="addDisease(dInput)">Add</button>
+              <input #dInput type="text" placeholder="New ..." (keyup.enter)="addDisease(dInput)" style="color:rgba(191,191,191,.87); background-color:black; border-color:rgba(255,255,255,.1) !important; border-radius:0px;">
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} button" (click)="addDisease(dInput)" style="border-radius:0px;">Add</button>
             </div>
           </div>
         </div>
