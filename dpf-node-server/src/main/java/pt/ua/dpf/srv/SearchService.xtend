@@ -40,10 +40,12 @@ class SearchService {
 			annotations = image.annotations.map[ anno |
 				AnnotationInfo.B => [
 					imageId = image.id
+					annotator = anno.annotator.alias
 					nodes = anno.nodes.map[ node |
 						NodeInfo.B => [
 							type = node.type.name
 							fields = node.fields
+							node.fields.put('createdAt', node.createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).replaceAll('T', ' '))
 						]
 					].toMap[ type ]
 				]
@@ -81,6 +83,7 @@ class ImageInfo {
 			},
 			"annotations": [
 				«FOR anno: annotations SEPARATOR ','»{
+					"annotator":"«anno.annotator»"«IF !anno.nodes.empty»,«ENDIF»
 					«FOR node: anno.nodes.values SEPARATOR ','»
 						"«node.type»": «mapper.writeValueAsString(node.fields)»
 					«ENDFOR»

@@ -136,7 +136,7 @@ export class SearchView {
     let selectedImages = this.images.filter(_ => _.selected == true)
     let selectedUIDs = selectedImages.map(_ => _.uid)
 
-    selectedImages.forEach(_ => _.transferred = false)
+    this.images.forEach(_ => _.transferred = false)
     this.ref.detectChanges()
     
     let fileName = UUID.generate()

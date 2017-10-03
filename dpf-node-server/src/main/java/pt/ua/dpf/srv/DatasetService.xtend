@@ -55,6 +55,9 @@ class DatasetService {
 			]
 			ds.save
 		]
+		
+		//force index update for the new dataset
+		Ebean.defaultServer.docStore.indexByQuery(Image.find.query.where.in('uid', imageUIDs).query)
 	}
 	
 	@Public(worker = true)

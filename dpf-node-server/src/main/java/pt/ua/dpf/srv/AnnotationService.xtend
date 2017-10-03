@@ -128,6 +128,8 @@ class AnnotationService {
 
 @Data
 class AnnotationInfo {
+	@Optional String annotator
+	
 	Long imageId
 	Map<String, NodeInfo> nodes
 }

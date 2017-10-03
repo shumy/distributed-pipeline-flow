@@ -256,6 +256,7 @@ export class AnnotateView {
 
   zoom(event: any) {
     event.stopImmediatePropagation()
+    if (this.toolActive) return;
 
     let maxLeft = this.box.width - this.magBox.width
     let maxTop = this.box.height - this.magBox.height
@@ -902,18 +903,23 @@ export class AnnotateView {
       //BEGIN: colect the time spent between read and save annotation...
       let now = new Date().getTime() / 1000
       let timeSpent = now - this.clockInSeconds
+      
+      let modes = []
+      if (this.ctxQuality) modes.push('QUALITY')
+      if (this.ctxDiagnosis) modes.push('DIAGNOSIS')
+      if (this.ctxLesions) modes.push('LESIONS')
 
       console.log('QUALITY:', this.node(this.QUALITY))
       if (this.ctxQuality && this.node(this.QUALITY).timeSpent == null && this.node(this.QUALITY).quality != null)
-        this.node(this.QUALITY).timeSpent = timeSpent
+        this.node(this.QUALITY).timeSpent = { modes: modes, time: timeSpent }
       
       console.log('DIAGNOSIS:', this.node(this.DIAGNOSIS))
       if (this.ctxDiagnosis && this.node(this.DIAGNOSIS).timeSpent == null && this.node(this.DIAGNOSIS).maculopathy != null)
-        this.node(this.DIAGNOSIS).timeSpent = timeSpent
+        this.node(this.DIAGNOSIS).timeSpent = { modes: modes, time: timeSpent }
       
       console.log('LESIONS:', this.node(this.LESIONS))
       if (this.ctxLesions && this.node(this.LESIONS).timeSpent == null)
-        this.node(this.LESIONS).timeSpent = timeSpent
+        this.node(this.LESIONS).timeSpent = { modes: modes, time: timeSpent }
       //END -------------------------------------------------------------------
 
       //BEGIN - save only the context...
