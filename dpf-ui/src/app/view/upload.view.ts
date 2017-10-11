@@ -6,6 +6,10 @@ import { environment as config }  from '../../environments/environment';
 import { FolderManagerProxy } from '../srv/folder.srv';
 import { IndexProxy } from '../srv/load.srv';
 
+import * as Dropzone from 'dropzone';
+
+declare var toastr: any
+
 @Component({
   selector: 'upload-view',
   templateUrl: 'upload.view.html',

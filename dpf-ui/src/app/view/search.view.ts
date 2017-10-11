@@ -4,6 +4,8 @@ import { FormControl }                                  from '@angular/forms';
 import { UUID, ClientRouter }                           from 'rts-ts-client';
 import { environment as config }                        from '../../environments/environment';
 
+declare var toastr: any
+
 @Component({
   selector: 'search-view',
   templateUrl: 'search.view.html',

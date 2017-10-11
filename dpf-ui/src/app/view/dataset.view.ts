@@ -3,6 +3,8 @@ import { ClientRouter }  from 'rts-ts-client';
 
 import { DatasetService, DatasetInfo } from '../srv/dataset.srv';
 
+declare var toastr: any
+
 @Component({
   selector: 'dataset',
   templateUrl: 'dataset.view.html',

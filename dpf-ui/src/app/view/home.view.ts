@@ -2,6 +2,8 @@ import { Component }                    from '@angular/core';
 import { Router }                       from '@angular/router';
 import { ClientRouter, IAuthManager }   from 'rts-ts-client';
 
+declare var toastr: any
+
 @Component({
   selector: 'home-view',
   templateUrl: 'home.view.html'

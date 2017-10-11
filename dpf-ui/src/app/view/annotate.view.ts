@@ -8,6 +8,7 @@ import { AnnotationService, AnnotationInfo, NodeInfo }        from '../srv/annot
 import * as Ps from 'perfect-scrollbar';
 
 declare var Raphael: any
+declare var toastr: any
 
 @Component({
   selector: 'annotate-view',

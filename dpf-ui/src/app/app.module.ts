@@ -30,6 +30,7 @@ import { EventsService, SubscriberService, RepositoryService }  from 'rts-ts-cli
 
 let client = 'web-' + UUID.generate()
 
+declare var toastr: any
 toastr.options = {
   positionClass: 'toast-top-center',
   timeOut: 5000
@@ -39,7 +40,7 @@ const pipeline = new Pipeline
 pipeline.failHandler(error => console.log('PIPELINE-FAIL: ' + error))
 
 const authMgr = new AuthService(config.authProvider, config.authClient)
-const router = new ClientRouter(config.server, client, pipeline)
+export const router = new ClientRouter(config.server, client, pipeline)
 router.authMgr = authMgr
 router.onError = error => {
   if (error.httpCode == 401) {
@@ -52,11 +53,11 @@ router.onError = error => {
 }
 
 const evtSrv = new EventsService(router)
-const subSrv = new SubscriberService(router, evtSrv)
-const repoSrv = new RepositoryService(router, evtSrv)
+export const subSrv = new SubscriberService(router, evtSrv)
+export const repoSrv = new RepositoryService(router, evtSrv)
   repoSrv.create('srv-points').connect()
 
-function init() {
+export function init() {
   return new Promise<void>((resolve) => {
     authMgr.load().then((isAuthorized: boolean) => {
       console.log('Auth-Manager ready...')
