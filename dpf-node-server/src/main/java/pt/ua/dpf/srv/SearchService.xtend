@@ -1,13 +1,14 @@
 package pt.ua.dpf.srv
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import java.time.format.DateTimeFormatter
 import java.util.List
+import pt.ua.ieeta.rpacs.model.Image
 import pt.ua.ieeta.rpacs.utils.DocSearch
 import rt.data.Data
+import rt.data.Optional
 import rt.plugin.service.an.Public
 import rt.plugin.service.an.Service
-import pt.ua.ieeta.rpacs.model.Image
-import com.fasterxml.jackson.databind.ObjectMapper
 
 @Data
 @Service
@@ -26,7 +27,13 @@ class SearchService {
 		ImageInfo.B => [
 			uid = image.uid
 			datetime = dbSerie.datetime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).replaceAll('T', ' ')
+			
 			modality = dbSerie.modality
+			stationName = dbSerie.stationName
+			manufacturer = dbSerie.manufacturer
+			manufacturerModelName = dbSerie.manufacturerModelName
+			
+			
 			laterality = image.laterality
 			columns = image.columns
 			rows = image.rows
@@ -58,7 +65,12 @@ class SearchService {
 class ImageInfo {
 	String uid
 	String datetime
+	
 	String modality
+	@Optional String stationName
+	@Optional String manufacturer
+	@Optional String manufacturerModelName
+	
 	String laterality
 	Integer columns
 	Integer rows
@@ -72,7 +84,12 @@ class ImageInfo {
 		val jsonString = '''{
 			"uid": "«uid»",
 			"datetime": "«datetime»",
+			
 			"modality": "«modality»",
+			"stationName": "«stationName»",
+			"manufacturer": "«manufacturer»",
+			"manufacturerModelName": "«manufacturerModelName»",
+			
 			"laterality": "«laterality»",
 			"columns": «columns»,
 			"rows": «rows»,
