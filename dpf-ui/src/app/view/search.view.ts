@@ -16,7 +16,6 @@ export class SearchView {
   @ViewChild('drop_action') drop_action
   @ViewChild('modal_create_ds') modal_create_ds
   @ViewChild('modal_help') modal_help
-  @ViewChild('ds_name') ds_name
 
   //search help
   @ViewChild('search') search
@@ -42,6 +41,12 @@ export class SearchView {
 
   dataTypes = ['dcm', 'anno']
 
+  //Dataset creator modal...
+  dsName = ''
+  dsNumberSelector: string
+  dsNumberOfImages: number
+  dsImageOrder: string
+  dsImageSelection: string
   dsMessageError = ''
 
   constructor(router: ClientRouter, private ref: ChangeDetectorRef) {
@@ -170,28 +175,81 @@ export class SearchView {
 
   //dataset creation.................................................
   openDsModel() {
+    //reset fields...
+    this.dsName = ''
+    this.dsNumberSelector = 'all'
+    this.dsNumberOfImages = this.selectedNumber
+    this.dsImageOrder = 'sequence'
+    this.dsImageSelection = 'top'
+    
     this.dsMessageError = ''
-    let input_ds_name: any = $(this.ds_name.nativeElement)
-    input_ds_name.val('')
 
     let modal_create: any = $(this.modal_create_ds.nativeElement)
     modal_create.modal('show')
   }
 
-  createDataset(name: string) {
-    if (name.length > 0) {
-      console.log('CREATE-DS: ', name)
-      let selectedImages = this.images.filter(_ => _.selected == true)
-      let selectedUIDs = selectedImages.map(_ => _.uid)
+  isInt(value) {
+    var x;
+    if (isNaN(value))
+      return false
+    
+    x = parseFloat(value)
+    return (x | 0) === x
+  }
 
-      this.dsSrv.create(name, selectedUIDs).then(_ => {
+  shuffle(values: any[]) {
+    let j, x, i
+    for (i = values.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1))
+        x = values[i]
+        values[i] = values[j]
+        values[j] = x
+    }
+  }
+
+  createDataset() {
+    this.dsMessageError = ''
+
+    console.log('LOG-DS-CREATE: ', this.dsName, this.dsNumberSelector, this.dsNumberOfImages, this.dsImageOrder, this.dsImageSelection)
+    if (this.dsName.length == 0) {
+      this.dsMessageError = 'Please provide a dataset name for: Dataset Name'
+      console.log('LOG-DS-ERROR: ', this.dsMessageError)
+      return
+    }
+
+    if (this.dsNumberSelector == 'total' && (!this.isInt(this.dsNumberOfImages) || this.dsNumberOfImages < 1 || this.dsNumberOfImages > this.selectedNumber)) {
+      this.dsMessageError = 'Please provide an integer value between 1 and ' + this.selectedNumber + ' for: Number of Images'
+      console.log('LOG-DS-ERROR: ', this.dsMessageError)
+      return
+    }
+
+    let selectedImages = this.images.filter(_ => _.selected == true)
+    let selectedUIDs = selectedImages.map(_ => _.uid)
+
+    //console.log('LOG-DS-UIDS: ')
+    //selectedUIDs.forEach(_ => console.log(_) )
+
+    //image shuffle
+    if (this.dsImageOrder == 'random') {
+      this.shuffle(selectedUIDs)
+    }
+
+    //image selection
+    if (this.dsNumberSelector == 'total' && this.dsNumberOfImages < this.selectedNumber) {
+      if (this.dsImageSelection == 'top') {
+        selectedUIDs = selectedUIDs.splice(0, this.dsNumberOfImages)
+      } else {
+        selectedUIDs = selectedUIDs.splice(selectedUIDs.length - this.dsNumberOfImages, this.dsNumberOfImages)
+      }
+    }
+
+    this.dsSrv.create(this.dsName, selectedUIDs)
+      .then(_ => {
         let modal_create: any = $(this.modal_create_ds.nativeElement)
         modal_create.modal('hide')
         toastr.success('Dataset created')
-      }).catch(error => this.dsMessageError = error.message)
-    } else {
-      this.dsMessageError = 'Please provide a dataset name!'
-    }
+      })
+      .catch(error => this.dsMessageError = error.message)
   }
 
   //search help dropdown..............................................

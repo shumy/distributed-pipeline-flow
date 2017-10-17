@@ -2,7 +2,7 @@ import { UUID }                       from 'rts-ts-client';
 
 import { NgModule, APP_INITIALIZER }  from '@angular/core';
 import { BrowserModule }              from '@angular/platform-browser';
-import { ReactiveFormsModule }        from '@angular/forms';
+import { ReactiveFormsModule, FormsModule }        from '@angular/forms';
 import { HttpModule }                 from '@angular/http';
 
 import { routing }                    from './app.routing';
@@ -68,7 +68,7 @@ export function init() {
 }
 
 @NgModule({
-  imports: [ BrowserModule, ReactiveFormsModule, HttpModule, routing ],
+  imports: [ BrowserModule, ReactiveFormsModule, FormsModule, HttpModule, routing ],
   declarations: [
     Application,
     HomeView, SearchView, UploadView, AnnotateView, PacsCenterView, DatasetView, ProfileView, RealmView

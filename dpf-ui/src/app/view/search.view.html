@@ -16,6 +16,11 @@
           <div class="item">Columns</div>
           <div class="item">Rows</div>
 
+          <div class="header">Station Fields</div>
+          <div class="item">StationName</div>
+          <div class="item">Manufacturer</div>
+          <div class="item">ManufacturerModelName</div>
+
           <div class="header">Patient Fields</div>
           <div class="item">PatientName</div>
           <div class="item">BirthDate</div>
@@ -92,7 +97,7 @@
       </tr>
     </thead>
     <tbody>
-      <template ngFor let-image [ngForOf]="images.slice(selectedPage*pageSize, (selectedPage + 1)*pageSize)">
+      <ng-template ngFor let-image [ngForOf]="images.slice(selectedPage*pageSize, (selectedPage + 1)*pageSize)">
         <!--Image Info-->
         <tr>
           <!--Selection-->
@@ -135,6 +140,18 @@
         <tr *ngIf="image.open">
           <td colspan="7">
             <div class="ui relaxed list" style="padding-left: 3em">
+            <!--Station-->
+            <div class="item">
+                <i class="large blue desktop icon"></i>
+                <div class="content">
+                  <div class="header">StationName: {{image.stationName}}</div>
+                  <div class="ui horizontal divided list">
+                    <div class="item">Manufacturer: {{image.manufacturer}}</div>
+                    <div class="item">ManufacturerModelName: {{image.manufacturerModelName}}</div>
+                  </div>
+                </div>
+              </div>
+              
               <!--Patient-->
               <div class="item">
                 <i class="large blue user icon"></i>
@@ -165,7 +182,7 @@
             </div>
           </td>
         </tr>
-      </template>
+      </ng-template>
     </tbody>
   </table>
 </div>
@@ -193,19 +210,77 @@
   <div class="header">
     Create Dataset
   </div>
-  <div class="content">
-    <div class="description">
-      <div class="ui header">Choose a dataset name:</div>
+
+  <div class="ui form" style="padding: 10px 0px 0px 10px;">
+    <!--Dataset Name-->
+    <div class="inline fields" style="display: flex;">
+      <label>Dataset Name:</label>
+      <div class="field" style="flex: 1 1 auto;">
+        <input [(ngModel)]="dsName" type="text" placeholder="Dataset Name..." style="width: 100%;">
+      </div>
     </div>
-    <div class="ui fluid input">
-      <input #ds_name type="text" placeholder="Dataset Name...">
+
+    <!--Image Order-->
+    <div class="inline fields">
+      <label>Image Order:</label>
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input [(ngModel)]="dsImageOrder" type="radio" name="dsImageOrder" value="sequence">
+          <label>Sequence</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input [(ngModel)]="dsImageOrder" type="radio" name="dsImageOrder" value="random">
+          <label>Random</label>
+        </div>
+      </div>
     </div>
-    <div *ngIf="dsMessageError.length > 0" class="ui negative message">
-      <p>{{dsMessageError}}</p>
+
+    <!--Number of Images-->
+    <div class="inline fields" style="display: flex;">
+        <label>Number of Images:</label>
+        <div class="field">
+          <div class="ui radio checkbox">
+            <input [(ngModel)]="dsNumberSelector" type="radio" name="dsNumberSelector" value="all">
+            <label>All</label>
+          </div>
+        </div>
+        <div class="field">
+          <div class="ui radio checkbox">
+            <input [(ngModel)]="dsNumberSelector" type="radio" name="dsNumberSelector" value="total">
+            <label>Total</label>
+          </div>
+        </div>
+        <div *ngIf="dsNumberSelector == 'total'" class="field" style="flex: 1 1 auto;">
+          <input [(ngModel)]="dsNumberOfImages" type="number" placeholder="Number..." style="width: 100%;">
+        </div>
+      </div>
+
+    <!--Image Selection-->
+    <div *ngIf="dsNumberSelector == 'total' && dsNumberOfImages < selectedNumber" class="inline fields">
+        <label>Image Selection:</label>
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input [(ngModel)]="dsImageSelection" type="radio" name="dsImageSelection" value="top">
+          <label>Top</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input [(ngModel)]="dsImageSelection" type="radio" name="dsImageSelection" value="bottom">
+          <label>Bottom</label>
+        </div>
+      </div>
     </div>
   </div>
+
+  <div *ngIf="dsMessageError.length > 0" class="ui negative message">
+    <p>{{dsMessageError}}</p>
+  </div>
+
   <div class="actions">
-    <div class="ui green button" (click)="createDataset(ds_name.value)">
+    <div class="ui green button" (click)="createDataset()">
       Create
     </div>
   </div>
@@ -273,6 +348,14 @@
           <li>Laterality -> <strong>text</strong> type (normally L or R), ex: <strong>Laterality:L</strong></li>
           <li>Columns -> <strong>numeric</strong> type, ex: <strong>Columns:[1000 TO 4000]</strong></li>
           <li>Rows-> <strong>numeric</strong> type, ex: <strong>Rows:>1000</strong></li>
+        </ul>
+      </li>
+      <li>
+        <strong>Using Station Fields:</strong>
+        <ul>
+          <li>StationName -> <strong>text</strong> type, ex: <strong>StationName:Braga</strong></li>
+          <li>Manufacturer -> <strong>text</strong> type, ex: <strong>Manufacturer:Canon</strong></li>
+          <li>ManufacturerModelName -> <strong>text</strong> type (normally M or F), ex: <strong>ManufacturerModelName:CR*</strong></li>
         </ul>
       </li>
       <li>
