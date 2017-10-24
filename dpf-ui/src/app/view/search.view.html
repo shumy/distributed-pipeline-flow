@@ -27,6 +27,7 @@
           <div class="item">Sex</div>
 
           <div class="header">Annotation Fields</div>
+          <div class="item">CreatedAt</div>
           <div class="item">Readability</div>
           <div class="item">Centered</div>
           <div class="item">Retinopathy</div>
@@ -168,7 +169,9 @@
               <div *ngFor="let anno of image.annotations" class="item">
                 <i class="large blue tags icon"></i>
                 <div class="content">
-                  <div class="header">Readability: {{anno.nodes.quality ? anno.nodes.quality.fields.quality: 'N/A'}}</div>
+                  <div class="header">
+                    Readability: {{anno.nodes.quality ? anno.nodes.quality.fields.quality: 'N/A'}} with {{ nodeTypesList(anno.nodes) }}
+                  </div>
                   <div class="ui horizontal divided list">
                     <div class="item">Centered: {{anno.nodes.quality ? anno.nodes.quality.fields.local: 'N/A'}}</div>
                     <div class="item">Retinopathy: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.retinopathy: 'N/A'}}</div>
@@ -369,6 +372,7 @@
       <li>
         <strong>Using Annotation Fields:</strong>
         <ul>
+          <li>CreatedDate -> <strong>date</strong> type, ex: <strong>CreatedDate:[2017-10-01 TO 2017-12-01]</strong></li>
           <li>Readability -> <strong>option</strong> type with options (GOOD, PARTIAL, BAD), ex: <strong>Readability:GOOD</strong></li>
           <li>Centered -> <strong>option</strong> type with options (MACULA, OPTIC_DISC, OTHER), ex: <strong>Centered:(MACULA OR OTHER)</strong></li>
           <li>Retinopathy -> <strong>option</strong> type with options (R0, R1, R2_M, R2_S, R3, RX), ex: <strong>Retinopathy:R2*</strong></li>

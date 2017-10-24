@@ -270,4 +270,10 @@ export class SearchView {
 
     jDrop.focus()
   }
+
+  nodeTypesList(nodes: any) {
+    let keys = Object.keys(nodes).map(_ => _.toUpperCase())
+    let listPrint = `[${keys}]`
+    return listPrint
+  }
 }
