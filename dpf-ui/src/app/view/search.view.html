@@ -28,6 +28,7 @@
 
           <div class="header">Annotation Fields</div>
           <div class="item">CreatedAt</div>
+          <div class="item">Annotator</div>
           <div class="item">Readability</div>
           <div class="item">Centered</div>
           <div class="item">Retinopathy</div>
@@ -173,6 +174,7 @@
                     Readability: {{anno.nodes.quality ? anno.nodes.quality.fields.quality: 'N/A'}} with {{ nodeTypesList(anno.nodes) }}
                   </div>
                   <div class="ui horizontal divided list">
+                    <div class="item">Annotator: {{anno.annotator}}</div>
                     <div class="item">Centered: {{anno.nodes.quality ? anno.nodes.quality.fields.local: 'N/A'}}</div>
                     <div class="item">Retinopathy: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.retinopathy: 'N/A'}}</div>
                     <div class="item">Maculopathy: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.maculopathy: 'N/A'}}</div>
@@ -373,6 +375,7 @@
         <strong>Using Annotation Fields:</strong>
         <ul>
           <li>CreatedAt -> <strong>date</strong> type, ex: <strong>CreatedAt:[2017-10-01 TO 2017-12-01]</strong></li>
+          <li>Annotator -> <strong>text</strong> type, ex: <strong>Annotator:f22dc9f9-ffc8-4376-a8e1-060b06aa2a04</strong></li>
           <li>Readability -> <strong>option</strong> type with options (GOOD, PARTIAL, BAD), ex: <strong>Readability:GOOD</strong></li>
           <li>Centered -> <strong>option</strong> type with options (MACULA, OPTIC_DISC, OTHER), ex: <strong>Centered:(MACULA OR OTHER)</strong></li>
           <li>Retinopathy -> <strong>option</strong> type with options (R0, R1, R2_M, R2_S, R3, RX), ex: <strong>Retinopathy:R2*</strong></li>
