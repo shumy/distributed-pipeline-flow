@@ -39,7 +39,7 @@ class SearchService {
 			rows = image.rows
 			
 			patient = PatientInfo.B => [
-				name = dbPatient.name
+				pid = dbPatient.pid
 				sex = dbPatient.sex
 				birthdate = dbPatient.birthdate.format(DateTimeFormatter.ISO_LOCAL_DATE)
 			]
@@ -94,7 +94,7 @@ class ImageInfo {
 			"columns": «columns»,
 			"rows": «rows»,
 			"patient": {
-				"name": "«patient.name»",
+				"pid": "«patient.pid»",
 				"sex": "«patient.sex»",
 				"birthdate": "«patient.birthdate»"
 			},
@@ -116,7 +116,7 @@ class ImageInfo {
 
 @Data
 class PatientInfo {
-	String name
+	String pid
 	String sex
 	String birthdate
 }
