@@ -154,7 +154,7 @@
               <button class="ui icon grey {{ tool == 'MOVE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Move selected geometry (activated with left mouse button)" (click)="selectTool('MOVE')">
                 <i class=" {{ tool == 'MOVE' && toolActive ? 'hand rock' : 'hand paper' }} large icon"></i>
               </button>
-              <button class="ui icon grey {{ tool == 'ZOOM-MOVE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Move the image" (click)="selectTool('ZOOM-MOVE')">
+              <button class="ui icon grey {{ tool == 'PAN' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Move the image" (click)="selectTool('PAN')">
                 <i class="move large icon"></i>
               </button>
               <button class="ui icon grey {{ magnifierTool ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Magnifying glass" (click)="selectTool('MAG')">

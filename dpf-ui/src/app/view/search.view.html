@@ -180,7 +180,7 @@
                     <div class="item">Maculopathy: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.maculopathy: 'N/A'}}</div>
                     <div class="item">Photocoagulation: {{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.photocoagulation: 'N/A'}}</div>
                     <div class="item">Comorbidities: [{{anno.nodes.diagnosis ? anno.nodes.diagnosis.fields.diseases : 'N/A'}}]</div>
-                    <div class="item">Lesions: [{{anno.nodes.lesions ? lesions(anno.nodes.lesions) : 'N/A'}}]</div>
+                    <div class="item">Lesions: {{anno.nodes.lesions ? '[' + lesions(anno.nodes.lesions) + ']': 'N/A'}}</div>
                   </div>
                 </div>
               </div>

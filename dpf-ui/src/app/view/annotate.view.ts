@@ -21,11 +21,13 @@ export class AnnotateView {
   readonly QUALITY        = 'quality'
   readonly DIAGNOSIS      = 'diagnosis'
   readonly LESIONS        = 'lesions'
+  readonly HISTORY        = 'history'
 
   readonly PRELOAD_LIMIT  = 5 //limit the preload of images and AnnotationInfo
   readonly BACK_LIMIT     = 5 //limit the number of "Recently Annotated" image list
 
   //registering time between readAnnotation and saveAnnotation
+  startTime: string
   clockInSeconds = 0
 
   diseasesOptions = []
@@ -72,7 +74,7 @@ export class AnnotateView {
   lastTool: string
   lastGeometryTool: string
 
-  tool = 'NONE'           // (MAG, ERASER, MOVE, ZOOM-MOVE)  (MA, HEM, HE, SE, NV)
+  tool = 'NONE'           // (MAG, ERASER, MOVE, PAN)  (MA, HEM, HE, SE, NV)
   geometryTool = 'N'      // (C-"Circle", E-"Elipse", P-"Polygon", F-"Free-Hand", N-"None")
   magnifierTool = false
   toolActive = false
@@ -124,7 +126,7 @@ export class AnnotateView {
   }
 
   initContext(params: any) {
-    this.tool = 'ZOOM-MOVE'
+    this.tool = 'PAN'
     this.geometryTool = 'N'
     this.magnifierTool = false
     this.toolActive = false
@@ -304,12 +306,12 @@ export class AnnotateView {
       } 
   }
 
-  selectTool(tool: string) {
+  selectTool(tool: string, dontStamp = false) {
     //Eraser and Move are not compatible with Magnifier
-    if (tool === 'ERASER' || tool === 'MOVE' || tool == 'ZOOM-MOVE')
+    if (tool === 'ERASER' || tool === 'MOVE' || tool == 'PAN')
       this.magnifierTool = false
 
-    if (this.tool === 'ERASER' || this.tool === 'MOVE' || this.tool === 'ZOOM-MOVE') {
+    if (this.tool === 'ERASER' || this.tool === 'MOVE' || this.tool === 'PAN') {
       if (tool === 'MAG')
         this.magnifierTool = true
       this.tool = tool
@@ -317,8 +319,8 @@ export class AnnotateView {
       this.magnifierTool = !this.magnifierTool
       if (!this.magnifierTool && this.tool === 'MAG') {
         this.tool = 'NONE'
-        if (!this.ctxLesions) 
-          this.tool = 'ZOOM-MOVE'
+        if (!this.ctxLesions)
+          this.tool = 'PAN'
       }
     } else {
       this.tool = tool
@@ -331,12 +333,19 @@ export class AnnotateView {
     if (tool !== 'MAG')
       this.geometryTool = this.defaultGeometryTool(this.tool)
     
+    if (!dontStamp)
+      this.stampHistory('TOOL_' + tool)
+
     this.redraw()
   }
 
-  selectGeometryTool(geoTool: string) {
-    if (['MA', 'HEM', 'HE', 'SE', 'NV'].indexOf(this.tool) > -1)
+  selectGeometryTool(geoTool: string, dontStamp = false) {
+    if (['MA', 'HEM', 'HE', 'SE', 'NV'].indexOf(this.tool) > -1) {
+      if (!dontStamp)
+        this.stampHistory('TOOL_' + geoTool)
+      
       this.geometryTool = geoTool
+    }
   }
 
   tools() {
@@ -359,6 +368,12 @@ export class AnnotateView {
       }
 
       if (e.button == 0) {
+        if (!this.toolActive)
+          if (['MA', 'HEM', 'HE', 'SE', 'NV'].indexOf(this.tool) > -1)
+            this.stampHistory('DRAW_' + this.tool + '_' + this.geometryTool)
+          else if (this.tool != 'MAG')
+            this.stampHistory('USE_' + this.tool)
+        
         this.toolGeo = null
         if (this.geometryTool == 'E' || this.geometryTool == 'C') {
           this.toolData = { x: pos.x, y: pos.y, rx: 0, ry: 0 }
@@ -373,7 +388,7 @@ export class AnnotateView {
           this.initPos = pos
           this.lastTool = this.tool
           this.hasChange.detectChanges()
-        } else if (this.tool == 'ZOOM-MOVE') {
+        } else if (this.tool == 'PAN') {
           this.initPos = pos
         }
 
@@ -382,6 +397,7 @@ export class AnnotateView {
           this.toolGeo.attr("stroke", this.geoAttributes[this.tool].color)
 
       } else if (e.button == 1 || e.button == 2) {
+
         if (this.toolActive && (this.geometryTool == 'P')) {
           this.toolActive = false
           if (this.toolData.length > 2)
@@ -393,8 +409,10 @@ export class AnnotateView {
           this.lastTool = this.tool
           this.lastGeometryTool = this.geometryTool
           this.toolActive = true
-          this.selectTool('MOVE')
+          this.selectTool('MOVE', true)
           this.hasChange.detectChanges()
+
+          this.stampHistory('USE_' + this.tool)
         }
       }
 
@@ -431,11 +449,11 @@ export class AnnotateView {
             this.pushGeometry()
           else
             this.redraw()
-        } else if (this.tool == 'MOVE' ) {
-          this.selectTool(this.lastTool)
-          this.selectGeometryTool(this.lastGeometryTool)
+        } else if (this.tool == 'MOVE') {
+          this.selectTool(this.lastTool, true)
+          this.selectGeometryTool(this.lastGeometryTool, true)
           this.hasChange.detectChanges()
-        } else if (this.tool == 'ZOOM-MOVE' ) {
+        } else if (this.tool == 'PAN') {
           this.adjustBox()
         }
       }
@@ -474,7 +492,7 @@ export class AnnotateView {
         } else if (this.tool == 'MOVE' && this.selectedGeoKey != null) {
           this.moveGeometry(pos.x - this.initPos.x, pos.y - this.initPos.y)
           this.initPos = pos
-        } else if(this.tool == 'ZOOM-MOVE') {
+        } else if(this.tool == 'PAN') {
           //move image
           this.magsmall[0].scrollLeft += this.initPos.x - pos.x
           this.magsmall[0].scrollTop += this.initPos.y - pos.y
@@ -580,11 +598,15 @@ export class AnnotateView {
         this.diseasesOptions.push(disease)
       }
 
+      this.stampHistory('NEW_COMORBIDITY')
+
       setTimeout(_ => this.diseasesDropdown.dropdown('set selected', disease), 1)
     }
   }
 
   loadDiseases() {
+    let isLoading = true
+
     let diseases = this.node(this.DIAGNOSIS).diseases || []
     diseases.forEach(el => {
       if (this.diseasesOptions.indexOf(el) == -1)
@@ -595,14 +617,21 @@ export class AnnotateView {
 
     this.diseasesDropdown.dropdown({
       onChange: (text) => {
+        let initialCount = 0
+        if (this.node(this.DIAGNOSIS).diseases != null)
+        initialCount = this.node(this.DIAGNOSIS).diseases.length
+
         let selected = text.split(',').filter(el => el.length > 0)
         this.node(this.DIAGNOSIS).diseases = selected
-        console.log('SELECTED: ', selected)
+
+        if (!isLoading && initialCount < selected.length)
+          this.stampHistory('ADD_COMORBIDITY')
       },
 
       onRemove: (value) => {
-        console.log('REMOVE: ', value)
-        console.log('TMP: ', this.tempDiseasesOptions)
+        if (!isLoading)
+          this.stampHistory('REMOVE_COMORBIDITY')
+
         let index = this.tempDiseasesOptions.indexOf(value)
         if (index != -1) {
           this.tempDiseasesOptions.splice(index, 1)
@@ -612,6 +641,7 @@ export class AnnotateView {
     })
 
     this.diseasesDropdown.dropdown('set exactly', diseases)
+    isLoading = false
   }
 
   geometryToLesions() {
@@ -675,6 +705,8 @@ export class AnnotateView {
   }
 
   eraseLast() {
+    this.stampHistory('TOOL_ERASE_LAST')
+
     let keyIndex = this.geoKeyOrder.length - 1
     if (keyIndex > -1) {
       let key = this.geoKeyOrder[keyIndex]
@@ -683,6 +715,8 @@ export class AnnotateView {
   }
 
   eraseAll() {
+    this.stampHistory('TOOL_ERASE_ALL')
+
     delete this.selectedGeoKey
     this.geoKeyOrder = []
     this.geometry = {}
@@ -707,23 +741,6 @@ export class AnnotateView {
   redraw() {
     this.paper.clear()
     if (!this.ctxLesions) return
-
-    // for debug...
-    /*let circle1 = this.paper.circle(0, 0, 10)
-    circle1.attr("fill", "#f00")
-
-    let circle2 = this.paper.circle(this.box.width, 0, 10)
-    circle2.attr("fill", "#f00")
-
-    let circle3 = this.paper.circle(0, this.box.height, 10)
-    circle3.attr("fill", "#f00")
-
-    let circle4 = this.paper.circle(this.box.width, this.box.height, 10)
-    circle4.attr("fill", "#f00")
-    */
-
-    //console.log('GEO-KEY: ', this.geoKeyOrder)
-    //console.log('GEO: ', this.geometry)
 
     //draw geometry
     this.geoElements = {}
@@ -785,14 +802,6 @@ export class AnnotateView {
     })
   }
 
-  /*@HostListener('window:keydown', ['$event'])
-  onKeyDown(event) {
-    switch (event.key) {
-      case "ArrowLeft": this.setPosition(this.progress); break
-      case "ArrowRight": this.setPosition(this.progress + 2); break
-    }
-  }*/
-
   setPosition(pos?: number) {
     //position == progress + 1
     if (pos == null)
@@ -848,6 +857,7 @@ export class AnnotateView {
     this.setMagImage()
 
     this.annoProxy.readAnnotation(this.image.id).then(ann => {
+      this.startTime = new Date().toISOString()
       this.clockInSeconds = new Date().getTime() / 1000
 
       this.annotation = ann
@@ -902,25 +912,10 @@ export class AnnotateView {
         this.getOrCreateNode(this.annotation, this.DIAGNOSIS).implicit = true
 
       //BEGIN: colect the time spent between read and save annotation...
+      this.stampHistory('SAVE')
       let now = new Date().getTime() / 1000
       let timeSpent = now - this.clockInSeconds
-      
-      let modes = []
-      if (this.ctxQuality) modes.push('QUALITY')
-      if (this.ctxDiagnosis) modes.push('DIAGNOSIS')
-      if (this.ctxLesions) modes.push('LESIONS')
-
-      console.log('QUALITY:', this.node(this.QUALITY))
-      if (this.ctxQuality && this.node(this.QUALITY).timeSpent == null && this.node(this.QUALITY).quality != null)
-        this.node(this.QUALITY).timeSpent = { modes: modes, time: timeSpent }
-      
-      console.log('DIAGNOSIS:', this.node(this.DIAGNOSIS))
-      if (this.ctxDiagnosis && this.node(this.DIAGNOSIS).timeSpent == null && this.node(this.DIAGNOSIS).maculopathy != null)
-        this.node(this.DIAGNOSIS).timeSpent = { modes: modes, time: timeSpent }
-      
-      console.log('LESIONS:', this.node(this.LESIONS))
-      if (this.ctxLesions && this.node(this.LESIONS).timeSpent == null)
-        this.node(this.LESIONS).timeSpent = { modes: modes, time: timeSpent }
+      this.node(this.HISTORY)[this.startTime].timeSpent = timeSpent
       //END -------------------------------------------------------------------
 
       //BEGIN - save only the context...
@@ -1016,6 +1011,8 @@ export class AnnotateView {
   }
 
   setQuality(quality: string) {
+    this.stampHistory(quality)
+
     let qNode = this.node(this.QUALITY)
     let dNode = this.node(this.DIAGNOSIS)
 
@@ -1031,12 +1028,16 @@ export class AnnotateView {
   }
 
   setLocal(local: string) {
+    this.stampHistory(local)
+
     let qNode = this.node(this.QUALITY)
     if (qNode.quality !== 'BAD')
       qNode.local = local
   }
 
   setRetinopathy(retinopathy: string) {
+    this.stampHistory(retinopathy)
+
     let qNode = this.node(this.QUALITY)
     let dNode = this.node(this.DIAGNOSIS)
     
@@ -1050,6 +1051,8 @@ export class AnnotateView {
   }
 
   setMaculopathy(maculopathy: string) {
+    this.stampHistory(maculopathy)
+
     let qNode = this.node(this.QUALITY)
     let dNode = this.node(this.DIAGNOSIS)
 
@@ -1058,10 +1061,32 @@ export class AnnotateView {
   }
 
   setPhotocoagulation(photocoagulation: string) {
+    this.stampHistory(photocoagulation)
+
     let qNode = this.node(this.QUALITY)
     let dNode = this.node(this.DIAGNOSIS)
 
     if (qNode.quality !== 'BAD')
       dNode.photocoagulation = photocoagulation
+  }
+
+  stampHistory(action: string) {
+    console.log('STAMP: ', action)
+
+    let nHistory = this.node(this.HISTORY)
+    let event = nHistory[this.startTime]
+    if (event == null) {
+      let modes = []
+      if (this.ctxQuality) modes.push('QUALITY')
+      if (this.ctxDiagnosis) modes.push('DIAGNOSIS')
+      if (this.ctxLesions) modes.push('LESIONS')
+
+      event = { modes: modes, timeSpent: 0, clicks: [] }
+      nHistory[this.startTime] = event
+    }
+
+    let aClick = {}
+    aClick[action] = new Date().toISOString()
+    event.clicks.push(aClick)
   }
 }
