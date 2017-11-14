@@ -16,7 +16,7 @@ class SearchService {
 	
 	@Public(worker = true)
 	def List<ImageInfo> search(String query) {
-		val results = DocSearch.search(query, 0, 100)
+		val results = DocSearch.search(query, 0, 0)
 		return results.map[ toImageInfo ]
 	}
 	
