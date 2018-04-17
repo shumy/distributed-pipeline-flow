@@ -126,6 +126,7 @@ export class AnnotateView {
   }
 
   initContext(params: any) {
+    this.dsLast = -1
     this.tool = 'PAN'
     this.geometryTool = 'N'
     this.magnifierTool = false
@@ -281,6 +282,16 @@ export class AnnotateView {
     }
 
     this.adjustLayout(leftScrollRatio, topScrollRatio)
+  }
+
+  isLesionsEligible() {
+    return this.node(this.QUALITY).quality != null && this.node(this.QUALITY).quality != 'BAD' &&
+      !(
+          (this.node(this.DIAGNOSIS).retinopathy == null || this.node(this.DIAGNOSIS).retinopathy == 'R0')
+       && (this.node(this.DIAGNOSIS).maculopathy == null || this.node(this.DIAGNOSIS).maculopathy == 'M0')
+       && (this.node(this.DIAGNOSIS).photocoagulation == null || this.node(this.DIAGNOSIS).photocoagulation == 'P0')
+       && (this.node(this.DIAGNOSIS).diseases == null || this.node(this.DIAGNOSIS).diseases.length == 0)
+      )
   }
 
   isQualityNeeded() {
@@ -907,6 +918,12 @@ export class AnnotateView {
   }
 
   done() {
+    if (this.ctxLesions && !this.isLesionsEligible()) {
+      this.setNext()
+      console.log('NEXT')
+      return
+    }
+
     if (this.isReadyToDone()) {
       if (this.ctxDiagnosis)
         this.getOrCreateNode(this.annotation, this.DIAGNOSIS).implicit = true
@@ -951,9 +968,6 @@ export class AnnotateView {
     if (this.dataset != null && this.progress >= this.dataset.size)
       return false
 
-    if (this.ctxLesions)
-      return true
-
     let qNode = this.node(this.QUALITY)
     let dNode = this.node(this.DIAGNOSIS)
 
@@ -961,7 +975,7 @@ export class AnnotateView {
     if (!qNode.quality || qNode.quality !== 'BAD' && !qNode.local)
       return false
 
-    if (this.ctxDiagnosis && qNode.quality !== 'BAD' &&
+    if ((this.ctxDiagnosis || this.ctxLesions) && qNode.quality !== 'BAD' &&
       (!dNode.retinopathy || !dNode.maculopathy || !dNode.photocoagulation)
     ) return false
 
@@ -991,6 +1005,8 @@ export class AnnotateView {
   }
 
   toogleQuality() {
+    if (this.ctxLesions) return
+
     //one must be selected
     if (this.ctxQuality && !this.ctxDiagnosis)
       return
@@ -1001,6 +1017,8 @@ export class AnnotateView {
   }
 
   toogleDiagnosis() {
+    if (this.ctxLesions) return
+
     //one must be selected
     if (this.ctxDiagnosis && !this.ctxQuality)
       return

@@ -23,7 +23,12 @@
           <i class="file image outline large icon"></i>
           <span>Image Quality</span>
         </div>
-        <div *ngIf="!ctxLesions" class="ui inverted form" style="flex: 1">
+        <div *ngIf="ctxLesions" class="ui icon button topic" style="cursor: default; background: #1B1C1D;">
+          <i class="file image outline large icon"></i>
+          <span>Image Quality</span>
+        </div>
+
+        <div class="ui inverted form" style="flex: 1">
           <div class="field">
             <label>Image Readability</label>
             <div class="ui tiny buttons">
@@ -55,7 +60,12 @@
           <i class="first aid large icon"></i>
           <span>Diagnosis</span>
         </div>
-        <div *ngIf="!ctxLesions" class="ui inverted form" style="flex: 1">
+        <div *ngIf="ctxLesions" class="ui icon button topic" style="cursor: default; background: #1B1C1D;">
+          <i class="file image outline large icon"></i>
+          <span>Diagnosis</span>
+        </div>
+
+        <div class="ui inverted form" style="flex: 1">
           <div *ngIf="isQualityNeeded()" class="field">
             <label>There is no available Quality for this image!</label>
           </div>
@@ -98,7 +108,7 @@
               </div>
             </div>
           </div>
-          <div *ngIf="!isQualityNeeded()" class="field">
+          <div *ngIf="!ctxLesions && !isQualityNeeded()" class="field">
             <div class="ui {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} action input">
               <input #dInput type="text" placeholder="New ..." (keyup.enter)="addDisease(dInput)" style="color:rgba(191,191,191,.87); background-color:black; border-color:rgba(255,255,255,.1) !important; border-radius:0px;">
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} button" (click)="addDisease(dInput)" style="border-radius:0px;">Add</button>
@@ -107,10 +117,14 @@
         </div>
 
         <!--Lesions-->
-        <h3 *ngIf="ctxLesions" class="ui dividing header" [style.background]="ctxLesions ? '#417d44' : '#1B1C1D'" style="padding: 0.4em 1em 1em 1em; height: 2em;">
+        <h3 *ngIf="ctxLesions" class="ui dividing header" [style.background]="isLesionsEligible() ? '#417d44' : '#1B1C1D'" style="cursor: default; padding: 0.4em 1em 1em 1em; height: 2em;">
           Lesions
         </h3>
-        <div *ngIf="ctxLesions" class="ui inverted form" style="flex: 1">
+        <div *ngIf="ctxLesions && !isLesionsEligible()" style="flex: 1">
+          <span>Image is not eligible for visual annotations.</span>
+        </div>
+
+        <div *ngIf="ctxLesions && isLesionsEligible()" class="ui inverted form" style="flex: 1">
           <div class="field">
             <div class="ui tiny buttons">
               <button class="ui red {{ tool == 'MA' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Microaneurisms"  (click)="selectTool('MA')">MA</button>
@@ -121,7 +135,7 @@
             </div>
           </div>
           <div class="field">
-            <div class="ui buttons">
+            <div class="ui tiny buttons">
               <button class="ui grey {{ geometryTool == 'E' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Ellipse"    (click)="selectGeometryTool('E')">
                 <img *ngIf="geometryTool != 'E'" class="ui image" style="width: 32px;" src="assets/icons/ellipse-normal.png">
                 <img *ngIf="geometryTool == 'E'" class="ui image" style="width: 32px;" src="assets/icons/ellipse-selected.png">
@@ -141,7 +155,7 @@
             </div>
           </div>
           <div class="field">
-            <div class="ui buttons">
+            <div class="ui tiny buttons">
               <button class="ui icon grey basic button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Erase last geometry" (click)="eraseLast()">
                 <i class="backward large icon"></i>
               </button>
@@ -165,7 +179,7 @@
         </div>
 
         <div class="ui {{ isReadyToDone() ? '' : 'basic disabled' }} tiny button" style="margin-top: 2em;" (click)="done()">
-          <div class="visible content">Save</div>
+          <div class="visible content">{{ ctxLesions && !isLesionsEligible() ? 'Next' : 'Save' }}</div>
         </div>
       </div>
     </div>
