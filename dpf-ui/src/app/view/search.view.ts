@@ -82,7 +82,10 @@ export class SearchView {
           //calculate pages
           this.changePageSize(this.pageSize)
 
-        }).catch(error => toastr.error(error.message))
+        }).catch(error => {
+          console.log('ERROR: ', error)
+          toastr.error(error.message)
+        })
       })
   }
 
@@ -158,7 +161,10 @@ export class SearchView {
           toastr.success('Downloading file...')
         }
       )
-    }).catch(error => toastr.error(error.message))
+    }).catch(error => {
+      console.log('ERROR: ', error)
+      toastr.error(error.message)
+    })
   }
 
   onTransferredNotif(notif: any) {
@@ -248,8 +254,10 @@ export class SearchView {
         let modal_create: any = $(this.modal_create_ds.nativeElement)
         modal_create.modal('hide')
         toastr.success('Dataset created')
+      }).catch(error => {
+        console.log('ERROR: ', error)
+        this.dsMessageError = error.message
       })
-      .catch(error => this.dsMessageError = error.message)
   }
 
   //search help dropdown..............................................
