@@ -136,6 +136,9 @@
           </div>
           <div class="field">
             <div class="ui tiny buttons">
+              <button class="ui grey {{ geometryTool == 'R' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Cross"    (click)="selectGeometryTool('R')">
+                <i class="crosshairs large icon" style="padding: 0px; margin: 0px; font-size: 26px;"></i>
+              </button>
               <button class="ui grey {{ geometryTool == 'E' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Ellipse"    (click)="selectGeometryTool('E')">
                 <img *ngIf="geometryTool != 'E'" class="ui image" style="width: 32px;" src="assets/icons/ellipse-normal.png">
                 <img *ngIf="geometryTool == 'E'" class="ui image" style="width: 32px;" src="assets/icons/ellipse-selected.png">

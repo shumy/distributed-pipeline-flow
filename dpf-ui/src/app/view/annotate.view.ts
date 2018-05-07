@@ -386,7 +386,10 @@ export class AnnotateView {
             this.stampHistory('USE_' + this.tool)
         
         this.toolGeo = null
-        if (this.geometryTool == 'E' || this.geometryTool == 'C') {
+        if (this.geometryTool == 'R') {
+          this.toolData = { x: pos.x, y: pos.y }
+          this.pushGeometry()
+        } else if (this.geometryTool == 'E' || this.geometryTool == 'C') {
           this.toolData = { x: pos.x, y: pos.y, rx: 0, ry: 0 }
           this.toolGeo = this.paper.ellipse(this.toolData.x, this.toolData.y, 0, 0)
         } else if (this.geometryTool == 'P' || this.geometryTool == 'F') {
@@ -543,7 +546,7 @@ export class AnnotateView {
 
       let geoType = selectedGeo.geo
       let geo = selectedGeo.data
-      if (geoType == 'E' || geoType == 'C') {
+      if (geoType == 'R' || geoType == 'E' || geoType == 'C') {
         geo.x += xDelta * scale.x
         geo.y += yDelta * scale.y
       } else if (geoType == 'P' || geoType == 'F') {
@@ -761,7 +764,9 @@ export class AnnotateView {
       let yScale = this.box.height/geo.scale.height
       
       let geoElement: any
-      if (geo.geo == 'E' || geo.geo == 'C') {  
+      if (geo.geo == 'R') {
+        geoElement = this.paper.text(geo.data.x*xScale, geo.data.y*yScale, "X")
+      } else if (geo.geo == 'E' || geo.geo == 'C') {  
         geoElement = this.paper.ellipse(geo.data.x*xScale, geo.data.y*yScale, geo.data.rx*xScale, geo.data.ry*yScale)
       } else if(geo.geo == 'P') {
         let path = this.toolBuildPath(geo.data, xScale, yScale, true)
@@ -774,7 +779,7 @@ export class AnnotateView {
       if (geoElement != null) {
         this.geoElements[key] = geoElement
         geoElement.attr({
-          "stroke-width": this.geoAttributes[geo.type].width,
+          "stroke-width": geo.geo == 'R' ? 1 : this.geoAttributes[geo.type].width,
           "stroke": this.geoAttributes[geo.type].color,
           "fill": "#ffffff",
           "fill-opacity": 0
