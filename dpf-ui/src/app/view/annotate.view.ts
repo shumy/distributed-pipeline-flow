@@ -54,6 +54,7 @@ export class AnnotateView {
   my = 0
 
   //html objects...
+  form: JQuery
   magnifier: JQuery
   maglarge: JQuery
   magsmall: JQuery
@@ -114,6 +115,7 @@ export class AnnotateView {
   }
 
   ngOnInit() {
+    this.form = $(".form")
     this.magnifier = $(".magnify")
     this.maglarge = $(".maglarge")
 
@@ -234,6 +236,7 @@ export class AnnotateView {
     //END: center image when non existent scroll
 
     this.paper.setSize('100%', '100%')
+    Ps.update(this.form[0])
     Ps.update(this.magsmall[0])
 
     this.adjustScroll(leftScrollRatio, topScrollRatio)
@@ -360,6 +363,7 @@ export class AnnotateView {
   }
 
   tools() {
+    Ps.initialize(this.form[0])
     Ps.initialize(this.magsmall[0])
     this.paper = Raphael('raphael', 0, 0)
 

@@ -119,8 +119,7 @@ div {
 
 /* magnify */
 .magnify {
-  padding: 0 0 0 0;
-  flex: 3;
+  padding: 0px;
   background: black;
 }
 
@@ -136,13 +135,18 @@ div {
 .magsmall {
   position: relative;
   height: calc(100vh - 90px);
-  width: calc(75vw);
+  width: calc(100vw - 300px);
   background-color: black;
 }
 
 .ps__scrollbar-x-rail, .ps__scrollbar-y-rail  {
   z-index: 150;
   background-color: transparent !important;
+}
+
+.form {
+  padding: 0px;
+  background: black;
 }
 
 #raphael {
