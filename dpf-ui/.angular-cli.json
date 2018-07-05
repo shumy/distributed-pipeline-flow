@@ -18,6 +18,7 @@
         "../node_modules/toastr/build/toastr.min.css",
         "../node_modules/dropzone/dist/min/dropzone.min.css",
         "../node_modules/perfect-scrollbar/dist/css/perfect-scrollbar.css",
+        "../node_modules/semantic-ui-range/range.css",
         "styles.css"
       ],
       "scripts": [
@@ -26,6 +27,7 @@
         "../node_modules/js-cookie/src/js.cookie.js",
         "../node_modules/toastr/build/toastr.min.js",
         "../node_modules/dropzone/dist/min/dropzone.min.js",
+        "../node_modules/semantic-ui-range/range.js",
         "../semantic/dist/semantic.min.js"
       ],
       "environmentSource": "environments/environment.ts",

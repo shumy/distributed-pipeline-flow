@@ -238,3 +238,23 @@ div {
 .ui.inline.dropdown .search.menu .item {
   margin-left: 1em;
 }
+
+/* range */
+.ui.range .inner .thumb {
+  height: 15px !important;
+  width: 15px !important;
+  border-radius: 100% !important;
+  background-color: #417d44 !important;
+}
+
+.ui.range .inner .track-fill {
+  top: 6px !important;
+  border-radius: 4px !important;
+  background-color: #417d44 !important;
+}
+
+.ui.range .inner .track {
+  top: 6px !important;;
+  border-radius: 4px !important;
+  background-color: rgba(255, 255, 255, 0.25) !important;
+}

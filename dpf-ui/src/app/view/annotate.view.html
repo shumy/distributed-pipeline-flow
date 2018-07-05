@@ -6,6 +6,8 @@
   </div>
 
   <div style="display: flex; height: calc(100vh - 90px);"><!--(keyup.enter)="done()"-->
+    <div id="contrast-range" class="ui range" style="position: fixed; top: 57px; left: 5px; width: 150px; z-index: 250;"></div>
+
     <div class="magnify">
       <div class="maglarge" (wheel)="zoom($event)"></div>
       <div class="magsmall" (ps-scroll-x)="adjustBox()" (ps-scroll-y)="adjustBox()" (wheel)="zoom($event)">
@@ -45,6 +47,7 @@
               <button class="ui grey {{ getStateClass(node(QUALITY).local, 'OTHER') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Centered in other location" (click)="setLocal('OTHER')">Other</button>
             </div>
           </div>
+          
           <div class="field" style="position: fixed; top: 57px; left: calc(100vw - 340px); z-index: 250;">
             <div class="ui tiny buttons">
               <button class="ui icon grey {{ magnifierTool ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Magnifying glass" (click)="selectTool('MAG')">

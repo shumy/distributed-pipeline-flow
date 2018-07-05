@@ -60,6 +60,7 @@ export class AnnotateView {
   magsmall: JQuery
   imageElm: JQuery
   raphaelElm: JQuery
+  range: any
 
   diseasesDropdown: any
   imageObj = new Image()
@@ -122,6 +123,22 @@ export class AnnotateView {
     this.magsmall = $(".magsmall")
     this.imageElm = $("#imageElm")
     this.raphaelElm = $("#raphael")
+
+    this.range = $('#contrast-range')
+    this.range.range({
+      min: 100,
+      max: 200,
+      start: 100,
+      onChange: val => {
+        let contrast = `contrast(${val}%)`
+        this.imageElm
+          .css('filter', contrast)
+          .css('webkitFilter',contrast)
+          .css('mozFilter',contrast)
+          .css('oFilter',contrast)
+          .css('msFilter',contrast)
+      }
+    })
 
     this.tools()
     this.loadDataset()
