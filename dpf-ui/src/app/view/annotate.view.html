@@ -34,16 +34,16 @@
           <div class="field">
             <label>Image Readability</label>
             <div class="ui tiny buttons">
-              <button class="ui grey {{ getStateClass(node(QUALITY).quality, 'GOOD') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Readable (GOOD)" (click)="setQuality('GOOD')">Readable</button>
-              <button class="ui grey {{ getStateClass(node(QUALITY).quality, 'PARTIAL') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Low Confidence (PARTIAL)" (click)="setQuality('PARTIAL')">Low Confidence</button>
+              <button class="ui grey {{ getStateClass(node(QUALITY).quality, 'GOOD') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Readable (GOOD)" (click)="setQuality('GOOD')">Readable</button>
+              <button class="ui grey {{ getStateClass(node(QUALITY).quality, 'PARTIAL') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Low Confidence (PARTIAL)" (click)="setQuality('PARTIAL')">Low Confidence</button>
               <button class="ui red {{ getStateClass(node(QUALITY).quality, 'BAD') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Unreadable (BAD)" (click)="setQuality('BAD')">Unreadable</button>
             </div>
           </div>
           <div class="field">
             <label>Centered in</label>
             <div class="ui tiny buttons">
-              <button class="ui grey {{ getStateClass(node(QUALITY).local, 'MACULA') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Centered in Macula" (click)="setLocal('MACULA')">Macula</button>
-              <button class="ui grey {{ getStateClass(node(QUALITY).local, 'OPTIC_DISC') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Centered in Optic Disc" (click)="setLocal('OPTIC_DISC')">Optic Disc</button>
+              <button class="ui grey {{ getStateClass(node(QUALITY).local, 'MACULA') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Centered in Macula" (click)="setLocal('MACULA')">Macula</button>
+              <button class="ui grey {{ getStateClass(node(QUALITY).local, 'OPTIC_DISC') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Centered in Optic Disc" (click)="setLocal('OPTIC_DISC')">Optic Disc</button>
               <button class="ui grey {{ getStateClass(node(QUALITY).local, 'OTHER') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Centered in other location" (click)="setLocal('OTHER')">Other</button>
             </div>
           </div>
@@ -75,10 +75,10 @@
           <div *ngIf="!isQualityNeeded()" class="field">
             <label>Retinopathy</label>
             <div class="ui mini buttons">
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R0') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="No diabetic retinopathy" (click)="setRetinopathy('R0')">R0</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R1') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Mild non-proliferative diabetic retinopathy (Mild NPDR)" (click)="setRetinopathy('R1')">R1</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R2_M') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Moderate non-proliferative diabetic retinopathy (Moderate NPDR)" (click)="setRetinopathy('R2_M')">R2-M</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R2_S') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Severe non-proliferative diabetic retinopathy (Severe NPDR)" (click)="setRetinopathy('R2_S')">R2-S</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R0') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="No diabetic retinopathy" (click)="setRetinopathy('R0')">R0</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R1') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Mild non-proliferative diabetic retinopathy (Mild NPDR)" (click)="setRetinopathy('R1')">R1</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R2_M') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Moderate non-proliferative diabetic retinopathy (Moderate NPDR)" (click)="setRetinopathy('R2_M')">R2-M</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R2_S') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Severe non-proliferative diabetic retinopathy (Severe NPDR)" (click)="setRetinopathy('R2_S')">R2-S</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R3') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Proliferative diabetic retinopathy (PDR)" (click)="setRetinopathy('R3')">R3</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'RX') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Unable to classify" (click)="setRetinopathy('RX')">X</button>
             </div>
@@ -86,17 +86,17 @@
           <div *ngIf="!isQualityNeeded()" class="field">
             <label>Maculopathy</label>
             <div class="ui tiny buttons">
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'M0') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="No Diabetic Macular Edema" (click)="setMaculopathy('M0')">M0</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'M1') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Diabetic Macular Edema" (click)="setMaculopathy('M1')">M1</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'MX') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Unable to classify" (click)="setMaculopathy('MX')">X</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'M0') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="No Diabetic Macular Edema" (click)="setMaculopathy('M0')">M0</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'M1') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Diabetic Macular Edema" (click)="setMaculopathy('M1')">M1</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'MX') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Unable to classify" (click)="setMaculopathy('MX')">X</button>
             </div>
           </div>
           <div *ngIf="!isQualityNeeded()" class="field">
             <label>Photocoagulation</label>
             <div class="ui tiny buttons">
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P0') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="No Photocoagulation" (click)="setPhotocoagulation('P0')">P0</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P1') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Insufficient Photocoagulation" (click)="setPhotocoagulation('P1')">P1</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P2') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Sufficient Photocoagulation" (click)="setPhotocoagulation('P2')">P2</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P0') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="No Photocoagulation" (click)="setPhotocoagulation('P0')">P0</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P1') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Insufficient Photocoagulation" (click)="setPhotocoagulation('P1')">P1</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P2') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Sufficient Photocoagulation" (click)="setPhotocoagulation('P2')">P2</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'PX') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Unable to classify" (click)="setPhotocoagulation('PX')">X</button>
             </div>
           </div>
@@ -130,23 +130,23 @@
         <div *ngIf="ctxLesions && isLesionsEligible()" class="ui inverted form" style="flex: 1">
           <div class="field">
             <div class="ui tiny buttons">
-              <button class="ui red {{ tool == 'MA' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Microaneurisms"  (click)="selectTool('MA')">MA</button>
-              <button class="ui green {{ tool == 'HEM' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Hemorrhages" (click)="selectTool('HEM')">HEM</button>
-              <button class="ui blue {{ tool == 'HE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Hard exudates" (click)="selectTool('HE')">HE</button>
+              <button class="ui red {{ tool == 'MA' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Microaneurisms"  (click)="selectTool('MA')">MA</button>
+              <button class="ui green {{ tool == 'HEM' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Hemorrhages" (click)="selectTool('HEM')">HEM</button>
+              <button class="ui blue {{ tool == 'HE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Hard exudates" (click)="selectTool('HE')">HE</button>
               <button class="ui olive {{ tool == 'SE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Soft exudates" (click)="selectTool('SE')">SE</button>
               <button class="ui grey {{ tool == 'NV' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Neovascularizations" (click)="selectTool('NV')">NV</button>
             </div>
           </div>
           <div class="field">
             <div class="ui tiny buttons">
-              <button class="ui grey {{ geometryTool == 'R' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Cross"    (click)="selectGeometryTool('R')">
+              <button class="ui grey {{ geometryTool == 'R' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Cross"    (click)="selectGeometryTool('R')">
                 <i class="crosshairs large icon" style="padding: 0px; margin: 0px; font-size: 26px;"></i>
               </button>
-              <button class="ui grey {{ geometryTool == 'E' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Ellipse"    (click)="selectGeometryTool('E')">
+              <button class="ui grey {{ geometryTool == 'E' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Ellipse"    (click)="selectGeometryTool('E')">
                 <img *ngIf="geometryTool != 'E'" class="ui image" style="width: 32px;" src="assets/icons/ellipse-normal.png">
                 <img *ngIf="geometryTool == 'E'" class="ui image" style="width: 32px;" src="assets/icons/ellipse-selected.png">
               </button>
-              <button class="ui grey {{ geometryTool == 'C' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Circle"    (click)="selectGeometryTool('C')">
+              <button class="ui grey {{ geometryTool == 'C' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Circle"    (click)="selectGeometryTool('C')">
                 <img *ngIf="geometryTool != 'C'" class="ui image" style="width: 32px;" src="assets/icons/circle-normal.png">
                 <img *ngIf="geometryTool == 'C'" class="ui image" style="width: 32px;" src="assets/icons/circle-selected.png">
               </button>
@@ -162,22 +162,22 @@
           </div>
           <div class="field">
             <div class="ui tiny buttons">
-              <button class="ui icon grey basic button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Erase last geometry" (click)="eraseLast()">
+              <button class="ui icon grey basic button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Erase last geometry" (click)="eraseLast()">
                 <i class="backward large icon"></i>
               </button>
-              <button class="ui icon grey basic button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Erase all geometry" (click)="eraseAll()">
+              <button class="ui icon grey basic button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Erase all geometry" (click)="eraseAll()">
                 <i class="trash large icon"></i>
               </button>
-              <button class="ui icon grey {{ tool == 'ERASER' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Erase selected geometry" (click)="selectTool('ERASER')">
+              <button class="ui icon grey {{ tool == 'ERASER' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Erase selected geometry" (click)="selectTool('ERASER')">
                 <i class="erase large icon"></i>
               </button>
-              <button class="ui icon grey {{ tool == 'MOVE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Move selected geometry (activated with left mouse button)" (click)="selectTool('MOVE')">
+              <button class="ui icon grey {{ tool == 'MOVE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Move selected geometry (activated with left mouse button)" (click)="selectTool('MOVE')">
                 <i class=" {{ tool == 'MOVE' && toolActive ? 'hand rock' : 'hand paper' }} large icon"></i>
               </button>
-              <button class="ui icon grey {{ tool == 'PAN' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Move the image" (click)="selectTool('PAN')">
+              <button class="ui icon grey {{ tool == 'PAN' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Move the image" (click)="selectTool('PAN')">
                 <i class="move large icon"></i>
               </button>
-              <button class="ui icon grey {{ magnifierTool ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Magnifying glass" (click)="selectTool('MAG')">
+              <button class="ui icon grey {{ magnifierTool ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Magnifying glass" (click)="selectTool('MAG')">
                 <i class="zoom large icon"></i>
               </button>
             </div>

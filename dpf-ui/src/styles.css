@@ -258,3 +258,8 @@ div {
   border-radius: 4px !important;
   background-color: rgba(255, 255, 255, 0.25) !important;
 }
+
+[data-tooltip]:after {
+  white-space: normal;
+  width: 200px;
+}
