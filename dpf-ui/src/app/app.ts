@@ -14,7 +14,8 @@ export class Application {
   }
 
   showMenu() {
-    return this.wRouter.url !== '/home'
+    let uri = this.wRouter.url.split('?')[0]
+    return ['/home', '/image'].indexOf(uri) === -1
   }
 
   contains(group: string): boolean {

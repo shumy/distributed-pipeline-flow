@@ -118,7 +118,10 @@
             <div attr.id="image_popup_{{image.uid}}" style="display:none; box-shadow: rgba(34, 36, 38, 0.6) -3px 5px 5px 2px;">
               <img class="ui fluid image" [src]="image.url">
             </div>
-            {{image.uid}}
+            
+            <a style="cursor: pointer;" (click)="openView(image.uid)">
+              {{image.uid}}
+            </a>
           </td>
 
           <!--DateTime-->

@@ -23,6 +23,7 @@ import { PacsCenterView }             from './view/pacscenter.view';
 import { DatasetView }                from './view/dataset.view';
 import { ProfileView }                from './view/profile.view';
 import { RealmView }                  from './view/realm.view';
+import { ImageView }                  from './view/image.view';
 
 //rts config
 import { ClientRouter, Pipeline }                               from 'rts-ts-client';
@@ -71,7 +72,8 @@ export function init() {
   imports: [ BrowserModule, ReactiveFormsModule, FormsModule, HttpModule, routing ],
   declarations: [
     Application,
-    HomeView, SearchView, UploadView, AnnotateView, PacsCenterView, DatasetView, ProfileView, RealmView
+    HomeView, SearchView, UploadView, AnnotateView, PacsCenterView,
+    DatasetView, ProfileView, RealmView, ImageView
   ],
   bootstrap: [ Application ],
   providers: [

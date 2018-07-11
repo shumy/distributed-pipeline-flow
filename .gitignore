@@ -2,6 +2,7 @@
 .classpath
 .project
 *.log
+package-lock.json
 
 .vscode/
 .vertx/

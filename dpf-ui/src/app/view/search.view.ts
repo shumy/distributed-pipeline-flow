@@ -4,6 +4,10 @@ import { FormControl }                                  from '@angular/forms';
 import { UUID, ClientRouter }                           from 'rts-ts-client';
 import { environment as config }                        from '../../environments/environment';
 
+import 'rxjs/add/operator/debounceTime';
+import 'rxjs/add/operator/distinctUntilChanged';
+import 'rxjs/add/operator/map';
+
 declare var toastr: any
 
 @Component({
@@ -111,6 +115,10 @@ export class SearchView {
   closePreview(uid: string) {
     let preview = $('div[id="image_popup_' + uid + '"]')
     preview.css({display: "none"})
+  }
+
+  openView(uid: string) {
+    window.open('image?uid=' + uid, 'Annotation Viewer', "_blank")
   }
 
   help() {

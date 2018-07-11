@@ -9,6 +9,7 @@ import { PacsCenterView }       from './view/pacscenter.view';
 import { DatasetView }          from './view/dataset.view';
 import { ProfileView }          from './view/profile.view';
 import { RealmView }            from './view/realm.view';
+import { ImageView }            from './view/image.view';
 
 const appRoutes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -19,7 +20,8 @@ const appRoutes: Routes = [
   { path: 'viewer', component: PacsCenterView },
   { path: 'dataset', component: DatasetView },
   { path: 'profile', component: ProfileView },
-  { path: 'realm', component: RealmView }
+  { path: 'realm', component: RealmView },
+  { path: 'image', component: ImageView }
 ];
 
 export const routing: ModuleWithProviders = RouterModule.forRoot(appRoutes);
