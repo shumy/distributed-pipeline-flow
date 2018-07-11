@@ -5,6 +5,14 @@
   </div>
 
   <div class="right menu" style="padding: 5px;">
+    <div class="ui invert selection dropdown" style="min-height: 0px; margin-right: 2px; line-height: 0.4;">
+      <input type="hidden">
+      <i class="inverted dropdown icon" style="line-height: 1;"></i>
+      <div class="default text">Annotators ...</div>
+      <div class="menu">
+        <div *ngFor="let entry of annotators" class="item" [attr.data-value]="entry.annotator">{{entry.annotator}}</div>
+      </div>
+    </div>
     <div class="ui tiny teal button" (click)="download()">
       Download
     </div>
@@ -31,75 +39,102 @@
     <div class="form">
       <div class="ui inverted segment" style="display:flex; flex-direction: column; background: black; margin: 0px; padding: 0.5em 0.5em;">
 
+        <!--<div class="ui inverted form" style="flex: 1">
+          <div class="field" style="margin: 0 0 1em;">
+              <label>Annotators</label>
+              <div class="ui invert selection dropdown">
+                <input type="hidden">
+                <i class="inverted dropdown icon"></i>
+                <div class="default text">Select ...</div>
+                <div class="menu">
+                  <div *ngFor="let entry of annotators" class="item" [attr.data-value]="entry.annotator">{{entry.annotator}}</div>
+                </div>
+              </div>
+            </div>
+        </div>-->
+
         <!--Image Quality-->
-        <div class="ui icon button topic" style="cursor: default; background: #417d44;">
-          <i class="file image outline large icon"></i>
-          <span>Image Quality</span>
+        <div class="ui mini icon button topic" style="cursor: default; background: #417d44;">
+          <span style="line-height: 0.35;">Image Quality</span>
         </div>
 
         <div class="ui inverted form" style="flex: 1">
           <div class="field">
             <label>Image Readability</label>
             <div class="ui mini buttons">
-              <button class="ui grey {{ getStateClass(node(QUALITY).quality, 'GOOD') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Readable (GOOD)">Readable</button>
-              <button class="ui grey {{ getStateClass(node(QUALITY).quality, 'PARTIAL') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Low Confidence (PARTIAL)">Low Confidence</button>
-              <button class="ui red {{ getStateClass(node(QUALITY).quality, 'BAD') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Unreadable (BAD)">Unreadable</button>
+              <button class="ui grey {{ getStateClass(node(QUALITY).quality, 'GOOD') }} button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="Readable (GOOD)">Readable</button>
+              <button class="ui grey {{ getStateClass(node(QUALITY).quality, 'PARTIAL') }} button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Low Confidence (PARTIAL)">Low Confidence</button>
+              <button class="ui red {{ getStateClass(node(QUALITY).quality, 'BAD') }} button" style="flex-shrink: 1; cursor: default;" data-position="top right" data-inverted="" data-tooltip="Unreadable (BAD)">Unreadable</button>
             </div>
           </div>
           <div class="field" style="margin: 0 0 1em;">
             <label>Centered in</label>
             <div class="ui mini buttons">
-              <button class="ui grey {{ getStateClass(node(QUALITY).local, 'MACULA') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Centered in Macula">Macula</button>
-              <button class="ui grey {{ getStateClass(node(QUALITY).local, 'OPTIC_DISC') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Centered in Optic Disc">Optic Disc</button>
-              <button class="ui grey {{ getStateClass(node(QUALITY).local, 'OTHER') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Centered in other location">Other</button>
+              <button class="ui grey {{ getStateClass(node(QUALITY).local, 'MACULA') }} button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="Centered in Macula">Macula</button>
+              <button class="ui grey {{ getStateClass(node(QUALITY).local, 'OPTIC_DISC') }} button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Centered in Optic Disc">Optic Disc</button>
+              <button class="ui grey {{ getStateClass(node(QUALITY).local, 'OTHER') }} button" style="flex-shrink: 1; cursor: default;" data-position="top right" data-inverted="" data-tooltip="Centered in other location">Other</button>
             </div>
           </div>
         </div>
         
         <!--Diagnosis-->
-        <div class="ui icon button topic" style="cursor: default; background: #417d44;">
-          <i class="file image outline large icon"></i>
-          <span>Diagnosis</span>
+        <div class="ui mini icon button topic" style="cursor: default; background: #417d44;">
+          <span style="line-height: 0.35;">Diagnosis</span>
         </div>
 
         <div class="ui inverted form" style="flex: 1">
           <div class="field">
             <label>Retinopathy</label>
             <div class="ui mini buttons">
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R0') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="No diabetic retinopathy">R0</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R1') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Mild non-proliferative diabetic retinopathy (Mild NPDR)">R1</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R2_M') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Moderate non-proliferative diabetic retinopathy (Moderate NPDR)">R2-M</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R2_S') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Severe non-proliferative diabetic retinopathy (Severe NPDR)">R2-S</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R3') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Proliferative diabetic retinopathy (PDR)">R3</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'RX') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Unable to classify">X</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R0') }} button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="No diabetic retinopathy">R0</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R1') }} button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="Mild non-proliferative diabetic retinopathy (Mild NPDR)">R1</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R2_M') }} button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Moderate non-proliferative diabetic retinopathy (Moderate NPDR)">R2-M</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R2_S') }} button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Severe non-proliferative diabetic retinopathy (Severe NPDR)">R2-S</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'R3') }} button" style="flex-shrink: 1; cursor: default;" data-position="top right" data-inverted="" data-tooltip="Proliferative diabetic retinopathy (PDR)">R3</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).retinopathy, 'RX') }} button" style="flex-shrink: 1; cursor: default;" data-position="top right" data-inverted="" data-tooltip="Unable to classify">X</button>
             </div>
           </div>
           <div class="field">
             <label>Maculopathy</label>
             <div class="ui mini buttons">
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'M0') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="No Diabetic Macular Edema">M0</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'M1') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Diabetic Macular Edema">M1</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'MX') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Unable to classify">X</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'M0') }} button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="No Diabetic Macular Edema">M0</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'M1') }} button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="Diabetic Macular Edema">M1</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).maculopathy, 'MX') }} button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Unable to classify">X</button>
             </div>
           </div>
           <div class="field">
             <label>Photocoagulation</label>
             <div class="ui mini buttons">
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P0') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="No Photocoagulation">P0</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P1') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Insufficient Photocoagulation">P1</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P2') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Sufficient Photocoagulation">P2</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'PX') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Unable to classify">X</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P0') }} button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="No Photocoagulation">P0</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P1') }} button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="Insufficient Photocoagulation">P1</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P2') }} button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Sufficient Photocoagulation">P2</button>
+              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'PX') }} button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Unable to classify">X</button>
             </div>
           </div>
           <div class="field" style="margin: 0 0 1em;">
             <label>Suspected comorbidities</label>
-            <div class="ui {{ getStateClass(node(DIAGNOSIS).diseases, 'DISEASES') }} invert multiple search selection dropdown">
-              <input type="hidden">
-              <i class="inverted dropdown icon"></i>
-              <div class="default text">Select ...</div>
-              <div class="menu">
-                <div *ngFor="let entry of diseasesOptions" class="item" [attr.data-value]="entry">{{entry}}</div>
+            <div class="ui list">
+              <div *ngFor="let entry of node(DIAGNOSIS).diseases" class="item">
+                <i class="blue tint icon"></i>
+                <div class="content">{{entry}}</div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!--Lesions-->
+        <div class="ui mini icon button topic" style="cursor: default; background: #417d44;">
+          <span style="line-height: 0.35;">Lesions Labels</span>
+        </div>
+
+        <div class="ui inverted form" style="flex: 1">
+          <div class="field">
+            <div class="ui mini buttons">
+              <button class="ui red basic button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="Microaneurisms">MA</button>
+              <button class="ui green basic button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="Hemorrhages">HEM</button>
+              <button class="ui blue basic button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Hard exudates">HE</button>
+              <button class="ui olive basic button" style="flex-shrink: 1; cursor: default;" data-position="top right" data-inverted="" data-tooltip="Soft exudates">SE</button>
+              <button class="ui grey basic button" style="flex-shrink: 1; cursor: default;" data-position="top right" data-inverted="" data-tooltip="Neovascularizations">NV</button>
             </div>
           </div>
         </div>

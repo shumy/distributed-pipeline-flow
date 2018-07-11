@@ -1,8 +1,8 @@
-import { Component }                                          from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef }               from '@angular/core';
 import { ActivatedRoute }                                     from '@angular/router';
 
 import { ClientRouter }                                       from 'rts-ts-client';
-import { AnnotationService, AnnotationInfo, NodeInfo }        from '../srv/annotation.srv';
+import { AnnotationService, NodeInfo }                        from '../srv/annotation.srv';
 
 import { environment as config }                              from '../../environments/environment';
 
@@ -18,6 +18,10 @@ declare var toastr: any
 export class ImageView {
   private searchSrv: any
 
+  readonly QUALITY        = 'quality'
+  readonly DIAGNOSIS      = 'diagnosis'
+  readonly LESIONS        = 'lesions'
+
   readonly geoAttributes = {
     MA:  { color: "#FF0000", width: 2},  //MicroAneurisms (elipse)
     HEM: { color: "#00FF00", width: 2},  //Hemorhages (circle)
@@ -30,8 +34,10 @@ export class ImageView {
   imageObj = new Image()
 
   //info part...
+  data: any
+  annotation: any = { annotator: 'none', nodes: {} }
   image: any = { url: '//:0', loaded: false }
-  annotation: AnnotationInfo = { imageId: 0, nodes: {} }
+  annotators = []
 
   //tools info
   toolActive = false
@@ -44,7 +50,8 @@ export class ImageView {
   magsmall: JQuery
   imageElm: JQuery
   raphaelElm: JQuery
-  range: any
+  annotatorsElm: any
+  rangeElm: any
 
   //geometry
   lastKey = 0
@@ -56,14 +63,14 @@ export class ImageView {
   box = { top: 0, left: 0, width: 0, height: 0 }
   magBox = { top: 0, left: 0, width: 0, height: 0 }
 
-  constructor(private router: ClientRouter, private route: ActivatedRoute) {
+  constructor(private router: ClientRouter, private route: ActivatedRoute, private hasChange: ChangeDetectorRef) {
     let params = this.route.snapshot.queryParams
     this.uid = params['uid']
 
     this.searchSrv = router.createProxy('search')
   }
 
-  getOrCreateNode(ann: AnnotationInfo, nType: string) {
+  getOrCreateNode(ann: any, nType: string) {
     let tNode = ann.nodes[nType]
     if (!tNode) {
       tNode = { type: nType, fields: {} }
@@ -80,7 +87,7 @@ export class ImageView {
   getStateClass(state: string, position: string) {
     if (state === position)
       return ''
-    return 'basic disabled'
+    return 'basic'
   }
 
   ngOnInit() {
@@ -90,8 +97,8 @@ export class ImageView {
     this.imageElm = $("#imageElm")
     this.raphaelElm = $("#raphael")
 
-    this.range = $('#contrast-range')
-    this.range.range({
+    this.rangeElm = $('#contrast-range')
+    this.rangeElm.range({
       min: 100,
       max: 200,
       start: 100,
@@ -103,6 +110,14 @@ export class ImageView {
           .css('mozFilter',contrast)
           .css('oFilter',contrast)
           .css('msFilter',contrast)
+      }
+    })
+
+    this.annotatorsElm = $('.ui.dropdown')
+    this.annotatorsElm.dropdown({
+      onChange: (value) => {
+        let index = this.annotators.findIndex(item => item.annotator === value)
+        this.selectAnnotator(index)
       }
     })
 
@@ -118,10 +133,18 @@ export class ImageView {
         return
       }
 
-      this.image.url = config.base + '/proxy/dic2png/' + results[0].uid
+      this.data = results[0]
+      this.image.url = config.base + '/proxy/dic2png/' + this.data.uid
       console.log('URL: ', this.image.url)
 
       this.loadImage()
+
+      this.annotators = this.data.annotations
+      if (this.annotators.length > 0) {
+        setTimeout(_ => this.annotatorsElm.dropdown('set selected', this.annotators[0].annotator), 1)
+        this.selectAnnotator(0)
+      }
+      
     }).catch(error => {
       console.log('ERROR: ', error)
       toastr.error(error.message)
@@ -140,6 +163,43 @@ export class ImageView {
     }
 
     this.imageObj.src = this.image.url
+  }
+
+  selectAnnotator(index: number) {
+    this.annotation = this.data.annotations[index]
+    this.lesionsToGeometry()
+    this.redraw()
+  }
+
+  defaultGeometryTool(tool: string): string {
+    switch (tool) {
+      case "MA": return "E"
+      case "HEM": return "C"
+      case "HE": 
+      case "SE": return "P"
+      case "NV": return "F"
+      default: return "N"
+    } 
+  }
+
+  lesionsToGeometry() {
+    let lNode = this.node(this.LESIONS)
+
+    this.lastKey = 0
+    this.geoKeyOrder = []
+    this.geometry = {}
+
+    if (lNode.lesions != null)
+      lNode.lesions.forEach(lesion => {
+        // lesion may not have the geometry type! Select the default.
+        if (lesion.geo == null)
+          lesion.geo = this.defaultGeometryTool(lesion.type)
+
+        this.lastKey++
+        let key = this.lastKey + ""
+        this.geoKeyOrder.push(key)
+        this.geometry[key] = lesion
+      })
   }
 
   download() {

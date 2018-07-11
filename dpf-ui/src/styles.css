@@ -189,7 +189,36 @@ div {
   color: white;
 }
 
+.ui.invert.selection.dropdown .text {
+  color: white;
+}
+
+.ui.invert.selection.dropdown.active.visible .text {
+  color: white;
+}
+
+.ui.invert.selection.dropdown.active.visible .item {
+  color: white !important;
+}
+
+
+.ui.invert.dropdown {
+  background-color: black;
+  border-color: #2f2f2f;
+}
+
+.ui.invert.dropdown.active {
+  color: white;
+  border-color: #96c8da;
+}
+
+.ui.invert.dropdown>input.search {
+  color: white;
+}
+
+
 .ui.invert.dropdown .menu {
+  color: white;
   border-color: #2f2f2f;
 }
 
@@ -205,6 +234,11 @@ div {
   background-color: #2f2f2f;
 }
 
+.ui.invert.dropdown .menu {
+  background-color: black;
+  border-top-color: #2f2f2f;
+  color: white;
+}
 
 .ui.invert.dropdown .menu>.item {
   background-color: black;
