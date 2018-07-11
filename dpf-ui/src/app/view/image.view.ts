@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef }               from '@angular/core';
 import { ActivatedRoute }                                     from '@angular/router';
 
-import { ClientRouter }                                       from 'rts-ts-client';
+import { UUID, ClientRouter }                                 from 'rts-ts-client';
 import { AnnotationService, NodeInfo }                        from '../srv/annotation.srv';
 
 import { environment as config }                              from '../../environments/environment';
@@ -16,6 +16,7 @@ declare var toastr: any
   templateUrl: 'image.view.html'
 })
 export class ImageView {
+  private trfSrv: any
   private searchSrv: any
 
   readonly QUALITY        = 'quality'
@@ -67,6 +68,7 @@ export class ImageView {
     let params = this.route.snapshot.queryParams
     this.uid = params['uid']
 
+    this.trfSrv = router.createProxy('transfers')
     this.searchSrv = router.createProxy('search')
   }
 
@@ -204,6 +206,21 @@ export class ImageView {
 
   download() {
     console.log('Download')
+    let fileName = UUID.generate()
+    this.trfSrv.downloadImages([this.uid], ['dcm', 'anno'], fileName).then(obs => {
+      toastr.success('Building zip file...')
+      obs.subscribe(
+        notif => console.log('READY: ', this.uid),
+        error => toastr.error(error.message),
+        _ => {
+          let uri = config.base + '/file-download-and-delete/' + fileName + '.zip'
+          window.location.href = uri
+        }
+      )
+    }).catch(error => {
+      console.log('ERROR: ', error)
+      toastr.error(error.message)
+    })
   }
 
   zoom(event: any) {
