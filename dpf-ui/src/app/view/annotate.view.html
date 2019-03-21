@@ -48,7 +48,7 @@
             </div>
           </div>
           
-          <div class="field" style="position: fixed; top: 57px; left: calc(100vw - 340px); z-index: 250;">
+          <div class="field" style="position: fixed; top: 57px; left: calc(100vw - 390px); z-index: 250;">
             <div class="ui tiny buttons">
               <button class="ui icon grey {{ magnifierTool ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="bottom right" data-inverted="" data-tooltip="Magnifying glass" (click)="selectTool('MAG')">
                 <i class="zoom large icon"></i>
@@ -96,7 +96,7 @@
             <div class="ui tiny buttons">
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P0') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="No Photocoagulation" (click)="setPhotocoagulation('P0')">P0</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P1') }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Insufficient Photocoagulation" (click)="setPhotocoagulation('P1')">P1</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P2') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Sufficient Photocoagulation" (click)="setPhotocoagulation('P2')">P2</button>
+              <button *ngIf="node(DIAGNOSIS).photocoagulation == 'P2'" class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P2') }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Sufficient Photocoagulation">P2</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'PX') }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Unable to classify" (click)="setPhotocoagulation('PX')">X</button>
             </div>
           </div>
@@ -129,12 +129,19 @@
 
         <div *ngIf="ctxLesions && isLesionsEligible()" class="ui inverted form" style="flex: 1">
           <div class="field">
-            <div class="ui tiny buttons">
+            <div class="ui mini buttons">
               <button class="ui red {{ tool == 'MA' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Microaneurisms"  (click)="selectTool('MA')">MA</button>
               <button class="ui green {{ tool == 'HEM' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Hemorrhages" (click)="selectTool('HEM')">HEM</button>
               <button class="ui blue {{ tool == 'HE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Hard exudates" (click)="selectTool('HE')">HE</button>
               <button class="ui olive {{ tool == 'SE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Soft exudates" (click)="selectTool('SE')">SE</button>
-              <button class="ui grey {{ tool == 'NV' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Neovascularizations" (click)="selectTool('NV')">NV</button>
+              <button class="ui purple {{ tool == 'IrMA' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Intraretinal Microvascular Abnormality" (click)="selectTool('IrMA')">IrMA</button>
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui mini buttons">
+              <button class="ui teal {{ tool == 'PHEM' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Vitreous/Pre-Retinal Hemorrhages" (click)="selectTool('PHEM')">pre-HEM</button>
+              <button class="ui brown {{ tool == 'PFIB' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top left" data-inverted="" data-tooltip="Pre-Retinal Fibrose" (click)="selectTool('PFIB')">pre-FIB</button>
+              <button class="ui grey {{ tool == 'NV' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top center" data-inverted="" data-tooltip="Neovascularizations" (click)="selectTool('NV')">NV</button>
             </div>
           </div>
           <div class="field">
@@ -176,6 +183,9 @@
               </button>
               <button class="ui icon grey {{ tool == 'PAN' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Move the image" (click)="selectTool('PAN')">
                 <i class="move large icon"></i>
+              </button>
+              <button class="ui icon grey {{ tool == 'RESIZE' ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Resize" (click)="selectTool('RESIZE')">
+                <i class="expand large icon"></i>
               </button>
               <button class="ui icon grey {{ magnifierTool ? '' : 'basic' }} button" style="flex-shrink: 1" data-position="top right" data-inverted="" data-tooltip="Magnifying glass" (click)="selectTool('MAG')">
                 <i class="zoom large icon"></i>

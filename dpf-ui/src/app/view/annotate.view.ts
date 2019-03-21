@@ -66,18 +66,22 @@ export class AnnotateView {
   imageObj = new Image()
 
   readonly geoAttributes = {
-    MA:  { color: "#FF0000", width: 2},  //MicroAneurisms (elipse)
-    HEM: { color: "#00FF00", width: 2},  //Hemorhages (circle)
-    HE:  { color: "#0000FF", width: 2},  //Hard Exudates (path)
-    SE:  { color: "#FFFF00", width: 2},  //Soft Exudates (path)
-    NV:  { color: "#000000", width: 2}   //Neovascularization (pencil)
+    MA:  { color: "#FF0000", width: 2},     //MicroAneurisms
+    HEM: { color: "#00FF00", width: 2},     //Hemorhages
+    HE:  { color: "#0000FF", width: 2},     //Hard Exudates
+    SE:  { color: "#FFFF00", width: 2},     //Soft Exudates
+    IrMA:  { color: "#B413EC", width: 2},   //Intraretinal Microvascular Abnormality
+    
+    PHEM:  { color: "#008080", width: 2},   //Vitreous/Pre-Retinal Hemorrhages
+    PFIB:  { color: "#A52A2A", width: 2},   //Pre-Retinal Fibrose
+    NV:  { color: "#000000", width: 2}      //Neovascularization
   }
 
   lastTool: string
   lastGeometryTool: string
 
-  tool = 'NONE'           // (MAG, ERASER, MOVE, PAN)  (MA, HEM, HE, SE, NV)
-  geometryTool = 'N'      // (C-"Circle", E-"Elipse", P-"Polygon", F-"Free-Hand", N-"None")
+  tool = 'NONE'           // (MAG, ERASER, MOVE, PAN)  (MA, HEM, HE, SE, IrMA, PHEM, PFIB, NV)
+  geometryTool = 'N'      // (R-"Cross, "C-"Circle", E-"Elipse", P-"Polygon", F-"Free-Hand", N-"None")
   magnifierTool = false
   toolActive = false
   toolData: any
@@ -152,8 +156,11 @@ export class AnnotateView {
     this.toolActive = false
 
     this.ctxLesions = params['lesions'] == 'true' ? true : false
-    this.ctxQuality = !this.ctxLesions
-    this.ctxDiagnosis = !this.ctxLesions
+    this.ctxQuality = true
+    this.ctxDiagnosis = true
+
+    //this.ctxQuality = !this.ctxLesions
+    //this.ctxDiagnosis = !this.ctxLesions
   }
 
   getProgressFromContext() {
@@ -328,11 +335,14 @@ export class AnnotateView {
 
   defaultGeometryTool(tool: string): string {
       switch (tool) {
-        case "MA": return "E"
-        case "HEM": return "C"
+        case "MA": return "R"
+        case "HEM": return "P"
         case "HE": 
         case "SE": return "P"
-        case "NV": return "F"
+        case "IrMA": return "P"
+        case "PHEM": return "P"
+        case "PFIB": return "P"
+        case "NV": return "P"
         default: return "N"
       } 
   }
@@ -371,7 +381,7 @@ export class AnnotateView {
   }
 
   selectGeometryTool(geoTool: string, dontStamp = false) {
-    if (['MA', 'HEM', 'HE', 'SE', 'NV'].indexOf(this.tool) > -1) {
+    if (['MA', 'HEM', 'HE', 'SE', 'IrMA', 'PHEM', 'PFIB', 'NV'].indexOf(this.tool) > -1) {
       if (!dontStamp)
         this.stampHistory('TOOL_' + geoTool)
       
@@ -401,7 +411,7 @@ export class AnnotateView {
 
       if (e.button == 0) {
         if (!this.toolActive)
-          if (['MA', 'HEM', 'HE', 'SE', 'NV'].indexOf(this.tool) > -1)
+          if (['MA', 'HEM', 'HE', 'SE', 'IrMA', 'PHEM', 'PFIB', 'NV'].indexOf(this.tool) > -1)
             this.stampHistory('DRAW_' + this.tool + '_' + this.geometryTool)
           else if (this.tool != 'MAG')
             this.stampHistory('USE_' + this.tool)
@@ -423,6 +433,12 @@ export class AnnotateView {
           this.initPos = pos
           this.lastTool = this.tool
           this.hasChange.detectChanges()
+        } else if (this.tool == 'RESIZE') {
+          if (this.selectedGeoKey != null) {
+            this.lastTool = this.tool
+            this.lastGeometryTool = this.geometryTool
+            this.resizeEllipse(pos.x, pos.y)
+          }
         } else if (this.tool == 'PAN') {
           this.initPos = pos
         }
@@ -485,11 +501,19 @@ export class AnnotateView {
           else
             this.redraw()
         } else if (this.tool == 'MOVE') {
-          this.selectTool(this.lastTool, true)
-          this.selectGeometryTool(this.lastGeometryTool, true)
           this.hasChange.detectChanges()
         } else if (this.tool == 'PAN') {
           this.adjustBox()
+        }
+
+        if (this.lastTool !== null) {
+          this.selectTool(this.lastTool, true)
+          this.lastTool = null
+        }
+
+        if (this.lastGeometryTool !== null) {
+          this.selectGeometryTool(this.lastGeometryTool, true)
+          this.lastGeometryTool = null
         }
       }
     }
@@ -554,6 +578,31 @@ export class AnnotateView {
       let index = this.geoKeyOrder.length - 1
       if (index > -1)
         this.selectedGeoKey = this.geoKeyOrder[index]
+    }
+  }
+
+  resizeEllipse(xDelta: number, yDelta: number) {
+    let selectedGeo = this.geometry[this.selectedGeoKey]
+    if (selectedGeo != null) {
+      let geoType = selectedGeo.geo
+      let geo = selectedGeo.data
+      
+      if (geoType == 'E') {
+        this.toolData = { x: geo.x, y: geo.y, rx: Math.abs(xDelta - geo.x), ry: Math.abs(yDelta - geo.y) }
+      }
+
+      if (geoType == 'C') {
+        let r = Math.sqrt(Math.pow(xDelta - geo.x, 2) + Math.pow(yDelta - geo.y, 2))
+        this.toolData = { x: geo.x, y: geo.y, rx: r, ry: r }
+      }
+
+      if (geoType == 'E' || geoType == 'C') {
+        console.log('RESIZE: ', selectedGeo)
+        this.tool = selectedGeo.type
+        this.geometryTool = geoType
+        this.erase(this.selectedGeoKey)
+        this.toolGeo = this.paper.ellipse(this.toolData.x, this.toolData.y, this.toolData.rx, this.toolData.ry)
+      }
     }
   }
 

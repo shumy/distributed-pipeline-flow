@@ -135,7 +135,7 @@ div {
 .magsmall {
   position: relative;
   height: calc(100vh - 90px);
-  width: calc(100vw - 300px);
+  width: calc(100vw - 350px);
   background-color: black;
 }
 
