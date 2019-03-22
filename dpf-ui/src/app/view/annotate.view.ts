@@ -587,6 +587,12 @@ export class AnnotateView {
       let geoType = selectedGeo.geo
       let geo = selectedGeo.data
       
+      if (geoType == 'E' || geoType == 'C') {
+        console.log('RESIZE: ', selectedGeo)
+        geo.x /= selectedGeo.scale.width/this.box.width
+        geo.y /= selectedGeo.scale.height/this.box.height
+      }
+
       if (geoType == 'E') {
         this.toolData = { x: geo.x, y: geo.y, rx: Math.abs(xDelta - geo.x), ry: Math.abs(yDelta - geo.y) }
       }
@@ -597,7 +603,6 @@ export class AnnotateView {
       }
 
       if (geoType == 'E' || geoType == 'C') {
-        console.log('RESIZE: ', selectedGeo)
         this.tool = selectedGeo.type
         this.geometryTool = geoType
         this.erase(this.selectedGeoKey)
