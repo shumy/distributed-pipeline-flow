@@ -24,11 +24,15 @@ export class ImageView {
   readonly LESIONS        = 'lesions'
 
   readonly geoAttributes = {
-    MA:  { color: "#FF0000", width: 2},  //MicroAneurisms (elipse)
-    HEM: { color: "#00FF00", width: 2},  //Hemorhages (circle)
-    HE:  { color: "#0000FF", width: 2},  //Hard Exudates (path)
-    SE:  { color: "#FFFF00", width: 2},  //Soft Exudates (path)
-    NV:  { color: "#000000", width: 2}   //Neovascularization (pencil)
+    MA:  { color: "#FF0000", width: 2},     //MicroAneurisms
+    HEM: { color: "#00FF00", width: 2},     //Hemorhages
+    HE:  { color: "#0000FF", width: 2},     //Hard Exudates
+    SE:  { color: "#FFFF00", width: 2},     //Soft Exudates
+    IrMA:  { color: "#B413EC", width: 2},   //Intraretinal Microvascular Abnormality
+    
+    PHEM:  { color: "#008080", width: 2},   //Vitreous/Pre-Retinal Hemorrhages
+    PFIB:  { color: "#A52A2A", width: 2},   //Pre-Retinal Fibrose
+    NV:  { color: "#000000", width: 2}      //Neovascularization
   }
 
   uid: string
@@ -175,13 +179,16 @@ export class ImageView {
 
   defaultGeometryTool(tool: string): string {
     switch (tool) {
-      case "MA": return "E"
-      case "HEM": return "C"
+      case "MA": return "R"
+      case "HEM": return "P"
       case "HE": 
       case "SE": return "P"
-      case "NV": return "F"
+      case "IrMA": return "P"
+      case "PHEM": return "P"
+      case "PFIB": return "P"
+      case "NV": return "P"
       default: return "N"
-    } 
+    }
   }
 
   lesionsToGeometry() {
@@ -284,8 +291,8 @@ export class ImageView {
     //END: center image when non existent scroll
 
     this.paper.setSize('100%', '100%')
-    Ps.update(this.form[0])
-    Ps.update(this.magsmall[0])
+    Ps.update(this.form[0] as HTMLElement)
+    Ps.update(this.magsmall[0] as HTMLElement)
 
     this.adjustScroll(leftScrollRatio, topScrollRatio)
     this.redraw()
@@ -326,8 +333,8 @@ export class ImageView {
   }
 
   tools() {
-    Ps.initialize(this.form[0])
-    Ps.initialize(this.magsmall[0])
+    Ps.initialize(this.form[0] as HTMLElement)
+    Ps.initialize(this.magsmall[0] as HTMLElement)
     this.paper = Raphael('raphael', 0, 0)
 
     window.onresize = _ => this.adjustLayout()

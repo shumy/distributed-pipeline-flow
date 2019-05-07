@@ -93,7 +93,7 @@
             <div class="ui mini buttons">
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P0') }} button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="No Photocoagulation">P0</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P1') }} button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="Insufficient Photocoagulation">P1</button>
-              <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P2') }} button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Sufficient Photocoagulation">P2</button>
+              <button *ngIf="node(DIAGNOSIS).photocoagulation == 'P2'" class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'P2') }} button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Sufficient Photocoagulation">P2</button>
               <button class="ui grey {{ getStateClass(node(DIAGNOSIS).photocoagulation, 'PX') }} button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Unable to classify">X</button>
             </div>
           </div>
@@ -120,11 +120,17 @@
               <button class="ui green basic button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="Hemorrhages">HEM</button>
               <button class="ui blue basic button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Hard exudates">HE</button>
               <button class="ui olive basic button" style="flex-shrink: 1; cursor: default;" data-position="top right" data-inverted="" data-tooltip="Soft exudates">SE</button>
-              <button class="ui grey basic button" style="flex-shrink: 1; cursor: default;" data-position="top right" data-inverted="" data-tooltip="Neovascularizations">NV</button>
+              <button class="ui purple basic button" style="flex-shrink: 1; cursor: default;" data-position="top right" data-inverted="" data-tooltip="Intraretinal Microvascular Abnormality">IrMA</button>
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui mini buttons">
+              <button class="ui teal basic button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="Vitreous/Pre-Retinal Hemorrhages">pre-HEM</button>
+              <button class="ui brown basic button" style="flex-shrink: 1; cursor: default;" data-position="top left" data-inverted="" data-tooltip="Pre-Retinal Fibrose">pre-FIB</button>
+              <button class="ui grey basic button" style="flex-shrink: 1; cursor: default;" data-position="top center" data-inverted="" data-tooltip="Neovascularizations">NV</button>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>

@@ -260,8 +260,8 @@ export class AnnotateView {
     //END: center image when non existent scroll
 
     this.paper.setSize('100%', '100%')
-    Ps.update(this.form[0])
-    Ps.update(this.magsmall[0])
+    Ps.update(this.form[0] as HTMLElement)
+    Ps.update(this.magsmall[0] as HTMLElement)
 
     this.adjustScroll(leftScrollRatio, topScrollRatio)
     this.redraw()
@@ -390,8 +390,8 @@ export class AnnotateView {
   }
 
   tools() {
-    Ps.initialize(this.form[0])
-    Ps.initialize(this.magsmall[0])
+    Ps.initialize(this.form[0] as HTMLElement)
+    Ps.initialize(this.magsmall[0] as HTMLElement)
     this.paper = Raphael('raphael', 0, 0)
 
     window.onresize = _ => this.adjustLayout()
